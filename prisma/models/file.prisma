@@ -1,0 +1,22 @@
+enum FileStatus {
+  pending
+  published
+  failed
+  orphan
+}
+
+model File {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  key       String     @unique
+  url       String
+  category  String
+  mimeType  String
+  sizeBytes Int
+  status    FileStatus @default(pending)
+  ownerId   String?    @db.ObjectId
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([ownerId, status])
+  @@index([status])
+}

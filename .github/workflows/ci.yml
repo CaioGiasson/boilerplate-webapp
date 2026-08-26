@@ -1,0 +1,54 @@
+name: CI
+
+on:
+    pull_request:
+
+concurrency:
+    group: ci-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    verify:
+        name: verify
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22.19.0'
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Prisma generate
+              run: npm run prisma:generate
+
+            - name: Lint
+              run: npm run lint
+
+            - name: Typecheck
+              run: npm run typecheck
+
+            - name: Test
+              run: npm run test
+
+            - name: Build
+              run: npm run build
+              env:
+                  DATABASE_URL: mongodb://127.0.0.1:27017/vitraux-ci
+                  JWT_SECRET: ci-jwt-secret-minimum-32-characters-long
+                  SESSION_SECRET: ci-session-secret-minimum-32-chars
+                  CACHE_LIFETIME_SECONDS: '3600'
+                  SPACES_ENDPOINT: nyc3.digitaloceanspaces.com
+                  SPACES_BUCKET: vitraux-ci
+                  SPACES_ACCESS_KEY_ID: ci-access-key
+                  SPACES_SECRET_ACCESS_KEY: ci-secret-key
+                  ENVIRONMENT: dev
+                  EMAIL_PROVIDER: none
+                  SWAGGER_ENABLED: 'false'

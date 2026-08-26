@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+    - name: Board Vitraux
+      url: https://github.com/users/CaioGiasson/projects/3/views/1
+      about: Acompanhe e priorize tarefas no project board
+    - name: Fluxo de issues
+      url: https://github.com/CaioGiasson/vitraux/blob/main/docs/issue-workflow.md
+      about: Regras de refinamento, escopo e review

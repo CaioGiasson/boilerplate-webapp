@@ -1,0 +1,21 @@
+---
+description: Commit e push obrigatórios em toda implementação; não aguardar pedido explícito
+alwaysApply: true
+---
+
+# Git — implementação contínua
+
+## Commit e push
+
+- **Sempre** commitar e dar **push** na branch remota da issue ao concluir implementação (ou em marcos lógicos).
+- **Não** aguardar o usuário pedir "commit", "faça commit" ou equivalente.
+- **Não** deixar trabalho só local em `main` — feature vai em branch da issue.
+- Mensagens de commit em **pt-BR**; hooks de pre-commit rodam normalmente (sem `--no-verify`).
+
+## Motivo
+
+Permitir retomar a issue em outra máquina se houver problema no computador local.
+
+## Antes do primeiro commit
+
+Issue criada no board + branch aberta a partir de `main`. Ver `.cursor/rules/issue-workflow.mdc`.

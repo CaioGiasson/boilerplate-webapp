@@ -1,0 +1,3 @@
+### Recuperar ou gerar Example
+GET http://localhost:3000/api/v1/examples?identifier=1234567890
+Accept: application/json

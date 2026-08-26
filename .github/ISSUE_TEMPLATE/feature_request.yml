@@ -1,0 +1,48 @@
+name: Feature
+description: Nova funcionalidade ou melhoria
+title: '[Feature] '
+labels: ['enhancement']
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Issues refinadas vão para o [board Vitraux](https://github.com/users/CaioGiasson/projects/3/views/1).
+              Guia completo: [`docs/issue-workflow.md`](../../docs/issue-workflow.md).
+
+    - type: textarea
+      id: objective
+      attributes:
+          label: Objetivo
+          description: Qual problema de usuário ou produto resolve?
+      validations:
+          required: true
+
+    - type: textarea
+      id: scope
+      attributes:
+          label: Escopo
+          description: O que entra e o que fica fora?
+      validations:
+          required: true
+
+    - type: textarea
+      id: acceptance
+      attributes:
+          label: Critérios de aceite
+          placeholder: |
+              - [ ] …
+              - [ ] …
+      validations:
+          required: true
+
+    - type: textarea
+      id: constraints
+      attributes:
+          label: Restrições
+          description: Camadas, i18n (pt/en/es), privacidade, performance
+
+    - type: textarea
+      id: references
+      attributes:
+          label: Referências
+          description: Issues, ADRs, reports (SECURITY, PRIVACY, etc.)

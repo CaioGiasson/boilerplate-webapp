@@ -1,0 +1,24 @@
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  SECRET
+  PROTECTED
+}
+
+model Image {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId     String     @db.ObjectId
+  url         String
+  title       String?
+  description String?
+  tags        String[]
+  fileId      String?    @db.ObjectId
+  visibility  Visibility @default(PUBLIC)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime?
+
+  @@index([ownerId])
+  @@index([createdAt])
+  @@index([ownerId, visibility])
+}

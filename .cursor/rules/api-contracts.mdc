@@ -1,0 +1,26 @@
+---
+description: Todo endpoint criado ou alterado exige .http + OpenAPI/Swagger — obrigatório
+alwaysApply: true
+---
+
+# Contratos HTTP — Vitraux
+
+## Obrigatório (não opcional)
+
+Sempre que um endpoint HTTP for **criado** ou **alterado** (`src/app/api/**`, controller/route correspondente), na **mesma PR/issue**:
+
+1. **`requests/**/*.http`** — request de smoke no arquivo da área (ou novo arquivo + linha no índice de `requests/README.md`).
+2. **`requests/README.md`** — inventário de rotas atualizado (método, path, auth, arquivo).
+3. **`docs/openapi.yaml`** — path, método, auth, request/response alinhados ao contrato real.
+
+A UI Swagger (`GET /api/docs`) consome `docs/openapi.yaml` via `GET /api/docs/openapi` — atualizar o YAML **é** atualizar o Swagger.
+
+## Não fazer
+
+- Entregar endpoint só no código sem `.http` / OpenAPI.
+- Deixar contrato “para depois” ou marcar como nit opcional na review.
+- Documentar path/shape diferente do que a rota realmente retorna.
+
+## Review
+
+Achado de endpoint novo/alterado sem `.http` + OpenAPI = **bloqueante** até corrigir. Ver também `docs/issue-workflow.md` e `AGENTS.md`.

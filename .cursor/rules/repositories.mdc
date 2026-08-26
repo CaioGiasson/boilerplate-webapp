@@ -1,0 +1,12 @@
+---
+description: Regras para repositories Prisma
+globs: src/repositories/**/*.repository.ts
+alwaysApply: false
+---
+
+# Repositories
+
+- Único lugar com Prisma direto (exceto health/scripts).
+- Recebem `Prisma.TransactionClient` (ou client root quando fase A/C).
+- Expor DTOs públicos via mappers (`toPublicUser`, etc.) — checklist em `docs/dto-checklist.md`.
+- Soft-delete Mongo: queries ativas via `activeWhere` / OR com campo ausente.

@@ -1,0 +1,1244 @@
+openapi: 3.0.3
+info:
+    title: Vitraux API
+    version: 1.0.0
+    description: |
+        Contrato HTTP do Vitraux (Next.js App Router).
+
+        **Auth:** cookie de sessão JWT (`vitraux-session` / `__Host-vitraux-session`).
+        Rotas mutáveis de auth exigem same-origin (`Origin` alinhado ao host).
+
+        **Envelope v1 (sucesso):** `{ "success": true, "message": "...", "data": { ... } }`
+        **Envelope v1 (erro):** `{ "success": false, "message": "...", "code": "..." }`
+
+        Spec canônica no repo: `docs/openapi.yaml`. UI interativa: `GET /api/docs` (gated).
+        Smoke manual: `requests/**/*.http`.
+    contact:
+        name: Vitraux
+servers:
+    - url: http://localhost:3000
+      description: Dev local
+tags:
+    - name: health
+    - name: docs
+    - name: auth
+    - name: users
+    - name: nickname
+    - name: images
+    - name: examples
+
+paths:
+    /api/health:
+        get:
+            tags: [health]
+            summary: Liveness / readiness leve
+            security:
+                - HealthToken: []
+                - {}
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success: { type: boolean, example: true }
+                                    status: { type: string, example: ok }
+                                    dependencies:
+                                        type: object
+                                        properties:
+                                            database:
+                                                type: object
+                                                properties:
+                                                    url: { type: string, example: /api/health/database }
+                '404':
+                    description: Acesso negado (não loopback e sem token)
+
+    /api/health/database:
+        get:
+            tags: [health]
+            summary: Ping MongoDB via Prisma
+            security:
+                - HealthToken: []
+                - {}
+            responses:
+                '200':
+                    description: DB up
+                '404':
+                    description: Acesso negado
+                '503':
+                    description: DB down
+
+    /api/docs:
+        get:
+            tags: [docs]
+            summary: Swagger UI (somente se SWAGGER_ENABLED)
+            security:
+                - SwaggerBasic: []
+            responses:
+                '200':
+                    description: HTML Swagger UI
+                '401':
+                    description: Credenciais ausentes/inválidas
+                '404':
+                    description: Desabilitado ou mal configurado
+
+    /api/docs/openapi:
+        get:
+            tags: [docs]
+            summary: Spec OpenAPI (YAML)
+            security:
+                - SwaggerBasic: []
+            responses:
+                '200':
+                    description: openapi.yaml
+                    content:
+                        application/yaml:
+                            schema:
+                                type: string
+                '401':
+                    description: Credenciais ausentes/inválidas
+                '404':
+                    description: Desabilitado ou mal configurado
+
+    /api/v1/auth/register:
+        post:
+            tags: [auth]
+            summary: Registrar usuário e abrir sessão
+            security: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RegisterBody'
+            responses:
+                '201':
+                    description: Criado + Set-Cookie de sessão
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessUser'
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '403':
+                    description: CSRF / origin
+                '409':
+                    description: Nickname ou e-mail em uso
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/auth/login:
+        post:
+            tags: [auth]
+            summary: Login
+            security: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [identifier, password]
+                            properties:
+                                identifier: { type: string, description: E-mail ou nickname }
+                                password: { type: string, maxLength: 128 }
+            responses:
+                '200':
+                    description: OK + cookies
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  user: { $ref: '#/components/schemas/PublicUser' }
+                                                  settings: { type: object }
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/auth/logout:
+        post:
+            tags: [auth]
+            summary: Logout (limpa cookies)
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            responses:
+                '204':
+                    description: Sem corpo
+
+    /api/v1/auth/me:
+        get:
+            tags: [auth]
+            summary: Sessão atual
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Sessão ativa
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessUser'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/auth/password/forgot:
+        post:
+            tags: [auth]
+            summary: Solicitar reset de senha (resposta opaca)
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [email]
+                            properties:
+                                email: { type: string, format: email }
+                                locale: { $ref: '#/components/schemas/Locale' }
+            responses:
+                '200':
+                    description: Sempre sucesso opaco
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/auth/password/reset:
+        post:
+            tags: [auth]
+            summary: Redefinir senha com token ou código
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [newPassword, newPasswordConfirmation]
+                            properties:
+                                token: { type: string }
+                                code: { type: string, minLength: 8, maxLength: 8 }
+                                newPassword: { type: string, maxLength: 128 }
+                                newPasswordConfirmation: { type: string, maxLength: 128 }
+            responses:
+                '200':
+                    description: Senha alterada
+                '404':
+                    description: Token/código inválido
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/auth/email/verify/send:
+        post:
+            tags: [auth]
+            summary: Enviar verificação de e-mail
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                locale: { $ref: '#/components/schemas/Locale' }
+            responses:
+                '200':
+                    description: Enviado ou already verified
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/auth/email/confirm:
+        post:
+            tags: [auth]
+            summary: Confirmar desafio de e-mail
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [token]
+                            properties:
+                                token: { type: string, minLength: 8, maxLength: 8 }
+                                locale: { $ref: '#/components/schemas/Locale' }
+            responses:
+                '200':
+                    description: E-mail confirmado / challenge resolvido
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessUser'
+                '404':
+                    description: Token inválido
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/auth/google/ready:
+        get:
+            tags: [auth]
+            summary: Readiness do login Google (sem secrets)
+            security: []
+            responses:
+                '200':
+                    description: Indica se o botão Continuar com Google deve aparecer
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [success, message, data]
+                                properties:
+                                    success: { type: boolean }
+                                    message: { type: string }
+                                    data:
+                                        type: object
+                                        required: [ready]
+                                        properties:
+                                            ready: { type: boolean }
+
+    /api/v1/auth/google/start:
+        get:
+            tags: [auth]
+            summary: Inicia OAuth Google (redirect 302)
+            security: []
+            parameters:
+                - name: returnUrl
+                  in: query
+                  required: false
+                  schema: { type: string, description: Path relativo same-origin (ex. /images) }
+            responses:
+                '302':
+                    description: Redirect para accounts.google.com (+ cookie de state)
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+                '503':
+                    description: Google OAuth não configurado
+
+    /api/v1/auth/google/callback:
+        get:
+            tags: [auth]
+            summary: Callback OAuth Google (redirect 302)
+            security: []
+            parameters:
+                - name: code
+                  in: query
+                  required: true
+                  schema: { type: string }
+                - name: state
+                  in: query
+                  required: true
+                  schema: { type: string }
+            responses:
+                '302':
+                    description: Sessão (cookie) ou pending register/link + redirect UI
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/auth/google/complete-registration:
+        post:
+            tags: [auth]
+            summary: Completa cadastro Google (termos + idade)
+            security: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [birthDate, acceptedTerms, acceptedPrivacy]
+                            properties:
+                                birthDate: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+                                acceptedTerms: { type: boolean, enum: [true] }
+                                acceptedPrivacy: { type: boolean, enum: [true] }
+            responses:
+                '201':
+                    description: Conta criada + sessão
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  user: { $ref: '#/components/schemas/PublicUser' }
+                                                  returnUrl: { type: string }
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/auth/google/link:
+        post:
+            tags: [auth]
+            summary: Vincula Google a conta existente (exige senha Vitraux)
+            security: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [password]
+                            properties:
+                                password: { type: string, maxLength: 128 }
+            responses:
+                '200':
+                    description: Vinculado + sessão
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  user: { $ref: '#/components/schemas/PublicUser' }
+                                                  returnUrl: { type: string }
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/users/{id}:
+        parameters:
+            - $ref: '#/components/parameters/UserId'
+        get:
+            tags: [users]
+            summary: Perfil (somente self)
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Perfil
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessUser'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Não é o próprio usuário
+        patch:
+            tags: [users]
+            summary: Atualizar perfil (somente self)
+            security:
+                - SessionCookie: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name: { type: string, nullable: true }
+                                nickname: { type: string }
+                                photoUrl:
+                                    type: string
+                                    nullable: true
+                                    description: Somente null para limpar foto
+            responses:
+                '200':
+                    description: Atualizado
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessUser'
+                '409':
+                    description: Nickname em uso
+
+    /api/v1/users/{id}/password:
+        parameters:
+            - $ref: '#/components/parameters/UserId'
+        patch:
+            tags: [users]
+            summary: Trocar senha
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [newPassword, newPasswordConfirmation]
+                            properties:
+                                currentPassword:
+                                    type: string
+                                    maxLength: 128
+                                    description: Obrigatório se a conta já tem senha; vazio permitido só para conta Google sem senha
+                                newPassword: { type: string, maxLength: 128 }
+                                newPasswordConfirmation: { type: string, maxLength: 128 }
+            responses:
+                '200':
+                    description: OK (+ cookie de sessão renovado)
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/users/{id}/photo:
+        parameters:
+            - $ref: '#/components/parameters/UserId'
+        patch:
+            tags: [users]
+            summary: Upload de foto de perfil (data URL, ≤3MB)
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [image]
+                            properties:
+                                image:
+                                    type: string
+                                    description: data:image/...;base64,...
+            responses:
+                '200':
+                    description: Foto atualizada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessUser'
+
+    /api/v1/users/{id}/settings:
+        parameters:
+            - $ref: '#/components/parameters/UserId'
+        patch:
+            tags: [users]
+            summary: Atualizar uma setting
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SettingPatch'
+            responses:
+                '200':
+                    description: Setting atualizada
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  user: { $ref: '#/components/schemas/PublicUser' }
+                                                  settings: { type: object }
+
+    /api/v1/users/me:
+        delete:
+            tags: [users]
+            summary: Solicitar exclusão de conta (quarentena 30 dias)
+            description: |
+                Marca `deletedAt`, revoga sessões e envia e-mail de quarentena.
+                Não anonimiza nem apaga Spaces. Conta com senha exige `currentPassword`;
+                conta só-Google autenticada pode omitir a senha.
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                currentPassword: { type: string, maxLength: 128 }
+                                locale: { type: string, enum: [pt, en, es] }
+            responses:
+                '200':
+                    description: Conta em quarentena; cookies limpos
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/users/me/deletion:
+        get:
+            tags: [users]
+            summary: Status da quarentena de exclusão (sessão de decisão)
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: deletedAt e deadlineAt
+                '401':
+                    description: Sem sessão de decisão válida
+
+    /api/v1/users/me/deletion/cancel:
+        post:
+            tags: [users]
+            summary: CANCELAR exclusão do perfil (restaurar conta)
+            description: Limpa `deletedAt` e envia e-mail de confirmação do cancelamento (best-effort).
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                locale: { type: string, enum: [pt, en, es] }
+            responses:
+                '200':
+                    description: Conta restaurada
+                '401':
+                    description: Quarentena expirada ou sessão inválida
+
+    /api/v1/users/me/deletion/keep:
+        post:
+            tags: [users]
+            summary: MANTER exclusão do perfil
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Quarentena mantida; cookies limpos
+
+    /api/v1/users/me/export:
+        get:
+            tags: [users]
+            summary: Exportação LGPD dos dados do usuário
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Payload de exportação
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  exportedAt: { type: string, format: date-time }
+                                                  user: { $ref: '#/components/schemas/PublicUser' }
+                                                  images:
+                                                      type: array
+                                                      items: { type: object }
+
+    /api/v1/users/me/stats:
+        get:
+            tags: [users]
+            summary: Estatísticas de armazenamento do usuário autenticado
+            description: |
+                Retorna a quantidade de imagens ativas (não soft-deleted) e o total de bytes
+                publicados do owner (mesma base da quota de upload: `File.status = published`).
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Estatísticas do usuário
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              required: [imageCount, usedBytes]
+                                              properties:
+                                                  imageCount:
+                                                      type: integer
+                                                      minimum: 0
+                                                      description: Quantidade de imagens ativas do owner
+                                                      example: 12
+                                                  usedBytes:
+                                                      type: integer
+                                                      minimum: 0
+                                                      description: Soma de sizeBytes dos Files published do owner
+                                                      example: 5242880
+                '401':
+                    description: Não autenticado
+
+    /api/v1/users/me/email/change:
+        post:
+            tags: [users]
+            summary: Solicitar troca de e-mail
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [password, newEmail]
+                            properties:
+                                password: { type: string, maxLength: 128 }
+                                newEmail: { type: string, format: email }
+                                locale: { $ref: '#/components/schemas/Locale' }
+            responses:
+                '200':
+                    description: Challenge iniciado (willUnlinkGoogle se a conta estava vinculada ao Google)
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  user: { $ref: '#/components/schemas/PublicUser' }
+                                                  willUnlinkGoogle: { type: boolean }
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/users/me/sessions:
+        get:
+            tags: [users]
+            summary: Listar sessões ativas
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Lista de sessões
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  sessions:
+                                                      type: array
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              device: { type: string }
+                                                              createdAt: { type: string, format: date-time }
+                                                              exp: { type: integer }
+                                                              current: { type: boolean }
+        delete:
+            tags: [users]
+            summary: Revogar outras sessões (mantém a atual)
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Contagem de sessões revogadas
+
+    /api/v1/users/me/sessions/{sessionId}:
+        parameters:
+            - name: sessionId
+              in: path
+              required: true
+              schema: { type: string }
+        delete:
+            tags: [users]
+            summary: Revogar uma sessão específica
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Revogada
+                '404':
+                    description: Sessão não encontrada
+
+    /api/v1/nickname/{nickname}:
+        parameters:
+            - name: nickname
+              in: path
+              required: true
+              schema: { type: string }
+        get:
+            tags: [nickname]
+            summary: Verificar nickname (200 = existe, 404 = disponível)
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Nickname já existe
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  exists: { type: boolean, example: true }
+                '404':
+                    description: Nickname disponível
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/images:
+        get:
+            tags: [images]
+            summary: Listar mosaico / imagens
+            parameters:
+                - name: scope
+                  in: query
+                  schema:
+                      type: string
+                      enum: [mine, all]
+                      default: mine
+                - name: q
+                  in: query
+                  schema: { type: string }
+                - name: tags
+                  in: query
+                  schema: { type: string, description: CSV }
+                - name: createdFrom
+                  in: query
+                  schema: { type: string, format: date-time }
+                - name: createdTo
+                  in: query
+                  schema: { type: string, format: date-time }
+                - name: cursor
+                  in: query
+                  schema: { type: string }
+            responses:
+                '200':
+                    description: Página cursor
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  images:
+                                                      type: array
+                                                      items: { type: object }
+                                                  mosaic:
+                                                      type: array
+                                                      items: { $ref: '#/components/schemas/MosaicImage' }
+                                                  nextCursor: { type: string, nullable: true }
+                '401':
+                    description: scope=mine sem sessão
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+        post:
+            tags: [images]
+            summary: Upload de imagem (data URL ≤3MB)
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateImageBody'
+            responses:
+                '201':
+                    description: Criada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessImage'
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/images/from-url:
+        post:
+            tags: [images]
+            summary: Importar imagem de URL pública HTTP(S)
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            allOf:
+                                - type: object
+                                  required: [url]
+                                  properties:
+                                      url: { type: string, format: uri }
+                                - $ref: '#/components/schemas/ImageMetadata'
+            responses:
+                '201':
+                    description: Importada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessImage'
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/images/tags:
+        get:
+            tags: [images]
+            summary: Listar tags agregadas
+            parameters:
+                - name: scope
+                  in: query
+                  schema:
+                      type: string
+                      enum: [mine, all]
+                      default: mine
+            responses:
+                '200':
+                    description: Tags
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  tags:
+                                                      type: array
+                                                      items: { type: string }
+                '401':
+                    description: scope=mine sem sessão
+
+    /api/v1/images/{id}:
+        parameters:
+            - $ref: '#/components/parameters/ImageId'
+        get:
+            tags: [images]
+            summary: Detalhe (respeita visibility / viewer)
+            responses:
+                '200':
+                    description: Mosaic item
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  mosaic: { $ref: '#/components/schemas/MosaicImage' }
+                '404':
+                    description: Não encontrado ou sem acesso
+        patch:
+            tags: [images]
+            summary: Atualizar metadados (owner)
+            security:
+                - SessionCookie: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ImageMetadata'
+            responses:
+                '200':
+                    description: Atualizada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessImage'
+        delete:
+            tags: [images]
+            summary: Soft-delete (owner)
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Removida
+
+    /api/v1/images/{id}/visibility:
+        parameters:
+            - $ref: '#/components/parameters/ImageId'
+        patch:
+            tags: [images]
+            summary: Alterar visibility (owner)
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/VisibilityBody'
+            responses:
+                '200':
+                    description: Visibility atualizada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuccessImage'
+
+    /api/v1/images/{id}/report:
+        parameters:
+            - $ref: '#/components/parameters/ImageId'
+        post:
+            tags: [images]
+            summary: Reportar imagem
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [reason]
+                            properties:
+                                reason:
+                                    type: string
+                                    enum: [spam, nudes_nonconsensual, csam, impersonation, other]
+                                details: { type: string, maxLength: 1000 }
+            responses:
+                '201':
+                    description: Report criado
+
+    /api/v1/examples:
+        get:
+            tags: [examples]
+            summary: Exemplo (desabilitado em production)
+            parameters:
+                - name: identifier
+                  in: query
+                  required: true
+                  schema: { type: string }
+            responses:
+                '200':
+                    description: Exemplo
+                '404':
+                    description: Desabilitado ou não encontrado
+
+components:
+    securitySchemes:
+        SessionCookie:
+            type: apiKey
+            in: cookie
+            name: vitraux-session
+            description: Em produção o cookie pode ser `__Host-vitraux-session`.
+        HealthToken:
+            type: http
+            scheme: bearer
+            description: HEALTHCHECK_TOKEN / HEALTH_TOKEN (também via header x-healthcheck-token).
+        SwaggerBasic:
+            type: http
+            scheme: basic
+            description: SWAGGER_USER / SWAGGER_PASSWORD quando SWAGGER_ENABLED=true.
+
+    parameters:
+        OriginHeader:
+            name: Origin
+            in: header
+            required: false
+            schema: { type: string }
+            description: Obrigatório em rotas CSRF (same-origin).
+        UserId:
+            name: id
+            in: path
+            required: true
+            schema: { type: string }
+        ImageId:
+            name: id
+            in: path
+            required: true
+            schema: { type: string }
+
+    responses:
+        ValidationError:
+            description: Validação
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ApiError'
+        Unauthorized:
+            description: Não autenticado
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ApiError'
+        RateLimited:
+            description: Rate limit
+            headers:
+                Retry-After:
+                    schema: { type: integer }
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ApiError'
+
+    schemas:
+        Locale:
+            type: string
+            enum: [pt, en, es]
+        Visibility:
+            type: string
+            enum: [PUBLIC, PRIVATE, SECRET, PROTECTED]
+        ApiSuccess:
+            type: object
+            properties:
+                success: { type: boolean, example: true }
+                message: { type: string }
+                data: { type: object }
+        ApiError:
+            type: object
+            properties:
+                success: { type: boolean, example: false }
+                message: { type: string }
+                code:
+                    type: string
+                    example: VALIDATION_ERROR
+        PublicUser:
+            type: object
+            properties:
+                id: { type: string }
+                name: { type: string, nullable: true }
+                nickname: { type: string }
+                email: { type: string }
+                photoUrl: { type: string, nullable: true }
+                settings: { type: object }
+                emailVerifiedAt: { type: string, format: date-time, nullable: true }
+                pendingEmail: { type: string, nullable: true }
+                emailChallenge:
+                    type: string
+                    enum: [none, verify, change_old, change_new]
+                hasPassword: { type: boolean, description: Conta já definiu senha Vitraux }
+                googleLinked: { type: boolean, description: Conta vinculada ao Google OAuth }
+        MosaicImage:
+            type: object
+            description: DTO de mosaico (URL já assinada quando aplicável)
+            properties:
+                id: { type: string }
+                url: { type: string }
+                title: { type: string, nullable: true }
+                visibility: { $ref: '#/components/schemas/Visibility' }
+        SuccessUser:
+            allOf:
+                - $ref: '#/components/schemas/ApiSuccess'
+                - type: object
+                  properties:
+                      data:
+                          type: object
+                          properties:
+                              user: { $ref: '#/components/schemas/PublicUser' }
+        SuccessImage:
+            allOf:
+                - $ref: '#/components/schemas/ApiSuccess'
+                - type: object
+                  properties:
+                      data:
+                          type: object
+                          properties:
+                              image: { type: object }
+                              mosaic: { $ref: '#/components/schemas/MosaicImage' }
+        ImageMetadata:
+            type: object
+            properties:
+                title: { type: string, maxLength: 200, nullable: true }
+                description: { type: string, maxLength: 5000, nullable: true }
+                tags:
+                    type: array
+                    maxItems: 20
+                    items: { type: string, maxLength: 40 }
+                visibility: { $ref: '#/components/schemas/Visibility' }
+                isPrivate: { type: boolean }
+                isSecret: { type: boolean }
+        CreateImageBody:
+            allOf:
+                - type: object
+                  required: [image]
+                  properties:
+                      image:
+                          type: string
+                          description: data URL
+                - $ref: '#/components/schemas/ImageMetadata'
+        VisibilityBody:
+            type: object
+            properties:
+                visibility: { $ref: '#/components/schemas/Visibility' }
+                isPrivate: { type: boolean }
+                isSecret: { type: boolean }
+        SettingPatch:
+            type: object
+            required: [key, value]
+            properties:
+                key:
+                    type: string
+                    enum:
+                        - darkMode
+                        - showSecretImages
+                        - appearInGlobalMosaic
+                        - language
+                        - homeZoomLevel
+                        - imagesZoomLevel
+                value:
+                    description: Boolean, locale ou int 1–12 conforme a key
+                    oneOf:
+                        - type: boolean
+                        - type: string
+                        - type: integer
+        RegisterBody:
+            type: object
+            required:
+                - nickname
+                - email
+                - password
+                - passwordConfirmation
+                - birthDate
+                - acceptedTerms
+                - acceptedPrivacy
+            properties:
+                nickname: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, maxLength: 128 }
+                passwordConfirmation: { type: string, maxLength: 128 }
+                birthDate: { type: string, format: date, example: '2000-01-15' }
+                acceptedTerms: { type: boolean, enum: [true] }
+                acceptedPrivacy: { type: boolean, enum: [true] }
+                device: { type: string }
+                locale: { $ref: '#/components/schemas/Locale' }
+                settings:
+                    type: array
+                    items: { $ref: '#/components/schemas/SettingPatch' }

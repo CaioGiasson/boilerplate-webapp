@@ -1,0 +1,13 @@
+---
+description: Regras para use cases (camadas e Prisma)
+globs: src/useCases/**/*.usecase.ts
+alwaysApply: false
+---
+
+# Use cases
+
+- Estendem `UseCaseMasterPort`; leituras puras: `transactional = false`.
+- Persistência: `new XxxRepository(injectables.prisma)` (ou root via ADR-007 helpers).
+- **Não** chamar `getPrismaClient()` direto — ESLint + `workUnitPhases`.
+- Sem `NextRequest`/`NextResponse`; I/O externo via services (`getEmailService`, `getStorageUrlService`, …).
+- Idioma do código: inglês; commits/comentários: pt-BR.

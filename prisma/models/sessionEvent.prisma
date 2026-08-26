@@ -1,0 +1,17 @@
+enum SessionEventType {
+  LOGOUT
+  FORCED_LOGOUT
+  REVOKE
+}
+
+model SessionEvent {
+  id         String           @id @default(auto()) @map("_id") @db.ObjectId
+  token      String
+  event      SessionEventType
+  device     String
+  occurredAt DateTime         @default(now())
+  exp        DateTime?
+
+  @@index([token])
+  @@index([exp])
+}

@@ -1,0 +1,43 @@
+---
+description: Fluxo obrigatório de criação e desenvolvimento de issues no board do Vitraux
+alwaysApply: true
+---
+
+# Fluxo de Issues — Vitraux
+
+Board: https://github.com/users/CaioGiasson/projects/3/views/1
+
+## Gate antes de implementar
+
+Pedidos do tipo **“Faça uma tela que…”**, **“Coloque uma seção de…”**, **“Crie um endpoint que…”** (e análogos: nova feature, bugfix, ajuste de UI/API) **não** iniciam código direto.
+
+Ordem obrigatória:
+
+1. **Refinar** — contexto, objetivo, escopo, critérios de aceite, restrições.
+2. **Criar issue** no board (label + vínculo ao projeto).
+3. **Branch** a partir de `main` (`feat/…`, `fix/…`) vinculada à issue; assignee ao iniciar.
+4. **Só então implementar.**
+
+## Criar issue
+
+1. **Sempre** criar a issue no board acima (não só no repositório sem vínculo ao projeto).
+2. **Refinar antes de abrir** — o corpo deve ter tudo necessário para desenvolver (contexto, objetivo, escopo, critérios de aceite, restrições). Não use só o prompt inicial do usuário.
+3. **Label obrigatória** — preencher label correspondente. Se não existir, perguntar no chat qual label criar; com a resposta, criar a label e então alocar na issue.
+
+## Desenvolver issue
+
+1. Ao começar, **assignar** o usuário que está desenvolvendo.
+2. Toda pergunta feita antes ou durante o desenvolvimento, e a respectiva resposta, deve ser **registrada como comentário na issue**.
+3. Trabalhar **somente na branch da issue** (nunca commitar feature direto em `main`).
+4. Ao concluir (ou em marcos lógicos), **commit + push** na branch remota — sem esperar pedido explícito de commit. Objetivo: continuidade em outra máquina se houver problema local.
+5. Abrir **PR** vinculada à issue (`Closes #N` quando couber).
+
+## Escopo: nova issue vs. mesma issue
+
+Pedido **sem relação** com a implementação atual → criar **issue específica** e documentar a solicitação nela (não misturar na issue em andamento).
+
+**Criar nova issue:** outra estrutura/contexto (ex. topo vs rodapé); pattern errado descoberto de passagem; outro bug em outra tela/endpoint; extração para tela futura fora do aceite.
+
+**Mesma issue:** mesma ação transversal do escopo (ex. fonte no topo e rodapé); ajustes em arquivos distintos só para o comportamento alvo funcionar; índice/DB necessário ao GET em construção; lint/TS pré-existente que bloqueia a feature ao tocar no arquivo; rename cosmético de auxiliar só da feature; mesma correção visual em outra rota; melhoria pequena opcional que cabe no aceite.
+
+**Na dúvida:** sem alto grau de confiança → consultar o desenvolvedor. Detalhes e exemplos em `docs/issue-workflow.md`.

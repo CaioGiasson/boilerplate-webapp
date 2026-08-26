@@ -1,0 +1,12 @@
+model ActiveSession {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  jtiHash   String
+  device    String
+  createdAt DateTime @default(now())
+  exp       DateTime
+
+  @@unique([jtiHash])
+  @@index([userId])
+  @@index([exp])
+}

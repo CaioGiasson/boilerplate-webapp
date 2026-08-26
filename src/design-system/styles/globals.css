@@ -1,0 +1,75 @@
+/**
+ * Guia de estilos globais do Vitraux.
+ * Tokens e overrides aqui têm precedência sobre defaults de libs (shadcn, etc.).
+ */
+
+:root {
+	/* Paleta clara */
+	--background: #f8fafc;
+	--foreground: #0f172a;
+	--primary: #2563eb;
+	--primary-foreground: #f8fafc;
+	--accent: #dda15e;
+	--accent-foreground: #0f172a;
+	--surface: #ffffff;
+	--card: #ffffff;
+	--card-foreground: #0f172a;
+	--popover: #ffffff;
+	--popover-foreground: #0f172a;
+	--secondary: #e2e8f0;
+	--secondary-foreground: #0f172a;
+	--muted: #e2e8f0;
+	--muted-foreground: #475569;
+	--destructive: #dc2626;
+	--border: #cbd5e1;
+	--input: #cbd5e1;
+	--ring: #2563eb;
+	--radius: 0.5rem;
+}
+
+.dark {
+	/* Paleta noturna */
+	--background: #0b1120;
+	--foreground: #f1f5f9;
+	--primary: #2563eb;
+	--primary-foreground: #f1f5f9;
+	--accent: #d48c5b;
+	--accent-foreground: #0b1120;
+	--surface: #1e293b;
+	--card: #1e293b;
+	--card-foreground: #f1f5f9;
+	--popover: #1e293b;
+	--popover-foreground: #f1f5f9;
+	--secondary: #1e293b;
+	--secondary-foreground: #f1f5f9;
+	--muted: #1e293b;
+	--muted-foreground: #94a3b8;
+	--destructive: #ef4444;
+	--border: #334155;
+	--input: #334155;
+	--ring: #d48c5b;
+}
+
+/* Scrollbar alinhada aos tokens de marca */
+.vitraux-scrollbar {
+	scrollbar-width: thin;
+	scrollbar-color: var(--primary) var(--muted);
+}
+
+.vitraux-scrollbar::-webkit-scrollbar {
+	width: 4px;
+}
+
+.vitraux-scrollbar::-webkit-scrollbar-track {
+	background: transparent;
+	border-radius: 999px;
+}
+
+.vitraux-scrollbar::-webkit-scrollbar-thumb {
+	background: var(--primary);
+	border-radius: 999px;
+}
+
+.vitraux-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: var(--accent);
+}

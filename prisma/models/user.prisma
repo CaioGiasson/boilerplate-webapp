@@ -1,0 +1,38 @@
+model User {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  name         String?
+  nickname     String           @unique
+  email        String           @unique
+  /// Null for Google-only accounts until the user sets a password in profile.
+  passwordHash String?
+  photoUrl     String?
+  /// Set when the account is linked to Google OAuth (matched by email). Cleared on email change.
+  googleLinkedAt DateTime?
+  settings     KeyValueObject[]
+  acceptedTermsAt   DateTime?
+  acceptedPrivacyAt DateTime?
+  termsVersion      String?
+  privacyVersion    String?
+  /// Data de nascimento (somente calendário UTC, hora 00:00:00.000Z) — auditoria LGPD art. 14; não expor em PublicUser.
+  dateOfBirth       DateTime?
+  ageVerifiedAt     DateTime?
+  /// null = conta ainda não confirmou posse do e-mail (SEC-I04 / PRIV-I05).
+  emailVerifiedAt   DateTime?
+  /// Novo e-mail aguardando confirmação (PRIV-I09); e-mail atual permanece até o fim do fluxo.
+  pendingEmail      String?
+  /// SHA-256 hex do token de desafio de e-mail (não armazenar o token cru).
+  emailTokenHash    String?
+  /// verify | change_old | change_new | password_reset
+  emailTokenPurpose String?
+  emailTokenExpiresAt DateTime?
+  /// Último `device` de sessão conhecido (UUID server-side) — usado para alerta de novo login (SEC-I15-C).
+  lastLoginDevice   String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  deletedAt    DateTime?
+  sessionsRevokedAt DateTime?
+  /// Denormalized from settings.appearInGlobalMosaic === false (DATA-04).
+  hideFromGlobalMosaic Boolean @default(false)
+
+  @@index([hideFromGlobalMosaic])
+}

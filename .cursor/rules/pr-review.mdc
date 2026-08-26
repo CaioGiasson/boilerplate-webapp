@@ -1,0 +1,31 @@
+---
+description: Toda PR aberta deve ser revisada; bloqueantes/importantes corrigidos; label Reviewed
+alwaysApply: true
+---
+
+# Review de Pull Requests — Vitraux
+
+Sempre que uma **pull request for aberta** (por você ou pedida pelo usuário), execute o fluxo abaixo **na mesma sessão**, antes de considerar o trabalho pronto.
+
+## Fluxo obrigatório
+
+1. **Revisar** o diff da PR (código, testes, docs, segurança, camadas, i18n quando couber).
+2. Classificar achados:
+   - **Bloqueante** — deve ser corrigido antes do merge (bug, regressão, falha de segurança, violação de camadas, aceite quebrado, teste faltando no caminho crítico, **endpoint novo/alterado sem `requests/*.http` + `docs/openapi.yaml`**).
+   - **Importante** — corrigir na mesma PR (clareza, edge case real, inconsistência de API/UI, gap de docs do aceite).
+   - **Opcional / nit** — só listar; não bloqueia merge nem a label.
+3. **Corrigir** todos os bloqueantes e importantes com commit(s) na branch da PR.
+4. **Comentar na PR** listando o que foi revisado e o que foi corrigido pós-review (ou “sem correções necessárias” se nada bloqueante/importante).
+5. Adicionar a label **`Reviewed`** na PR.
+
+## Label
+
+- Nome: `Reviewed`
+- Significado: a PR passou por review do agente; bloqueantes e importantes foram tratados; o comentário de pós-review está na PR.
+- Se a label não existir no repo, criá-la (`gh label create Reviewed ...`) e então aplicá-la.
+
+## Escopo da review
+
+Priorizar: critérios de aceite da issue vinculada, segurança/privacidade, contratos de API (`.http` + OpenAPI obrigatórios), testes do use case, i18n pt/en/es, e padrões já usados no repositório. Não expandir escopo com refactors cosméticos fora dos achados.
+
+Detalhes espelhados em `docs/issue-workflow.md` (seção Review de PRs).

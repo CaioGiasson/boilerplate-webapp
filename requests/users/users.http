@@ -1,0 +1,119 @@
+@baseUrl = http://localhost:3000
+@userId = {{userId}}
+@imageId = {{imageId}}
+@sessionId = {{sessionId}}
+@nickname = alice
+
+### Get own profile
+GET {{baseUrl}}/api/v1/users/{{userId}}
+Accept: application/json
+
+###
+### Update profile
+PATCH {{baseUrl}}/api/v1/users/{{userId}}
+Content-Type: application/json
+
+{
+  "name": "Alice",
+  "nickname": "alice"
+}
+
+###
+### Change password
+PATCH {{baseUrl}}/api/v1/users/{{userId}}/password
+Content-Type: application/json
+
+{
+  "currentPassword": "CorrectHorse1!",
+  "newPassword": "NewPassword1!",
+  "newPasswordConfirmation": "NewPassword1!"
+}
+
+###
+### Upload profile photo (data URL)
+PATCH {{baseUrl}}/api/v1/users/{{userId}}/photo
+Content-Type: application/json
+
+{
+  "image": "data:image/png;base64,iVBORw0KGgo="
+}
+
+###
+### Set user setting
+PATCH {{baseUrl}}/api/v1/users/{{userId}}/settings
+Content-Type: application/json
+
+{
+  "key": "darkMode",
+  "value": true
+}
+
+###
+### Delete account
+DELETE {{baseUrl}}/api/v1/users/me
+Content-Type: application/json
+
+{
+  "currentPassword": "CorrectHorse1!",
+  "locale": "pt"
+}
+
+###
+### Account deletion status (quarantine decision session)
+GET {{baseUrl}}/api/v1/users/me/deletion
+Accept: application/json
+
+###
+### Cancel account deletion (restore)
+POST {{baseUrl}}/api/v1/users/me/deletion/cancel
+Content-Type: application/json
+Accept: application/json
+
+{
+  "locale": "pt"
+}
+
+###
+### Keep account deletion
+POST {{baseUrl}}/api/v1/users/me/deletion/keep
+Accept: application/json
+
+###
+### Export user data (GDPR)
+GET {{baseUrl}}/api/v1/users/me/export
+Accept: application/json
+
+###
+### Storage / profile statistics
+GET {{baseUrl}}/api/v1/users/me/stats
+Accept: application/json
+
+###
+### Request email change
+POST {{baseUrl}}/api/v1/users/me/email/change
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "password": "CorrectHorse1!",
+  "newEmail": "alice.new@example.com",
+  "locale": "pt"
+}
+
+###
+### List active sessions
+GET {{baseUrl}}/api/v1/users/me/sessions
+Accept: application/json
+
+###
+### Revoke other sessions
+DELETE {{baseUrl}}/api/v1/users/me/sessions
+
+###
+### Revoke one session
+DELETE {{baseUrl}}/api/v1/users/me/sessions/{{sessionId}}
+
+###
+### Check nickname availability
+GET {{baseUrl}}/api/v1/nickname/{{nickname}}
+Accept: application/json

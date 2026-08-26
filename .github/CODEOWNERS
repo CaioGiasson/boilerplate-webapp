@@ -1,0 +1,33 @@
+# CODEOWNERS — revisão obrigatória em paths críticos
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default
+* @CaioGiasson
+
+# Regras de domínio e orquestração
+/src/useCases/ @CaioGiasson
+/src/masterPorts/ @CaioGiasson
+
+# Object storage e arquivos
+/src/services/Storage/ @CaioGiasson
+/src/services/Image/ @CaioGiasson
+
+# Autenticação e sessão
+/src/controllers/Auth/ @CaioGiasson
+/src/app/api/v1/auth/ @CaioGiasson
+/src/utils/session.ts @CaioGiasson
+/src/middleware/auth.middleware.ts @CaioGiasson
+/src/useCases/loginUser.usecase.ts @CaioGiasson
+/src/useCases/logoutUser.usecase.ts @CaioGiasson
+/src/useCases/registerUser.usecase.ts @CaioGiasson
+/src/useCases/revokeUserSession.usecase.ts @CaioGiasson
+/src/useCases/revokeOtherUserSessions.usecase.ts @CaioGiasson
+
+# E-mail / desafios de verificação
+/src/services/Email/ @CaioGiasson
+/src/useCases/sendEmailVerification.usecase.ts @CaioGiasson
+/src/useCases/confirmEmailChallenge.usecase.ts @CaioGiasson
+
+# Guardrails de agente
+/AGENTS.md @CaioGiasson
+/.cursor/rules/ @CaioGiasson

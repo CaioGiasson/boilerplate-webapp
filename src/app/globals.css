@@ -1,0 +1,185 @@
+@import 'tailwindcss';
+@import '../design-system/styles/globals.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-surface: var(--surface);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-destructive: var(--destructive);
+	--font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--animate-accordion-down: accordion-down 0.2s ease-out;
+	--animate-accordion-up: accordion-up 0.2s ease-out;
+	--animate-toast-slide-down: toast-slide-down 0.2s ease-out;
+	--animate-toast-slide-up: toast-slide-up 0.2s ease-in;
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+		font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
+	}
+
+	html {
+		@apply bg-background text-foreground;
+	}
+
+	body {
+		@apply min-h-screen bg-background text-foreground antialiased;
+		font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
+		background-color: var(--background) !important;
+		color: var(--foreground) !important;
+	}
+}
+
+@keyframes accordion-down {
+	from {
+		height: 0;
+	}
+	to {
+		height: var(--radix-accordion-content-height);
+	}
+}
+
+@keyframes accordion-up {
+	from {
+		height: var(--radix-accordion-content-height);
+	}
+	to {
+		height: 0;
+	}
+}
+
+@keyframes toast-slide-down {
+	from {
+		opacity: 0;
+		transform: translateY(-0.75rem);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes toast-slide-up {
+	from {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	to {
+		opacity: 0;
+		transform: translateY(-0.75rem);
+	}
+}
+
+.animate-toast-slide-down {
+	animation: toast-slide-down 0.2s ease-out;
+}
+
+.animate-toast-slide-up {
+	animation: toast-slide-up 0.2s ease-in forwards;
+}
+
+@keyframes dropdown-expand {
+	from {
+		opacity: 0;
+		clip-path: inset(100% 0 0 0);
+	}
+	to {
+		opacity: 1;
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+@keyframes dropdown-collapse {
+	from {
+		opacity: 1;
+		clip-path: inset(0 0 0 0);
+	}
+	to {
+		opacity: 0;
+		clip-path: inset(100% 0 0 0);
+	}
+}
+
+.dropdown-menu-motion[data-state='open'] {
+	animation: dropdown-expand 0.18s ease-out;
+}
+
+.dropdown-menu-motion[data-state='closed'] {
+	animation: dropdown-collapse 0.14s ease-in;
+}
+
+@keyframes tooltip-in {
+	from {
+		opacity: 0;
+		clip-path: inset(0 100% 0 0);
+	}
+	to {
+		opacity: 1;
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+@keyframes tooltip-out {
+	from {
+		opacity: 1;
+		clip-path: inset(0 0 0 0);
+	}
+	to {
+		opacity: 0;
+		clip-path: inset(0 100% 0 0);
+	}
+}
+
+.tooltip-motion[data-state='delayed-open'],
+.tooltip-motion[data-state='instant-open'] {
+	animation: tooltip-in 0.16s ease-out;
+}
+
+.tooltip-motion[data-state='closed'] {
+	animation: tooltip-out 0.12s ease-in;
+}
+
+@keyframes confirm-action-shake {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	20% {
+		transform: translateX(-6px);
+	}
+	40% {
+		transform: translateX(6px);
+	}
+	60% {
+		transform: translateX(-4px);
+	}
+	80% {
+		transform: translateX(4px);
+	}
+}
+
+.confirm-action-shake,
+.close-warn-shake {
+	animation: confirm-action-shake 300ms ease-in-out;
+}

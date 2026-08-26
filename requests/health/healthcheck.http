@@ -1,0 +1,14 @@
+### Healthcheck principal
+GET http://localhost:3000/api/health
+Accept: application/json
+
+###
+### Healthcheck do banco
+GET http://localhost:3000/api/health/database
+Accept: application/json
+
+###
+### Healthcheck remoto com token opcional (HEALTHCHECK_TOKEN)
+GET http://localhost:3000/api/health/database
+Accept: application/json
+x-healthcheck-token: {{healthcheckToken}}

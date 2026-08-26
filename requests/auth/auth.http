@@ -1,0 +1,117 @@
+@baseUrl = http://localhost:3000
+@healthcheckToken =
+
+### Login (sets vitraux-session cookie)
+# @name login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "identifier": "alice@example.com",
+  "password": "CorrectHorse1!"
+}
+
+###
+### Register
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "nickname": "alice",
+  "email": "alice@example.com",
+  "password": "CorrectHorse1!",
+  "passwordConfirmation": "CorrectHorse1!",
+  "birthDate": "1990-01-15",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true,
+  "locale": "pt"
+}
+
+###
+### Current session / profile
+GET {{baseUrl}}/api/v1/auth/me
+Accept: application/json
+
+###
+### Logout
+POST {{baseUrl}}/api/v1/auth/logout
+Origin: {{baseUrl}}
+
+###
+### Forgot password
+POST {{baseUrl}}/api/v1/auth/password/forgot
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "email": "alice@example.com",
+  "locale": "pt"
+}
+
+###
+### Reset password
+POST {{baseUrl}}/api/v1/auth/password/reset
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "code": "ABCD1234",
+  "newPassword": "NewPassword1!",
+  "newPasswordConfirmation": "NewPassword1!"
+}
+
+###
+### Send email verification (authenticated)
+POST {{baseUrl}}/api/v1/auth/email/verify/send
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "locale": "pt"
+}
+
+###
+### Confirm email challenge
+POST {{baseUrl}}/api/v1/auth/email/confirm
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "token": "ABCD1234",
+  "locale": "pt"
+}
+
+###
+### Google OAuth — readiness (público; sem secrets)
+# Resposta: { success, message, data: { ready: boolean } }
+GET {{baseUrl}}/api/v1/auth/google/ready
+Accept: application/json
+
+###
+### Google OAuth — start (302 → Google; cookie de state)
+# Abra no browser ou use um cliente que siga redirects.
+GET {{baseUrl}}/api/v1/auth/google/start?returnUrl=/
+
+###
+### Google OAuth — complete registration (após callback → /register/google)
+POST {{baseUrl}}/api/v1/auth/google/complete-registration
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "birthDate": "1990-01-15",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+###
+### Google OAuth — link existing account (após callback → /login/google/link)
+POST {{baseUrl}}/api/v1/auth/google/link
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "password": "CorrectHorse1!"
+}

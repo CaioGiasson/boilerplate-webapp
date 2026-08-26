@@ -1,0 +1,34 @@
+---
+description: Ao aprovar uma tarefa, se a PR já estiver Reviewed, fazer merge e limpar branches
+alwaysApply: true
+---
+
+# Aprovação de tarefa — Vitraux
+
+Quando o usuário **aprova** uma tarefa (ex.: “aprovado”, “pode mergear”, “fecha a task”), execute o fluxo abaixo **somente** se houver PR vinculada.
+
+## Pré-condição
+
+1. Identificar a PR da tarefa (branch atual, issue vinculada ou URL/número informado).
+2. Verificar se a PR já está **revisada** — label **`Reviewed`** presente (fluxo de `.cursor/rules/pr-review.mdc`).
+
+| Estado | Ação |
+| ------ | ---- |
+| PR **com** label `Reviewed` | Seguir o fluxo de merge e limpeza abaixo |
+| PR **sem** label `Reviewed` | **Não** mergear. Informar que falta a review; oferecer rodar o fluxo de review antes |
+
+## Fluxo após aprovação (PR já revisada)
+
+1. Confirmar check **`CI / verify` verde** (política CI-04). Se vermelho ou pendente, **não** mergear; informar o status.
+2. **Merge** da PR na `main` (`gh pr merge`; preferir `--squash` se for o padrão do repo, e `--delete-branch` quando disponível para a remota).
+3. **Atualizar `main` local** — `git checkout main` e `git pull`.
+4. **Deletar a branch local** — `git branch -d <branch>` (usar `-D` só se `-d` falhar por já estar mergeada no remoto, no contexto de limpeza pós-merge). Se `--delete-branch` não tiver sido usado no merge, deletar também a remota (`git push origin --delete <branch>`).
+
+Não deletar `main`/`master`/`homolog`. Não usar `push --force` em `main`.
+
+## Escopo
+
+- Aprovação ≠ pedido genérico de “revisar” ou “abrir PR”; só dispara merge + limpeza quando o usuário deixa claro que a tarefa está aprovada.
+- Se a PR ainda estiver aberta sem review, priorizar review (ou avisar) em vez de merge.
+
+Detalhes espelhados em `docs/issue-workflow.md` (seção Aprovação de tarefa).

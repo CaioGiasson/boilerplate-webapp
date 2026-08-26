@@ -1,0 +1,41 @@
+# Dependências e artefatos ignorados pelo Cursor
+
+# Alinhado a .gitignore — reduz ruído de contexto para agentes.
+# NÃO ocultar: src/, tests/, docs/, *.md reports na raiz.
+
+# Node / build
+node_modules/
+.next/
+out/
+build/
+coverage/
+
+# Prisma gerado
+prisma/schema.prisma
+
+# Env e secrets locais
+.env
+.env.*
+secrets/
+
+# Exports e cookies operacionais (binários / grandes)
+exports/
+.pinterest-cookies.json
+
+# Logs e cache
+*.log
+.npm/
+.turbo/
+.vercel/
+*.tsbuildinfo
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+
+# Agent transcripts (se existirem no workspace)
+agent-transcripts/
+.cursor/projects/**/agent-transcripts/
+
+# Husky internals (baixo valor para contexto)
+.husky/_/

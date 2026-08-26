@@ -48,22 +48,6 @@ export function GeneralSettingsForm() {
 		void persistSetting(SETTINGS_KEYS.DARK_MODE, checked)
 	}
 
-	const showSecretImages = user?.settings?.some(
-		(entry) => entry.key === SETTINGS_KEYS.SHOW_SECRET_IMAGES && entry.value === true
-	)
-
-	const handleShowSecretImagesChange = (checked: boolean) => {
-		void persistSetting(SETTINGS_KEYS.SHOW_SECRET_IMAGES, checked)
-	}
-
-	const appearInGlobalMosaic = user?.settings?.every(
-		(entry) => entry.key !== SETTINGS_KEYS.APPEAR_IN_GLOBAL_MOSAIC || entry.value !== false
-	)
-
-	const handleAppearInGlobalMosaicChange = (checked: boolean) => {
-		void persistSetting(SETTINGS_KEYS.APPEAR_IN_GLOBAL_MOSAIC, checked)
-	}
-
 	return (
 		<div className="mx-auto w-full max-w-2xl space-y-6 p-4 sm:p-6" data-testid="settings-page">
 			<Title as="h1">{t('title')}</Title>
@@ -78,37 +62,6 @@ export function GeneralSettingsForm() {
 						data-testid="dark-mode-toggle"
 					/>
 				</div>
-
-				{user ? (
-					<div className="flex items-center justify-between gap-4">
-						<div className="min-w-0 flex-1">
-							<Label htmlFor="show-secret-images-toggle">{t('general.showSecretImages')}</Label>
-							<p className="text-sm text-muted-foreground">{t('general.showSecretImagesDescription')}</p>
-						</div>
-						<Toggle
-							id="show-secret-images-toggle"
-							checked={Boolean(showSecretImages)}
-							onCheckedChange={handleShowSecretImagesChange}
-							data-testid="show-secret-images-toggle"
-						/>
-					</div>
-				) : null}
-
-				{user ? (
-					<div className="flex items-center justify-between gap-4">
-						<div className="min-w-0 flex-1">
-							<Label htmlFor="appear-in-mosaic-toggle">{t('general.appearInGlobalMosaic')}</Label>
-							<p className="text-sm text-muted-foreground">
-								{t('general.appearInGlobalMosaicDescription')}
-							</p>
-						</div>
-						<Toggle
-							id="appear-in-mosaic-toggle"
-							checked={Boolean(appearInGlobalMosaic)}
-							onCheckedChange={handleAppearInGlobalMosaicChange}
-						/>
-					</div>
-				) : null}
 
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 					<Label htmlFor="language-select">{t('general.language')}</Label>

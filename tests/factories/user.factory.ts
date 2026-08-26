@@ -1,5 +1,4 @@
 import type { UserEntity } from '@/repositories/User.repository'
-import { SETTINGS_KEYS, type SettingEntry } from '@/managers/Settings.manager'
 
 export type UserFactoryOverrides = Partial<UserEntity>
 
@@ -35,20 +34,16 @@ export function buildUser(overrides: UserFactoryOverrides = {}): UserEntity {
 		updatedAt: DEFAULT_DATE,
 		deletedAt: null,
 		sessionsRevokedAt: null,
-		hideFromGlobalMosaic: false,
 		...overrides,
 	}
 }
 
-export function buildOwnerUser(showSecretImages = false, overrides: UserFactoryOverrides = {}): UserEntity {
-	const settings: SettingEntry[] = showSecretImages ? [{ key: SETTINGS_KEYS.SHOW_SECRET_IMAGES, value: true }] : []
-
+export function buildOwnerUser(overrides: UserFactoryOverrides = {}): UserEntity {
 	return buildUser({
 		id: 'owner-1',
 		name: 'Ada',
 		nickname: 'ada',
 		email: 'ada@example.com',
-		settings,
 		...overrides,
 	})
 }

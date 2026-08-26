@@ -61,9 +61,9 @@ jest.mock('@/utils/googleOAuthCookies', () => {
 	}
 })
 
-jest.mock('@/services/Image/RemoteImage.service', () => {
+jest.mock('@/services/Storage/RemoteFetch.service', () => {
 	return jest.fn().mockImplementation(() => ({
-		fetch: jest.fn().mockRejectedValue(new Error('skip photo')),
+		fetchImage: jest.fn().mockRejectedValue(new Error('skip photo')),
 	}))
 })
 

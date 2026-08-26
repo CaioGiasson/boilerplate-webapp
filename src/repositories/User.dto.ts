@@ -25,7 +25,6 @@ export type UserEntity = {
 	updatedAt: Date
 	deletedAt: Date | null
 	sessionsRevokedAt: Date | null
-	hideFromGlobalMosaic: boolean
 }
 
 export type PublicUser = Pick<
@@ -62,7 +61,6 @@ export function mapUser(user: {
 	updatedAt: Date
 	deletedAt: Date | null
 	sessionsRevokedAt: Date | null
-	hideFromGlobalMosaic?: boolean
 }): UserEntity {
 	const settings = SettingsManager.list({
 		settings: Array.isArray(user.settings) ? user.settings : [],
@@ -93,7 +91,6 @@ export function mapUser(user: {
 		updatedAt: user.updatedAt,
 		deletedAt: user.deletedAt,
 		sessionsRevokedAt: user.sessionsRevokedAt ?? null,
-		hideFromGlobalMosaic: user.hideFromGlobalMosaic ?? false,
 	}
 }
 

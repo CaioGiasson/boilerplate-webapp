@@ -7,7 +7,7 @@ import { handleRoute } from '@/utils/routeHandler'
 import { requireAuth } from '@/middleware/auth.middleware'
 import { readJsonBodyCapped, assertImageDataUrlStringNotTooLarge, parseImageDataUrl } from '@/utils/dataUrl'
 import { withIdempotencyKey } from '@/utils/idempotency'
-import { uploadPhotoBodySchema } from '@/schemas/imageMutation.schema'
+import { uploadPhotoBodySchema } from '@/schemas/uploadPhoto.schema'
 
 type Dependencies = {
 	uploadUserPhotoUseCase: UploadUserPhoto

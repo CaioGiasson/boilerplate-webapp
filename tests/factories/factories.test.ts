@@ -1,5 +1,5 @@
 import { FileStatus } from '@prisma/client'
-import { buildFile, buildReport, buildSessionClaims, buildVerifiedSession } from '../factories'
+import { buildFile, buildSessionClaims, buildVerifiedSession } from '../factories'
 
 describe('test factories', () => {
 	it('buildFile defaults to published with Spaces-like URL', () => {
@@ -7,12 +7,6 @@ describe('test factories', () => {
 		expect(file.status).toBe(FileStatus.published)
 		expect(file.key).toContain('u1/')
 		expect(file.url).toContain(file.key)
-	})
-
-	it('buildReport defaults to open spam', () => {
-		const report = buildReport()
-		expect(report.status).toBe('open')
-		expect(report.reason).toBe('spam')
 	})
 
 	it('buildVerifiedSession includes claims', () => {

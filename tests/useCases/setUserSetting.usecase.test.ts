@@ -70,7 +70,7 @@ describe('SetUserSetting', () => {
 			useCase.run({ userId: 'user-1', key: SETTINGS_KEYS.DARK_MODE, value: 'yes' })
 		).rejects.toBeInstanceOf(ValidationError)
 		await expect(
-			useCase.run({ userId: 'user-1', key: SETTINGS_KEYS.HOME_ZOOM_LEVEL, value: 999 })
+			useCase.run({ userId: 'user-1', key: SETTINGS_KEYS.LANGUAGE, value: 'fr' })
 		).rejects.toBeInstanceOf(ValidationError)
 	})
 
@@ -97,24 +97,6 @@ describe('SetUserSetting', () => {
 					{ key: SETTINGS_KEYS.DARK_MODE, value: true },
 				]),
 			})
-		)
-	})
-
-	it('denormaliza hideFromGlobalMosaic ao desativar appearInGlobalMosaic', async () => {
-		const useCase = new SetUserSetting()
-		await useCase.run({
-			userId: 'user-1',
-			key: SETTINGS_KEYS.APPEAR_IN_GLOBAL_MOSAIC,
-			value: false,
-		})
-
-		const MockedRepository = UserRepository as unknown as jest.Mock
-		const instance = MockedRepository.mock.results.at(-1)?.value as {
-			updateProfile: jest.Mock
-		}
-		expect(instance.updateProfile).toHaveBeenCalledWith(
-			'user-1',
-			expect.objectContaining({ hideFromGlobalMosaic: true })
 		)
 	})
 })

@@ -161,7 +161,6 @@ export default class UserRepository {
 			nickname?: string
 			settings?: SettingEntry[]
 			photoUrl?: string | null
-			hideFromGlobalMosaic?: boolean
 		}
 	): Promise<UserEntity> {
 		try {
@@ -181,9 +180,6 @@ export default class UserRepository {
 							}
 						: {}),
 					...(data.photoUrl !== undefined ? { photoUrl: data.photoUrl } : {}),
-					...(data.hideFromGlobalMosaic !== undefined
-						? { hideFromGlobalMosaic: data.hideFromGlobalMosaic }
-						: {}),
 				},
 			})
 			return mapUser(user)
@@ -499,18 +495,6 @@ export default class UserRepository {
 				throw error
 			}
 			throw new RepositoryError('Failed to anonymize and delete user', error)
-		}
-	}
-
-	async listIdsHiddenFromGlobalMosaic(): Promise<string[]> {
-		try {
-			const users = await this.prisma.user.findMany({
-				where: activeWhere({ hideFromGlobalMosaic: true }),
-				select: { id: true },
-			})
-			return users.map((user) => user.id)
-		} catch (error: unknown) {
-			throw new RepositoryError('Failed to list mosaic opt-outs', error)
 		}
 	}
 

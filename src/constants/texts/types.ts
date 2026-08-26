@@ -21,8 +21,6 @@ export type AppMessages = {
 	}
 	nav: {
 		home: string
-		images: string
-		create: string
 		settings: string
 		openMenu: string
 		closeMenu: string
@@ -206,9 +204,10 @@ export type AppMessages = {
 		sessionCreated: string
 		sessionExpires: string
 		statistics: string
-		statisticsImageCount: string
+		statisticsFileCount: string
 		statisticsStorageUsed: string
 		statisticsStorageUsedValue: string
+		statisticsLoading: string
 	}
 	settings: {
 		title: string
@@ -217,10 +216,6 @@ export type AppMessages = {
 			description: string
 			darkMode: string
 			language: string
-			showSecretImages: string
-			showSecretImagesDescription: string
-			appearInGlobalMosaic: string
-			appearInGlobalMosaicDescription: string
 		}
 		languages: {
 			pt: string
@@ -246,53 +241,6 @@ export type AppMessages = {
 		network: string
 		generic: string
 	}
-	mosaic: {
-		close: string
-		closeWithoutSaving: string
-		delete: string
-		deleteConfirm: string
-		deleting: string
-		deleteError: string
-		deleteSuccess: string
-		save: string
-		saving: string
-		saveError: string
-		saveSuccess: string
-		isPrivate: string
-		isSecret: string
-		showText: string
-		showImage: string
-		zoomLabel: string
-		zoomColumns: string
-		imageMissing: string
-		untitled: string
-		imageDetails: string
-		openImage: string
-		empty: string
-		loadMore: string
-	}
-	report: {
-		button: string
-		title: string
-		description: string
-		reason: string
-		reasonPlaceholder: string
-		details: string
-		detailsHint: string
-		submit: string
-		cancel: string
-		success: string
-		errorGeneric: string
-		alreadyReported: string
-		loginRequired: string
-		reasons: {
-			spam: string
-			nudes_nonconsensual: string
-			csam: string
-			impersonation: string
-			other: string
-		}
-	}
 	home: {
 		title: string
 		description: string
@@ -301,69 +249,27 @@ export type AppMessages = {
 		guestPrompt: string
 	}
 	documentTitle: {
-		images: string
-		create: string
 		profile: string
 		settings: string
-		imageUpload: string
-		imageMassUpload: string
-		imageImportUrl: string
-		imageImportPinterest: string
+		dsComponents: string
 		privacy: string
 		terms: string
 	}
-	images: {
-		pageTitle: string
-		searchLabel: string
+	dsCatalog: {
+		title: string
+		description: string
 		searchPlaceholder: string
-		noTagsYet: string
-		empty: string
-		emptyFiltered: string
-		loading: string
-		loadError: string
-		loadMore: string
-		createFab: string
-		createTitle: string
-		fileLabel: string
-		fileHint: string
-		fileReadError: string
-		titleLabel: string
-		descriptionLabel: string
-		tagsLabel: string
-		tagsHint: string
-		massTagsHint: string
-		optionalHint: string
-		cancel: string
-		create: string
-		creating: string
-		createSuccess: string
-		createError: string
-		dropHint: string
-		massSuccess: string
-		massPartial: string
-		urlLabel: string
-		urlHint: string
-		importing: string
-		importUrlSuccess: string
-		isPrivate: string
-		isSecret: string
-	}
-	create: {
-		nav: string
-		back: string
-		oneTitle: string
-		oneSubtitle: string
-		manyTitle: string
-		manySubtitle: string
-		urlTitle: string
-		urlSubtitle: string
-		pinterestTitle: string
-		pinterestSubtitle: string
-		uploadPageTitle: string
-		massPageTitle: string
-		importUrlPageTitle: string
-		pinterestPageTitle: string
-		pinterestLinkLabel: string
-		pinterestHelp: string
+		importLabel: string
+		categoryLabel: string
+		exampleLabel: string
+		noResults: string
+		categories: {
+			actions: string
+			inputs: string
+			navigation: string
+			feedback: string
+			layout: string
+			icons: string
+		}
 	}
 }

@@ -60,7 +60,7 @@ jest.mock('@/utils/googleOAuthCookies', () => {
 		...actual,
 		verifyGoogleOAuthStateToken: jest.fn(async () => ({
 			state: 'state-ok',
-			returnUrl: '/mosaic',
+			returnUrl: '/',
 		})),
 		signGoogleOAuthPendingToken: jest.fn(async () => 'pending-token'),
 	}
@@ -100,7 +100,7 @@ describe('HandleGoogleOAuthCallback', () => {
 		jest.clearAllMocks()
 		jest.mocked(verifyGoogleOAuthStateToken).mockResolvedValue({
 			state: 'state-ok',
-			returnUrl: '/mosaic',
+			returnUrl: '/',
 		})
 	})
 
@@ -144,7 +144,7 @@ describe('HandleGoogleOAuthCallback', () => {
 
 		expect(result.kind).toBe('session')
 		if (result.kind !== 'session') return
-		expect(result.redirectPath).toBe('/mosaic')
+		expect(result.redirectPath).toBe('/')
 		expect(result.device).toBe(KNOWN_DEVICE)
 		expect(email.send).toHaveBeenCalledTimes(1)
 	})

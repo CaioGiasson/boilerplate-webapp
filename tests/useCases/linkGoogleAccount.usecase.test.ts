@@ -89,7 +89,7 @@ function pendingLink(overrides: Partial<Awaited<ReturnType<typeof verifyGoogleOA
 		name: 'Alice',
 		picture: null,
 		emailVerified: true,
-		returnUrl: '/mosaic',
+		returnUrl: '/',
 		emailChangeCancelled: false,
 		googleEmailUnverified: false,
 		...overrides,
@@ -148,7 +148,7 @@ describe('LinkGoogleAccount', () => {
 		expect(findByEmail).not.toHaveBeenCalled()
 		expect(clearEmailChangeChallenge).toHaveBeenCalledWith('user-1')
 		expect(linkGoogle).toHaveBeenCalledWith('user-1')
-		expect(result.returnUrl).toBe('/mosaic')
+		expect(result.returnUrl).toBe('/')
 		expect(result.token).toBe('session-token')
 		expect(email.send).toHaveBeenCalledTimes(1)
 	})

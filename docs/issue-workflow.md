@@ -1,6 +1,6 @@
 # Fluxo de Issues e Tarefas
 
-Board do projeto: [App — Project board](https://github.com/users/CaioGiasson/projects/3/views/1)
+Board do projeto: [App — Project board](https://github.com/users/CaioGiasson/projects/4/views/1)
 
 ## Gate antes de implementar
 
@@ -13,6 +13,20 @@ Ordem obrigatória:
 3. **Abrir branch** a partir de `main`, vinculada à issue.
 4. **Assignar** quem desenvolve.
 5. **Só então** implementar.
+
+## Sem tarefas ad-hoc
+
+**Não existem exceções.** Qualquer pedido que altere código, testes, Prisma, rotas ou docs operacionais exige **issue no board** antes de implementar — inclusive checkup, refactor, catálogo de componentes ou “ajuste rápido”.
+
+| Proibido                                     | O que fazer                                                              |
+| -------------------------------------------- | ------------------------------------------------------------------------ |
+| Codificar direto após pedido no chat         | Refinar → issue → branch → implementar                                   |
+| Várias entregas (“Feature 1 + 2”) sem issues | Uma issue por entrega (ou epic + sub-issues)                             |
+| PR sem `Closes #N`                           | Vincular à issue                                                         |
+| Issue sem vínculo ao projeto                 | Adicionar ao board                                                       |
+| Review só com Bugbot/ferramenta externa      | Fluxo em [Review de PRs](#review-de-prs) + `.cursor/rules/pr-review.mdc` |
+
+Pedido urgente encurta refinamento; **não** elimina issue, branch nem PR vinculada.
 
 ## Criação de issues
 
@@ -79,6 +93,8 @@ Sempre que uma **pull request for aberta**, o agente deve:
 2. Corrigir achados **bloqueantes** e **importantes** com commit(s) na branch da PR.
 3. Comentar na PR o resultado da review e as **correções pós-review** (ou registrar que não houve correções necessárias).
 4. Adicionar a label **`Reviewed`** na PR.
+
+**Bugbot e ferramentas externas não substituem este fluxo** — podem ser consulta opcional; a review mandatória é a descrita acima.
 
 - **Bloqueante:** bug, regressão, falha de segurança, violação de camadas, aceite quebrado, teste crítico ausente, endpoint novo/alterado sem `requests/*.http` + `docs/openapi.yaml`.
 - **Importante:** edge case real, inconsistência de API/UI, gap de docs do aceite — corrigir na mesma PR.

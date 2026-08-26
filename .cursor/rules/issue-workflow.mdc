@@ -18,6 +18,21 @@ Ordem obrigatória:
 3. **Branch** a partir de `main` (`feat/…`, `fix/…`) vinculada à issue; assignee ao iniciar.
 4. **Só então implementar.**
 
+## Sem tarefas ad-hoc
+
+**Não existem exceções.** Todo pedido que altere código, testes, Prisma, rotas, scripts de runtime ou documentação operacional do produto **exige issue no board** — inclusive quando parecer “rápido”, “só docs” ou “checkup/refactor”.
+
+| Proibido | O que fazer |
+| -------- | ----------- |
+| Implementar direto no chat ou em `main` | Refinar → issue → branch → implementar |
+| “Feature 1 / Feature 2” sem issues | Uma issue por entrega (ou epic + sub-issues) |
+| PR sem `Closes #N` | Vincular à issue antes de considerar pronta |
+| Pular o board (issue só no repo) | Vincular ao [projeto #4](https://github.com/users/CaioGiasson/projects/4/views/1) |
+| “Confirmado, pode implementar” sem issue | Confirmação **não** substitui issue; no máximo acelera o refinamento |
+| Review com Bugbot ou ferramenta externa | Review **sempre** conforme `.cursor/rules/pr-review.mdc` |
+
+Urgência do usuário reduz refinamento, **não** elimina issue, branch nem PR vinculada.
+
 ## Criar issue
 
 1. **Sempre** criar a issue no board acima (não só no repositório sem vínculo ao projeto).

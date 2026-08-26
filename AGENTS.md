@@ -2,6 +2,10 @@
 
 Guia conciso para agentes de IA e contribuidores. Detalhes de setup local: [`README.md`](README.md).
 
+## Fluxo obrigatório (zero ad-hoc)
+
+**Não há tarefas ad-hoc.** Todo pedido de implementação segue: refinar → **issue no board** → branch → implementar → PR (`Closes #N`) → review (`Reviewed`). Pedido direto no chat, checkup ou “só desta vez” **não** isenta issue. Detalhes: [`.cursor/rules/issue-workflow.mdc`](.cursor/rules/issue-workflow.mdc) e [`docs/issue-workflow.md`](docs/issue-workflow.md).
+
 ## Stack
 
 - **Node.js 22.19.0** (ver [`.nvmrc`](.nvmrc) e `package.json` → `engines`)
@@ -107,6 +111,8 @@ Guidelines do time: [`docs/guidelines/`](docs/guidelines/).
 | Endpoint novo/alterado sem `requests/*.http` + `docs/openapi.yaml`                                                       | Contrato HTTP obrigatório                 |
 | `--no-verify` / pular hooks sem pedido                                                                                   | Pre-commit formata e valida               |
 | Alterar `git config` do ambiente                                                                                         | Política do projeto                       |
+| Implementar sem issue no board (tarefa ad-hoc)                                                                           | Sempre issue → branch → PR                |
+| Review de PR só com Bugbot/ferramenta externa                                                                            | Usar `.cursor/rules/pr-review.mdc`        |
 
 Regras Cursor: [`.cursor/rules/issue-workflow.mdc`](.cursor/rules/issue-workflow.mdc), [`.cursor/rules/git-workflow.mdc`](.cursor/rules/git-workflow.mdc), [`.cursor/rules/api-contracts.mdc`](.cursor/rules/api-contracts.mdc), [`.cursor/rules/pr-review.mdc`](.cursor/rules/pr-review.mdc), [`.cursor/rules/task-approval.mdc`](.cursor/rules/task-approval.mdc), [`.cursor/rules/use-cases.mdc`](.cursor/rules/use-cases.mdc), [`.cursor/rules/repositories.mdc`](.cursor/rules/repositories.mdc).
 
@@ -137,11 +143,11 @@ Catálogos: `src/constants/texts/{pt,en,es,types}.ts`. Locales: `pt`, `en`, `es`
 
 ## Fluxo de issues e PRs
 
-Board: [App — Project board](https://github.com/users/CaioGiasson/projects/3/views/1)
+Board: [App — Project board](https://github.com/users/CaioGiasson/projects/4/views/1)
 
 ### Gate antes de implementar
 
-Pedidos como **“Faça uma tela…”**, **“Coloque uma seção…”**, **“Crie um endpoint…”** (e análogos) exigem **refinamento → issue no board → branch → implementação**. Não codificar direto.
+Pedidos como **“Faça uma tela…”**, **“Coloque uma seção…”**, **“Crie um endpoint…”** (e análogos — inclusive checkup, refactor e catálogo) exigem **refinamento → issue no board → branch → implementação**. Não codificar direto. **Não existem tarefas ad-hoc.**
 
 ### Sequência
 
@@ -151,7 +157,7 @@ Pedidos como **“Faça uma tela…”**, **“Coloque uma seção…”**, **�
 4. PR com summary + test plan; vincular issue; documentação no repo quando couber
 5. **`homolog`** — branch de QA integrado (sem CI em push; o gate é a PR)
 6. **CI** — `.github/workflows/ci.yml` roda **somente em `pull_request`** (lint, typecheck, test, build). **Política humana (CI-04):** merge só com check `CI / verify` verde — branch protection não disponível em repo privado Free.
-7. Após abrir PR: review conforme [`docs/guidelines/GUIA_REVISAO_PR_GERAL.md`](docs/guidelines/GUIA_REVISAO_PR_GERAL.md); corrigir bloqueantes/importantes; comentar resultado; label **`Reviewed`**
+7. Após abrir PR: review conforme [`.cursor/rules/pr-review.mdc`](.cursor/rules/pr-review.mdc) e [`docs/issue-workflow.md`](docs/issue-workflow.md) (seção Review de PRs); corrigir bloqueantes/importantes; comentar resultado; label **`Reviewed`**. Bugbot **não** substitui este fluxo.
 
 Contribuição humana: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 

@@ -6,7 +6,7 @@ body:
     - type: markdown
       attributes:
           value: |
-              Tarefas do App devem estar no [board do projeto](https://github.com/users/CaioGiasson/projects/3/views/1).
+              Tarefas do App devem estar no [board do projeto](https://github.com/users/CaioGiasson/projects/4/views/1).
               Refine o pedido antes de abrir — ver [`docs/issue-workflow.md`](../../docs/issue-workflow.md).
 
     - type: textarea

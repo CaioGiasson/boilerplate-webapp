@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Demonstrar o fluxo em camadas do Vitraux: controller → useCase → service/repository.
+Demonstrar o fluxo em camadas do App: controller → useCase → service/repository.
 
 ## Regra de negócio
 

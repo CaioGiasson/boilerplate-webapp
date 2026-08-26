@@ -1,4 +1,4 @@
-# Lições aprendidas — Vitraux
+# Lições aprendidas — App
 
 Entradas curtas pós-incidente ou bug não óbvio. Formato: **sintoma → causa → fix/prevenção**.
 
@@ -60,7 +60,7 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 
 **Sintoma:** Login OK mas sessão não persiste em HTTPS; ou cookie rejeitado em localhost.
 
-**Causa:** Em produção o cookie usa prefixo `__Host-` e exige `Secure`. Em dev usa nome simples `vitraux-session`.
+**Causa:** Em produção o cookie usa prefixo `__Host-` e exige `Secure`. Em dev usa nome simples `app-session`.
 
 **Prevenção:** Testar auth com o mesmo `NODE_ENV`/proxy do ambiente alvo. Ver `src/utils/session.ts` e ADR-001.
 

@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADR)
 
-Decisões arquiteturais curtas do Vitraux. Formato: Contexto → Decisão → Consequências.
+Decisões arquiteturais curtas do App. Formato: Contexto → Decisão → Consequências.
 
 ## Índice
 

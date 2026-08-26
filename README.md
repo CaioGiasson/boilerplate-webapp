@@ -1,8 +1,8 @@
 # Boilerplate Webapp
 
-Aplicação Next.js 15 reutilizável, extraída do [Vitraux](../vitraux). Inclui autenticação, perfil, configurações, upload para DigitalOcean Spaces, e-mail transacional (Brevo), design system e arquitetura em camadas — **sem regras de negócio de galeria/mosaico**.
+Aplicação Next.js 15 reutilizável, extraída e sanitizada a partir do projeto [Vitraux](../vitraux). Inclui autenticação, perfil, configurações, upload para DigitalOcean Spaces, e-mail transacional (Brevo), design system e arquitetura em camadas — **sem regras de negócio de galeria/mosaico**.
 
-## O que veio do Vitraux (agnóstico)
+## O que está incluído (agnóstico)
 
 - **Arquitetura:** `app/api → controller → useCase → repository | service`
 - **Auth:** registro, login, JWT em cookie, Google OAuth, verificação de e-mail, reset de senha
@@ -17,7 +17,7 @@ Aplicação Next.js 15 reutilizável, extraída do [Vitraux](../vitraux). Inclui
 
 - Mosaico, imagens, painéis, Pinterest, visibilidade SECRET/PUBLIC, reports
 - Settings de zoom e mosaico global
-- Branding e cookies `vitraux-*` → `app-*`
+- Branding e cookies genéricos (`app-*`)
 - Campo `hideFromGlobalMosaic` no modelo User
 
 ## Stack
@@ -130,9 +130,9 @@ npm run start
 Recomendações:
 
 - Process manager (systemd, PM2) reiniciando `npm run start` na falha
-- Proxy HTTPS na frente; cookie `__Host-vitraux-session` exige TLS em production
+- Proxy HTTPS na frente; cookie `__Host-app-session` exige TLS em production
 - Probes de `/api/health*` via `127.0.0.1` ou header `x-healthcheck-token`
-- **Não** rode `npm run list-users`, `export-from-pinterest` nem scripts de operador no host de produção
+- **Não** rode `npm run list-users` nem scripts de operador no host de produção
 - Sincronize schema após mudanças: `npm run prisma:push` (ou pipeline equivalente)
 
 O `docker-compose.yaml` deste repositório é para **desenvolvimento local**. Em produção, prefira Mongo gerenciado ou container na rede interna **sem** publicar porta no firewall.
@@ -143,21 +143,21 @@ As credenciais **não vêm de um serviço externo** — você as define no `.env
 
 | Campo                 | Onde   | Uso                                                               |
 | --------------------- | ------ | ----------------------------------------------------------------- |
-| `MONGO_ROOT_USERNAME` | `.env` | Usuário admin (padrão: `vitraux`)                                 |
+| `MONGO_ROOT_USERNAME` | `.env` | Usuário admin (padrão: `mongo`)                                   |
 | `MONGO_ROOT_PASSWORD` | `.env` | Senha que **você gera** (`openssl rand -base64 24`)               |
 | `DATABASE_URL`        | `.env` | Connection string da app/Prisma (mesmo user/senha, porta `27717`) |
 
 **Conectar com mongosh** (dentro do container; porta interna 27017):
 
 ```bash
-docker exec -it vitraux_mongo mongosh --port 27017 \
-  -u vitraux -p '<MONGO_ROOT_PASSWORD>' --authenticationDatabase admin
+docker exec -it mongo mongosh --port 27017 \
+  -u mongo -p '<MONGO_ROOT_PASSWORD>' --authenticationDatabase admin
 ```
 
 **MongoDB Compass / cliente GUI** (no host):
 
 ```
-mongodb://vitraux:<senha>@127.0.0.1:27717/vitraux?replicaSet=rs0&directConnection=true&authSource=admin
+mongodb://mongo:<senha>@127.0.0.1:27717/mongo?replicaSet=rs0&directConnection=true&authSource=admin
 ```
 
 **Onde ler a senha depois:** apenas no seu `.env` local (gitignored). Não há painel nem vault no projeto — guarde o valor com segurança.
@@ -203,50 +203,9 @@ Arquivos REST Client em `requests/`. Lista completa de rotas v1 (images, session
 - `npm run spaces:migrate-keys -- --confirm` — CopyObject + atualiza Mongo + DeleteObject (ver `docs/operators/spaces-key-migration.md`)
 - `npm run list-users` — ferramenta de operador local (não rodar em produção); lista os 10 usuários mais recentes com e-mail mascarado
 - `npm run prisma:push` — sincroniza schema com MongoDB
-- `npm run export-from-pinterest` — exporta boards/imagens de um perfil Pinterest (ver abaixo)
-
-## Exportar imagens do Pinterest
-
-Export Pinterest is an operator-local tool, not a product feature; `next start` does not run or bundle `scripts/`.
-
-Script em `scripts/export-from-pinterest.mjs`. Lista os boards de um perfil, coleta as URLs das imagens e baixa em `exports/<username>/` (pasta gitignored). Não use no host de produção. A app Next **não** lê `PINTEREST_COOKIES`.
-
-O Pinterest bloqueia a paginação completa sem sessão. Defina `PINTEREST_COOKIES` só no ambiente do operador (veja `.env.example`) ou use `.pinterest-cookies.json` (gitignored):
-
-1. Abra o Pinterest já logado.
-2. DevTools → Application → Cookies → `pinterest.com`.
-3. Copie `_auth` (deve ser `1`), `csrftoken` e `_pinterest_sess` (`HttpOnly`; não aparece em `document.cookie`).
-4. Monte:
-
-```bash
-PINTEREST_COOKIES="_auth=1; csrftoken=...; _pinterest_sess=..."
-```
-
-Uso:
-
-```bash
-# Lista boards, coleta imagens e baixa 1 arquivo/s em exports/<username>/
-npm run export-from-pinterest -- https://br.pinterest.com/caiogiasson/
-
-# Só lista os boards e as URLs do primeiro board (sem download)
-npm run export-from-pinterest -- https://br.pinterest.com/caiogiasson/ -test
-```
-
-Arquivos salvos como `pasta-do-board--hash.extensão` (ex.: `mapas--3b-3a-00-3b3a006d946a098b64a59dbe537576c2.jpg`). A console imprime o andamento de cada etapa.
-
-## Governança / assessments
-
-Documentos de revisão whitebox na raiz do repositório. Board de evolução: [Vitraux — Project #3](https://github.com/users/CaioGiasson/projects/3/views/1).
-
-| Área         | Assessment (checklist)                                     | Report (achados Vitraux)                           |
-| ------------ | ---------------------------------------------------------- | -------------------------------------------------- |
-| AI-readiness | [`AI-READINESS-ASSESSMENT.md`](AI-READINESS-ASSESSMENT.md) | [`AI-READINESS-REPORT.md`](AI-READINESS-REPORT.md) |
-| Segurança    | [`SECURITY-ASSESSMENT.md`](SECURITY-ASSESSMENT.md)         | [`SECURITY-REPORT.md`](SECURITY-REPORT.md)         |
-| Privacidade  | [`PRIVACY-ASSESSMENT.md`](PRIVACY-ASSESSMENT.md)           | [`PRIVACY-REPORT.md`](PRIVACY-REPORT.md)           |
-| Performance  | [`PERFORMANCE-ASSESSMENT.md`](PERFORMANCE-ASSESSMENT.md)   | [`PERFORMANCE-REPORT.md`](PERFORMANCE-REPORT.md)   |
 
 Guia para agentes: [`AGENTS.md`](AGENTS.md) · Contribuição: [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Fluxo de issues
 
-Tarefas seguem o board [Vitraux](https://github.com/users/CaioGiasson/projects/3/views/1). Regras completas em [`docs/issue-workflow.md`](docs/issue-workflow.md) (também aplicadas via `.cursor/rules/issue-workflow.mdc`).
+Regras em [`docs/issue-workflow.md`](docs/issue-workflow.md) (também via `.cursor/rules/issue-workflow.mdc`).

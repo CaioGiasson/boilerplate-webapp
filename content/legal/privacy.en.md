@@ -4,7 +4,7 @@
 
 ## 1. Controller
 
-The controller of personal data processed in this application is **Vitraux**, operated by **Caio Felipe Giasson**. The privacy contact (LGPD data protection officer equivalent) is the same person, at **cainitech@gmail.com**.
+The controller of personal data processed in this application is **App**, operated by **Caio Felipe Giasson**. The privacy contact (LGPD data protection officer equivalent) is the same person, at **cainitech@gmail.com**.
 
 ## 2. Purposes
 

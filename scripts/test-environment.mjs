@@ -330,7 +330,7 @@ async function checkGoogleOAuthIntegration() {
 	const tokenTimer = setTimeout(() => tokenController.abort(), timeout)
 	try {
 		const body = new URLSearchParams({
-			code: 'vitraux-test-environment-invalid-code',
+			code: 'app-test-environment-invalid-code',
 			client_id: clientId,
 			client_secret: clientSecret,
 			redirect_uri: redirectUri,
@@ -410,7 +410,7 @@ function printResult(result) {
 }
 
 async function main() {
-	console.log('Vitraux test-environment\n')
+	console.log('App test-environment\n')
 
 	const results = []
 	for (const check of [

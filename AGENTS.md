@@ -1,4 +1,4 @@
-# AGENTS.md — Vitraux
+# AGENTS.md — Boilerplate Webapp
 
 Guia conciso para agentes de IA e contribuidores. Detalhes de setup local: [`README.md`](README.md).
 
@@ -137,7 +137,7 @@ Catálogos: `src/constants/texts/{pt,en,es,types}.ts`. Locales: `pt`, `en`, `es`
 
 ## Fluxo de issues e PRs
 
-Board: [Vitraux — Project board](https://github.com/users/CaioGiasson/projects/3/views/1)
+Board: [App — Project board](https://github.com/users/CaioGiasson/projects/3/views/1)
 
 ### Gate antes de implementar
 

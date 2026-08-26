@@ -1,6 +1,6 @@
 # Graceful shutdown (REL-03)
 
-Vitraux registers SIGTERM/SIGINT handlers in `src/instrumentation.ts` via `registerGracefulShutdown()`.
+App registers SIGTERM/SIGINT handlers in `src/instrumentation.ts` via `registerGracefulShutdown()`.
 
 ## Behavior
 
@@ -17,7 +17,7 @@ Edge runtime (`NEXT_RUNTIME=edge`) skips registration.
 spec:
     terminationGracePeriodSeconds: 30
     containers:
-        - name: vitraux
+        - name: boilerplate-webapp
           lifecycle:
               preStop:
                   exec:

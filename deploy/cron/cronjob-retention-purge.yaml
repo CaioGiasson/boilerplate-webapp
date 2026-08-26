@@ -1,11 +1,11 @@
-# Exemplo de Kubernetes CronJob para PRIV-I03.
+# Exemplo de Kubernetes CronJob para retenção de contas.
 # Ajuste image, secrets e schedule ao ambiente real antes de aplicar.
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-    name: vitraux-retention-purge
+    name: boilerplate-webapp-retention-purge
     labels:
-        app: vitraux
+        app: boilerplate-webapp
         job: retention-purge
 spec:
     # Diário às 03:00 UTC — alinhar ao fuso do operador se necessário
@@ -19,16 +19,16 @@ spec:
             template:
                 metadata:
                     labels:
-                        app: vitraux
+                        app: boilerplate-webapp
                         job: retention-purge
                 spec:
                     restartPolicy: Never
                     containers:
                         - name: retention-purge
-                          image: vitraux:latest
+                          image: boilerplate-webapp:latest
                           imagePullPolicy: IfNotPresent
                           workingDir: /app
                           command: ['npm', 'run', 'cron', '--', 'retention-purge', '--confirm']
                           envFrom:
                               - secretRef:
-                                    name: vitraux-env
+                                    name: boilerplate-webapp-env

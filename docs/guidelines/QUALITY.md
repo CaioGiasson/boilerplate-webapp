@@ -1,4 +1,4 @@
-# Qualidade: Observabilidade, Testes, Documentação e Code Review — Vitraux
+# Qualidade: Observabilidade, Testes, Documentação e Code Review — App
 
 ## 1. Observabilidade e logging
 

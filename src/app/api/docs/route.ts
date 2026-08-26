@@ -12,7 +12,7 @@ function swaggerHtml(): string {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex,nofollow" />
-  <title>Vitraux API Docs</title>
+  <title>App API Docs</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@${SWAGGER_UI_VERSION}/swagger-ui.css" />
   <style>
     body { margin: 0; background: #fafafa; }

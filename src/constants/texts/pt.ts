@@ -11,7 +11,7 @@ const passwordChecklist = {
 
 const pt: AppMessages = {
 	app: {
-		name: 'Vitraux',
+		name: 'App',
 		helloWorld: 'Hello World',
 		close: 'Fechar',
 	},
@@ -99,21 +99,21 @@ const pt: AppMessages = {
 		googleRegisterSuccess: 'Conta criada com Google',
 		googleLinkTitle: 'Vincular conta Google',
 		googleLinkMessage:
-			'Já existe uma conta Vitraux com este e-mail e senha. Informe sua senha atual para vincular o Google.',
+			'Já existe uma conta App com este e-mail e senha. Informe sua senha atual para vincular o Google.',
 		googleLinkSubmit: 'Vincular e entrar',
 		googleLinkSuccess: 'Google vinculado com sucesso',
 		emailChangeCancelledMessage:
 			'Continuar com o Google cancela qualquer alteração de e-mail pendente nesta conta.',
 		googleEmailUnverifiedMessage:
-			'O e-mail da conta Google não está verificado. Será necessário verificar o e-mail novamente no Vitraux.',
+			'O e-mail da conta Google não está verificado. Será necessário verificar o e-mail novamente no App.',
 	},
 	legal: {
 		privacyTitle: 'Política de Privacidade',
 		termsTitle: 'Termos de Uso',
 		privacyMetaDescription:
-			'Política de privacidade do Vitraux: finalidades, bases legais, retenção, transferência internacional e direitos da LGPD.',
+			'Política de privacidade do App: finalidades, bases legais, retenção, transferência internacional e direitos da LGPD.',
 		termsMetaDescription:
-			'Termos de uso do Vitraux para conta, conteúdo enviado, regras da plataforma e colaboração com autoridades.',
+			'Termos de uso do App para conta, conteúdo enviado, regras da plataforma e colaboração com autoridades.',
 		versionLabel: 'Versão {version}',
 		privacyLink: 'Privacidade',
 		termsLink: 'Termos',
@@ -305,14 +305,11 @@ const pt: AppMessages = {
 		},
 	},
 	home: {
-		searchLabel: 'Buscar imagens',
-		searchPlaceholder: 'Buscar por título ou descrição',
-		noTagsYet: 'Nenhuma tag cadastrada ainda',
-		empty: 'Ainda não há imagens publicadas.',
-		emptyFiltered: 'Nenhuma imagem corresponde a esses critérios de busca',
+		title: 'Bem-vindo',
+		description: 'Webapp inicial com autenticação, configurações, armazenamento de arquivos e e-mail.',
 		loading: 'Carregando…',
-		loadError: 'Não foi possível carregar as imagens',
-		loadMore: 'Carregar mais',
+		signedInAs: 'Conectado como',
+		guestPrompt: 'Entre ou crie uma conta para acessar seu perfil e configurações.',
 	},
 	documentTitle: {
 		images: 'Minhas imagens',

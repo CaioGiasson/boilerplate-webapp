@@ -1,6 +1,6 @@
 ## Contexto
 
-Primeira entrega da estrutura visual do Vitraux. Define a base de estilo, fonte, paletas claro/escuro, shadcn/ui e persistência de preferências via cookies (não localStorage).
+Primeira entrega da estrutura visual do App. Define a base de estilo, fonte, paletas claro/escuro, shadcn/ui e persistência de preferências via cookies (não localStorage).
 
 ## Objetivo
 

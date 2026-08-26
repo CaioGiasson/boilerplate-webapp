@@ -1,4 +1,4 @@
-# Arquitetura — Vitraux
+# Arquitetura — App
 
 Documento curto sobre camadas e fluxo de requisições. Setup e endpoints: [`README.md`](../README.md). Glossário: [`glossary.md`](glossary.md).
 
@@ -8,7 +8,7 @@ Aplicação **single-package** Next.js 15. A API REST vive em `src/app/api/v1/`.
 
 ## Deploy — máquina única (modelo atual)
 
-O Vitraux **roda em uma única máquina / um processo Node**, sem load balancer e sem distribuição entre vários pods/réplicas.
+O App **roda em uma única máquina / um processo Node**, sem load balancer e sem distribuição entre vários pods/réplicas.
 
 Implicações:
 

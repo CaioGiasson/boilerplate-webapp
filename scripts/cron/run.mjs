@@ -7,7 +7,7 @@
  *   npm run cron -- retention-purge --confirm
  *
  * Agendamento (host):
- *   0 3 * * * cd /path/to/vitraux && npm run cron -- retention-purge --confirm >> /var/log/vitraux-cron.log 2>&1
+ *   0 3 * * * cd /path/to/boilerplate-webapp && npm run cron -- retention-purge --confirm >> /var/log/app-cron.log 2>&1
  *
  * Ver também: docs/operators/cron.md e deploy/cron/cronjob-retention-purge.yaml
  */

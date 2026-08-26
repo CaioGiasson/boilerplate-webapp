@@ -17,11 +17,11 @@ const STRONG_SECRET = 'a'.repeat(32)
 
 function stubRequiredEnv(overrides: Record<string, string | undefined> = {}) {
 	const base: Record<string, string> = {
-		DATABASE_URL: 'mongodb://localhost:27017/vitraux',
+		DATABASE_URL: 'mongodb://localhost:27017/mongo',
 		CACHE_LIFETIME_SECONDS: '21600',
 		JWT_SECRET: STRONG_SECRET,
 		SPACES_ENDPOINT: 'nyc3.digitaloceanspaces.com',
-		SPACES_BUCKET: 'vitraux',
+		SPACES_BUCKET: 'app',
 		SPACES_ACCESS_KEY_ID: 'key',
 		SPACES_SECRET_ACCESS_KEY: 'secret',
 		ENVIRONMENT: 'dev',
@@ -67,23 +67,23 @@ describe('assertJwtSecret', () => {
 
 describe('assertDatabaseUrl', () => {
 	it('aceita URL sem credencial em dev', () => {
-		expect(() => assertDatabaseUrl('mongodb://localhost:27017/vitraux', 'dev')).not.toThrow()
+		expect(() => assertDatabaseUrl('mongodb://localhost:27017/mongo', 'dev')).not.toThrow()
 	})
 
 	it('rejeita URL sem credencial em prod', () => {
-		expect(() => assertDatabaseUrl('mongodb://localhost:27017/vitraux', 'prod')).toThrow('credentials')
+		expect(() => assertDatabaseUrl('mongodb://localhost:27017/mongo', 'prod')).toThrow('credentials')
 	})
 
 	it('aceita URL com credencial em prod', () => {
 		expect(() =>
-			assertDatabaseUrl('mongodb://vitraux:secret@localhost:27717/vitraux?authSource=admin', 'prod')
+			assertDatabaseUrl('mongodb://mongo:secret@localhost:27717/mongo?authSource=admin', 'prod')
 		).not.toThrow()
 	})
 
 	it('rejeita senha example em prod', () => {
 		expect(() =>
 			assertDatabaseUrl(
-				`mongodb://vitraux:${EXAMPLE_MONGO_ROOT_PASSWORD}@localhost:27717/vitraux?authSource=admin`,
+				`mongodb://mongo:${EXAMPLE_MONGO_ROOT_PASSWORD}@localhost:27717/mongo?authSource=admin`,
 				'prod'
 			)
 		).toThrow('example Mongo password')
@@ -115,9 +115,9 @@ describe('validateEnv', () => {
 	it('falha em prod com DATABASE_URL sem credencial', () => {
 		stubRequiredEnv({
 			ENVIRONMENT: 'prod',
-			DATABASE_URL: 'mongodb://localhost:27017/vitraux',
+			DATABASE_URL: 'mongodb://localhost:27017/mongo',
 			EMAIL_PROVIDER: 'brevo',
-			EMAIL_FROM: 'noreply@vitraux.test',
+			EMAIL_FROM: 'noreply@app.test',
 			BREVO_API_KEY: 'key',
 		})
 		expect(() => validateEnv()).toThrow('credentials')
@@ -126,7 +126,7 @@ describe('validateEnv', () => {
 	it('falha em prod com EMAIL_PROVIDER=none', () => {
 		stubRequiredEnv({
 			ENVIRONMENT: 'prod',
-			DATABASE_URL: 'mongodb://vitraux:secret@localhost:27717/vitraux?authSource=admin',
+			DATABASE_URL: 'mongodb://mongo:secret@localhost:27717/mongo?authSource=admin',
 			EMAIL_PROVIDER: 'none',
 		})
 		expect(() => validateEnv()).toThrow('EMAIL_PROVIDER=none|disabled')
@@ -175,8 +175,8 @@ describe('getJwtSecret / issuer / audience', () => {
 	it('usa defaults de iss/aud', () => {
 		delete process.env.JWT_ISSUER
 		delete process.env.JWT_AUDIENCE
-		expect(getJwtIssuer()).toBe('vitraux')
-		expect(getJwtAudience()).toBe('vitraux-web')
+		expect(getJwtIssuer()).toBe('boilerplate-webapp')
+		expect(getJwtAudience()).toBe('boilerplate-webapp-web')
 	})
 
 	it('respeita JWT_ISSUER e JWT_AUDIENCE', () => {

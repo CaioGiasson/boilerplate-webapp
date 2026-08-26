@@ -10,7 +10,7 @@ O produto precisa de login/cadastro social sem abandonar a sessão JWT em cookie
 ## Decisão
 
 - OAuth 2.0 Authorization Code com Google Identity; env `GOOGLE_OAUTH_*` (opcional — botão oculto se incompleto).
-- Identidade Vitraux casa pelo **e-mail** exato; flag `googleLinkedAt`; `passwordHash` opcional.
+- Identidade App casa pelo **e-mail** exato; flag `googleLinkedAt`; `passwordHash` opcional.
 - State e pending flows em cookies HttpOnly assinados (jose); callback redireciona para UI de onboarding ou vínculo.
 - Sessão pós-sucesso reutiliza JWT + `ActiveSession` (ADR-001).
 

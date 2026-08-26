@@ -4,7 +4,7 @@
 
 ## 1. Responsable
 
-El responsable del tratamiento de los datos personales en esta aplicación es **Vitraux**, operado por **Caio Felipe Giasson**. El contacto de privacidad (encargado / LGPD) es la misma persona, en **cainitech@gmail.com**.
+El responsable del tratamiento de los datos personales en esta aplicación es **App**, operado por **Caio Felipe Giasson**. El contacto de privacidad (encargado / LGPD) es la misma persona, en **cainitech@gmail.com**.
 
 ## 2. Finalidades
 

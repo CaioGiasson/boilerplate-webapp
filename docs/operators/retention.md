@@ -33,7 +33,7 @@ Ver `docs/operators/cron.md` (npm, crontab, exemplo Kubernetes CronJob). Sem o s
 
 ## Referências
 
-- Issues: [PRIV-I03 #70](https://github.com/CaioGiasson/vitraux/issues/70), [PRIV-C04 #81](https://github.com/CaioGiasson/vitraux/issues/81), [SEC-I01 #52](https://github.com/CaioGiasson/vitraux/issues/52), [SEC-I02 #53](https://github.com/CaioGiasson/vitraux/issues/53)
+- Issues: [PRIV-I03 #70](https://github.com/CaioGiasson/boilerplate-webapp/issues/70), [PRIV-C04 #81](https://github.com/CaioGiasson/boilerplate-webapp/issues/81), [SEC-I01 #52](https://github.com/CaioGiasson/boilerplate-webapp/issues/52), [SEC-I02 #53](https://github.com/CaioGiasson/boilerplate-webapp/issues/53)
 - Cron: `docs/operators/cron.md`
 - Exclusão de conta: `docs/operators/account-deletion.md`
 - RoPA / suboperadores: `docs/operators/subprocessors-ropa.md`

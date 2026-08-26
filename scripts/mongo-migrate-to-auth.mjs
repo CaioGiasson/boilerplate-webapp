@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 loadEnv({ path: resolve(__dirname, '../.env') })
 
-const CONTAINER = 'vitraux_mongo'
-const username = process.env.MONGO_ROOT_USERNAME?.trim() || 'vitraux'
+const CONTAINER = 'mongo'
+const username = process.env.MONGO_ROOT_USERNAME?.trim() || 'mongo'
 const password = process.env.MONGO_ROOT_PASSWORD?.trim()
 
 if (!password) {
@@ -34,7 +34,7 @@ admin.createUser({
 print('Created admin user "' + username + '". Restart Mongo with auth enabled.');
 `
 
-const tempDir = mkdtempSync(join(tmpdir(), 'vitraux-mongo-migrate-'))
+const tempDir = mkdtempSync(join(tmpdir(), 'app-mongo-migrate-'))
 const scriptPath = join(tempDir, 'create-admin.js')
 writeFileSync(scriptPath, userScript.trim())
 

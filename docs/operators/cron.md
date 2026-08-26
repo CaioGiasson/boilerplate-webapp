@@ -31,7 +31,7 @@ Linhas Mongo de `File` orphan **não** são apagadas (trilha). Mutações exigem
 ## Crontab (host / VM)
 
 ```cron
-0 3 * * * cd /caminho/para/vitraux && /usr/bin/npm run cron -- retention-purge --confirm >> /var/log/vitraux-retention-purge.log 2>&1
+0 3 * * * cd /caminho/para/boilerplate-webapp && /usr/bin/npm run cron -- retention-purge --confirm >> /var/log/app-retention-purge.log 2>&1
 ```
 
 Requer `.env` com `DATABASE_URL` e credenciais Spaces no ambiente do processo.
@@ -46,5 +46,5 @@ Retenção de logs de aplicação continua **processo do operador** (rotação n
 
 ## Referências
 
-- [PRIV-I03 #70](https://github.com/CaioGiasson/vitraux/issues/70)
+- [PRIV-I03 #70](https://github.com/CaioGiasson/boilerplate-webapp/issues/70)
 - `docs/operators/retention.md`

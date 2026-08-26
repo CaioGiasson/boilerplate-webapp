@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { Button } from '@/design-system'
 
-const STORAGE_KEY = 'vitraux-cookie-notice-dismissed'
+const STORAGE_KEY = 'app-cookie-notice-dismissed'
 
 export function CookieNotice() {
 	const t = useTranslations('legal')

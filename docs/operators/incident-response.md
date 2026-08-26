@@ -8,7 +8,7 @@ Modelo operacional interno alinhado à LGPD art. 48 (comunicação à ANPD e aos
 | -------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------- |
 | **Encarregado / ponto de privacidade** | Avaliar risco aos titulares; decidir notificação ANPD/titulares; manter registro | **Caio Felipe Giasson** — `cainitech@gmail.com` |
 | **Ops / engenharia**                   | Detectar, conter, erradicar, recuperar; preservar evidências técnicas            | Canal interno TBD                               |
-| **Produto / controlador**              | Decisões de produto, comunicação pública, aprovação de downtime                  | Caio Felipe Giasson / Vitraux                   |
+| **Produto / controlador**              | Decisões de produto, comunicação pública, aprovação de downtime                  | Caio Felipe Giasson / App                       |
 
 ## Fluxo resumido
 
@@ -37,9 +37,9 @@ Modelo operacional interno alinhado à LGPD art. 48 (comunicação à ANPD e aos
 
 ## Template — notificação à ANPD (rascunho)
 
-> **Assunto:** Comunicação de incidente de segurança — Vitraux  
+> **Assunto:** Comunicação de incidente de segurança — App  
 > **Remetente:** Encarregado / contato de privacidade — Caio Felipe Giasson \<cainitech@gmail.com\>  
-> **Controlador:** Vitraux (operado por Caio Felipe Giasson)
+> **Controlador:** App (operado por Caio Felipe Giasson)
 >
 > 1. **Natureza do incidente:** (ex.: acesso não autorizado a objetos de armazenamento; exposição de URLs; comprometimento de credencial de Spaces/Mongo.)
 > 2. **Data/hora da descoberta e da ocorrência estimada (UTC).**

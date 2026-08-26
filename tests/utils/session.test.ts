@@ -59,7 +59,7 @@ describe('session cookie options', () => {
 		process.env.NODE_ENV = originalNodeEnv
 	})
 
-	it('usa vitraux-session sem Secure em HTTP local', () => {
+	it('usa app-session sem Secure em HTTP local', () => {
 		process.env.NODE_ENV = 'development'
 		const context = { url: 'http://localhost:3000/api/v1/auth/login' }
 		const options = getSessionCookieOptions(3600, context)
@@ -75,7 +75,7 @@ describe('session cookie options', () => {
 		expect(options).not.toHaveProperty('domain')
 	})
 
-	it('usa __Host-vitraux-session com Secure em production', () => {
+	it('usa __Host-app-session com Secure em production', () => {
 		process.env.NODE_ENV = 'production'
 		const options = getSessionCookieOptions(3600)
 

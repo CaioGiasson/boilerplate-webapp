@@ -1,3 +1,4 @@
+import { APP_NAME } from '@/constants/app'
 import type { ExampleRawData } from './Example.ports'
 
 export default class ExampleService {
@@ -13,7 +14,7 @@ export default class ExampleService {
 		return {
 			id: now.getTime().toString(),
 			created_at: now.toISOString(),
-			value: `Hello World from Vitraux #${suffix}`,
+			value: `Hello World from ${APP_NAME} #${suffix}`,
 		}
 	}
 }

@@ -1,4 +1,4 @@
-# Glossário — Vitraux
+# Glossário — App
 
 Termos de domínio e infra usados no código. Arquitetura: [`architecture.md`](architecture.md).
 
@@ -17,7 +17,7 @@ Termos de domínio e infra usados no código. Arquitetura: [`architecture.md`](a
 | **appearInGlobalMosaic**            | Setting boolean — opt-in para aparecer no mosaico global.                                                                                     |
 | **homeZoomLevel / imagesZoomLevel** | Settings numéricos de zoom do board (desktop).                                                                                                |
 | **Session (JWT)**                   | Cookie HTTP-only com claims `userId` + `device`; validado via `jose`.                                                                         |
-| **Device cookie**                   | UUID persistido para detectar novo login (`vitraux-device`).                                                                                  |
+| **Device cookie**                   | UUID persistido para detectar novo login (`app-device`).                                                                                      |
 | **ActiveSession**                   | Registro server-side de sessões ativas (revogação, listagem).                                                                                 |
 | **SessionEvent**                    | Auditoria de eventos de sessão (login, logout, revoke).                                                                                       |
 | **File**                            | Metadado de objeto no Spaces (key, ownerId, category `images` \| `avatars`).                                                                  |

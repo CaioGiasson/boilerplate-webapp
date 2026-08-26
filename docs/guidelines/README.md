@@ -1,4 +1,4 @@
-# Guidelines — Vitraux
+# Guidelines — App
 
 Documentos de referência do time, **alinhados ao codebase atual**. Cruzar com [`AGENTS.md`](../../AGENTS.md), [`docs/architecture.md`](../architecture.md) e assessments na raiz.
 

@@ -294,14 +294,11 @@ export type AppMessages = {
 		}
 	}
 	home: {
-		searchLabel: string
-		searchPlaceholder: string
-		noTagsYet: string
-		empty: string
-		emptyFiltered: string
+		title: string
+		description: string
 		loading: string
-		loadError: string
-		loadMore: string
+		signedInAs: string
+		guestPrompt: string
 	}
 	documentTitle: {
 		images: string

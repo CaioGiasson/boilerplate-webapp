@@ -10,8 +10,8 @@ import type { BrevoEmailConfig } from '@/config/env'
 const config = (overrides: Partial<BrevoEmailConfig> = {}): BrevoEmailConfig => ({
 	apiKey: 'test-key',
 	apiBaseUrl: 'https://api.brevo.com',
-	from: 'noreply@vitraux.test',
-	fromName: 'Vitraux',
+	from: 'noreply@app.test',
+	fromName: 'App',
 	timeoutMs: 5_000,
 	sandbox: false,
 	...overrides,
@@ -28,7 +28,7 @@ describe('BrevoService', () => {
 			subject: 'Subject',
 			text: 'Plain',
 			html: '<p>Html</p>',
-			replyTo: 'support@vitraux.test',
+			replyTo: 'support@app.test',
 		})
 
 		expect(result).toEqual({ provider: 'brevo', messageId: '<abc@smtp>' })
@@ -40,12 +40,12 @@ describe('BrevoService', () => {
 		expect(headers['api-key']).toBe('test-key')
 		const body = JSON.parse(String(init.body))
 		expect(body).toMatchObject({
-			sender: { email: 'noreply@vitraux.test', name: 'Vitraux' },
+			sender: { email: 'noreply@app.test', name: 'App' },
 			to: [{ email: 'user@example.com' }],
 			subject: 'Subject',
 			textContent: 'Plain',
 			htmlContent: '<p>Html</p>',
-			replyTo: { email: 'support@vitraux.test' },
+			replyTo: { email: 'support@app.test' },
 		})
 		expect(body.headers).toBeUndefined()
 	})

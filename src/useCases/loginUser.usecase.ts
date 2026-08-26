@@ -18,7 +18,7 @@ import SettingsManager from '@/managers/Settings.manager'
 type Input = {
 	identifier: string
 	password: string
-	/** UUID do cookie HttpOnly `vitraux-device` (server-side). Ignorar body do cliente. */
+	/** UUID do cookie HttpOnly `app-device` (server-side). Ignorar body do cliente. */
 	deviceCookie?: string | null
 }
 

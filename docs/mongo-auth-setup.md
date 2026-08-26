@@ -25,9 +25,9 @@ openssl rand -base64 24
 No `.env`:
 
 ```env
-MONGO_ROOT_USERNAME="vitraux"
+MONGO_ROOT_USERNAME="mongo"
 MONGO_ROOT_PASSWORD="<senha-gerada>"
-DATABASE_URL="mongodb://vitraux:<senha-gerada>@localhost:27717/vitraux?replicaSet=rs0&directConnection=true&authSource=admin"
+DATABASE_URL="mongodb://mongo:<senha-gerada>@localhost:27717/mongo?replicaSet=rs0&directConnection=true&authSource=admin"
 ```
 
 **URL-encoding:** se a senha tiver `@`, `:`, `/`, `?`, `#`, `[`, `]`, `%` ou espaços, codifique na `DATABASE_URL` (ex.: `@` → `%40`). O valor literal em `MONGO_ROOT_PASSWORD` continua sem encoding.
@@ -59,8 +59,8 @@ Aguarde o healthcheck (`docker compose ps`). O script interno inicia o replica s
 Teste manual (porta **dentro** do container; no host a app usa `27717`):
 
 ```bash
-docker exec -it vitraux_mongo mongosh --port 27017 \
-  -u vitraux -p '<senha>' --authenticationDatabase admin \
+docker exec -it mongo mongosh --port 27017 \
+  -u mongo -p '<senha>' --authenticationDatabase admin \
   --eval "db.adminCommand({ ping: 1 })"
 ```
 
@@ -188,5 +188,5 @@ docker compose logs mongo1 --tail 50
 
 ## Referências
 
-- Issue [#48](https://github.com/CaioGiasson/vitraux/issues/48) (SEC-C03)
+- Issue [#48](https://github.com/CaioGiasson/boilerplate-webapp/issues/48) (SEC-C03)
 - `docker-compose.yaml`, `.env.example`, `scripts/generate-mongo-keyfile.mjs`, `scripts/mongo-migrate-to-auth.mjs`

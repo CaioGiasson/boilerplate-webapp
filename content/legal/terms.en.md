@@ -4,23 +4,23 @@
 
 ## 1. Who provides the service
 
-Vitraux is provided by **Vitraux / Caio Felipe Giasson**. These terms govern use of the application, including accounts, images, and other features.
+App is provided by **App / Caio Felipe Giasson**. These terms govern use of the application, including accounts, images, and other features.
 
 ## 2. Account and eligibility
 
 To use authenticated features, the user must create an account with a nickname, email, password, and **date of birth**, accept these Terms and the Privacy Policy, and keep information up to date. The user is responsible for activity carried out with their credentials.
 
-**Eligibility:** Vitraux is intended **only for people aged 18 or older**. We do not operate minor accounts; there is no parental-consent flow. Registrations under age 18 are refused. Date of birth is stored to audit the age gate and is **not** exposed to third parties in public profiles.
+**Eligibility:** App is intended **only for people aged 18 or older**. We do not operate minor accounts; there is no parental-consent flow. Registrations under age 18 are refused. Date of birth is stored to audit the age gate and is **not** exposed to third parties in public profiles.
 
 ## 3. User content (UGC)
 
-The user represents that they have rights in the images and text they upload, including permission when an image depicts third parties. Unlawful content, content that infringes third-party rights, or content that breaks platform rules may be removed. Vitraux is not obliged to monitor all content, but may act to protect the service and other users.
+The user represents that they have rights in the images and text they upload, including permission when an image depicts third parties. Unlawful content, content that infringes third-party rights, or content that breaks platform rules may be removed. App is not obliged to monitor all content, but may act to protect the service and other users.
 
 ## 4. Acceptable use and prohibited content
 
 It is forbidden to bypass authentication or access controls, overload infrastructure, exploit security flaws, or use the service for illegal purposes. Storage and processing of files may occur on cloud providers, including outside Brazil.
 
-The creators of Vitraux **discourage using the platform for pornography**. Prohibited content will be **strictly banned**.
+The creators of App **discourage using the platform for pornography**. Prohibited content will be **strictly banned**.
 
 It is **expressly prohibited** to publish, store, or share:
 

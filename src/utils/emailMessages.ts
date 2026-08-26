@@ -13,34 +13,34 @@ export function buildEmailVerificationMail(input: {
 
 	if (input.purpose === 'verify') {
 		return {
-			subject: 'Confirm your Vitraux account',
-			text: `Your Vitraux verification code is:\n\n${code}\n\nEnter this code in your profile, or open this link (valid for 1 hour):\n${link}\n\nIf you did not create an account, ignore this message.`,
+			subject: 'Confirm your App account',
+			text: `Your App verification code is:\n\n${code}\n\nEnter this code in your profile, or open this link (valid for 1 hour):\n${link}\n\nIf you did not create an account, ignore this message.`,
 		}
 	}
 	if (input.purpose === 'change_old') {
 		return {
 			subject: 'Confirm email change (current address)',
-			text: `Your Vitraux confirmation code is:\n\n${code}\n\nSomeone requested to change the email on your account. Confirm with this code or open (valid for 1 hour):\n${link}\n\nIf this was not you, ignore this message and keep your password secure.`,
+			text: `Your App confirmation code is:\n\n${code}\n\nSomeone requested to change the email on your account. Confirm with this code or open (valid for 1 hour):\n${link}\n\nIf this was not you, ignore this message and keep your password secure.`,
 		}
 	}
 	return {
-		subject: 'Confirm your new Vitraux email',
-		text: `Your Vitraux confirmation code is:\n\n${code}\n\nConfirm your new email with this code or open (valid for 1 hour):\n${link}\n\nIf you did not request this, ignore this message.`,
+		subject: 'Confirm your new App email',
+		text: `Your App confirmation code is:\n\n${code}\n\nConfirm your new email with this code or open (valid for 1 hour):\n${link}\n\nIf you did not request this, ignore this message.`,
 	}
 }
 
 export function buildAccountVerifiedMail(): { subject: string; text: string } {
 	return {
-		subject: 'Your Vitraux account is verified',
-		text: `Your Vitraux account email was verified successfully.\n\nYou can now change your email and use account recovery features that require a confirmed address.\n\nIf you did not verify this account, contact support.`,
+		subject: 'Your App account is verified',
+		text: `Your App account email was verified successfully.\n\nYou can now change your email and use account recovery features that require a confirmed address.\n\nIf you did not verify this account, contact support.`,
 	}
 }
 
 /** Fixed EN copy (same as other transactional mails). No IP/UA/PII beyond account notice. */
 export function buildNewLoginMail(): { subject: string; text: string } {
 	return {
-		subject: 'New login to your Vitraux account',
-		text: `Someone just signed in to your Vitraux account.\n\nIf this was you, no action is needed.\n\nIf you did not sign in, change your password and review your account security as soon as possible.`,
+		subject: 'New login to your App account',
+		text: `Someone just signed in to your App account.\n\nIf this was you, no action is needed.\n\nIf you did not sign in, change your password and review your account security as soon as possible.`,
 	}
 }
 
@@ -53,8 +53,8 @@ export function buildPasswordResetMail(input: { appBaseUrl: string; locale: stri
 	const code = input.token.toUpperCase()
 
 	return {
-		subject: 'Reset your Vitraux password',
-		text: `Your Vitraux password reset code is:\n\n${code}\n\nEnter this code on the reset page, or open this link (valid for 1 hour):\n${link}\n\nIf you did not request a password reset, ignore this message.`,
+		subject: 'Reset your App password',
+		text: `Your App password reset code is:\n\n${code}\n\nEnter this code on the reset page, or open this link (valid for 1 hour):\n${link}\n\nIf you did not request a password reset, ignore this message.`,
 	}
 }
 
@@ -82,9 +82,9 @@ export function buildAccountDeletionQuarantineMail(input: {
 
 	if (input.locale === 'pt') {
 		return {
-			subject: 'Solicitação de exclusão de conta Vitraux — quarentena de 30 dias',
+			subject: 'Solicitação de exclusão de conta App — quarentena de 30 dias',
 			text: [
-				'Recebemos a solicitação de exclusão da sua conta Vitraux.',
+				'Recebemos a solicitação de exclusão da sua conta App.',
 				'',
 				`Pedido feito em ${requested} (UTC) por você.`,
 				'',
@@ -106,9 +106,9 @@ export function buildAccountDeletionQuarantineMail(input: {
 
 	if (input.locale === 'es') {
 		return {
-			subject: 'Solicitud de eliminación de cuenta Vitraux — cuarentena de 30 días',
+			subject: 'Solicitud de eliminación de cuenta App — cuarentena de 30 días',
 			text: [
-				'Recibimos la solicitud de eliminación de tu cuenta Vitraux.',
+				'Recibimos la solicitud de eliminación de tu cuenta App.',
 				'',
 				`Solicitud realizada el ${requested} (UTC) por ti.`,
 				'',
@@ -129,9 +129,9 @@ export function buildAccountDeletionQuarantineMail(input: {
 	}
 
 	return {
-		subject: 'Vitraux account deletion request — 30-day quarantine',
+		subject: 'App account deletion request — 30-day quarantine',
 		text: [
-			'We received a request to delete your Vitraux account.',
+			'We received a request to delete your App account.',
 			'',
 			`Request made on ${requested} (UTC) by you.`,
 			'',
@@ -162,9 +162,9 @@ export function buildAccountDeletionCancelledMail(input: { locale: string; cance
 
 	if (input.locale === 'pt') {
 		return {
-			subject: 'Exclusão de conta Vitraux cancelada',
+			subject: 'Exclusão de conta App cancelada',
 			text: [
-				'A solicitação de exclusão da sua conta Vitraux foi cancelada.',
+				'A solicitação de exclusão da sua conta App foi cancelada.',
 				'',
 				`Cancelamento em ${cancelled} (UTC), por solicitação direta sua (login e opção CANCELAR exclusão do perfil).`,
 				'',
@@ -179,9 +179,9 @@ export function buildAccountDeletionCancelledMail(input: { locale: string; cance
 
 	if (input.locale === 'es') {
 		return {
-			subject: 'Eliminación de cuenta Vitraux cancelada',
+			subject: 'Eliminación de cuenta App cancelada',
 			text: [
-				'La solicitud de eliminación de tu cuenta Vitraux fue cancelada.',
+				'La solicitud de eliminación de tu cuenta App fue cancelada.',
 				'',
 				`Cancelación el ${cancelled} (UTC), por tu solicitud directa (inicio de sesión y opción CANCELAR eliminación del perfil).`,
 				'',
@@ -195,9 +195,9 @@ export function buildAccountDeletionCancelledMail(input: { locale: string; cance
 	}
 
 	return {
-		subject: 'Vitraux account deletion cancelled',
+		subject: 'App account deletion cancelled',
 		text: [
-			'The deletion request for your Vitraux account has been cancelled.',
+			'The deletion request for your App account has been cancelled.',
 			'',
 			`Cancelled on ${cancelled} (UTC) at your direct request (sign-in and CANCEL profile deletion).`,
 			'',

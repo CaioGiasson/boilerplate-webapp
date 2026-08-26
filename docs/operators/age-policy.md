@@ -2,7 +2,7 @@
 
 ## Decisão de produto
 
-O Vitraux **não opera contas de menores de 18 anos**.
+O App **não opera contas de menores de 18 anos**.
 
 - No cadastro, a data de nascimento é **obrigatória**.
 - Idade < 18 → cadastro **recusado** (HTTP 400).

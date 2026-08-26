@@ -4,23 +4,23 @@
 
 ## 1. Quem oferece o serviço
 
-O Vitraux é oferecido por **Vitraux / Caio Felipe Giasson**. Estes termos regulam o uso da aplicação, incluindo conta, imagens e demais funcionalidades.
+O App é oferecido por **App / Caio Felipe Giasson**. Estes termos regulam o uso da aplicação, incluindo conta, imagens e demais funcionalidades.
 
 ## 2. Conta e elegibilidade
 
 Para usar recursos autenticados, o usuário deve criar uma conta com nickname, e-mail, senha e **data de nascimento**, aceitar estes Termos e a Política de Privacidade, e manter as informações atualizadas. O usuário é responsável pelas atividades realizadas com suas credenciais.
 
-**Elegibilidade:** o Vitraux é destinado **apenas a pessoas com 18 anos ou mais**. Não operamos contas de menores; não há fluxo de consentimento parental. Cadastros com idade inferior a 18 anos são recusados. A data de nascimento é armazenada para auditoria do age gate e **não** é exposta a terceiros nos perfis públicos.
+**Elegibilidade:** o App é destinado **apenas a pessoas com 18 anos ou mais**. Não operamos contas de menores; não há fluxo de consentimento parental. Cadastros com idade inferior a 18 anos são recusados. A data de nascimento é armazenada para auditoria do age gate e **não** é exposta a terceiros nos perfis públicos.
 
 ## 3. Conteúdo do usuário (UGC)
 
-O usuário declara ter direitos sobre as imagens e textos que envia, inclusive autorização quando a imagem retrata terceiros. Conteúdos ilícitos, que violem direitos de terceiros ou as regras da plataforma podem ser removidos. O Vitraux não se obriga a monitorar todo o conteúdo, mas pode agir para proteger a segurança do serviço e de outros usuários.
+O usuário declara ter direitos sobre as imagens e textos que envia, inclusive autorização quando a imagem retrata terceiros. Conteúdos ilícitos, que violem direitos de terceiros ou as regras da plataforma podem ser removidos. O App não se obriga a monitorar todo o conteúdo, mas pode agir para proteger a segurança do serviço e de outros usuários.
 
 ## 4. Uso aceitável e conteúdo proibido
 
 É vedado tentar burlar autenticação ou controles de acesso, sobrecarregar a infraestrutura, explorar falhas de segurança, ou usar o serviço para fins ilegais. O armazenamento e o processamento de arquivos podem ocorrer em provedores de nuvem, inclusive fora do Brasil.
 
-Os criadores do Vitraux **desincentivam o uso da plataforma para pornografia**. Conteúdo proibido será **rigorosamente banido**.
+Os criadores do App **desincentivam o uso da plataforma para pornografia**. Conteúdo proibido será **rigorosamente banido**.
 
 É **expressamente proibido** publicar, armazenar ou compartilhar:
 

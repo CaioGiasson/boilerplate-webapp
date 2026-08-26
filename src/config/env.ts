@@ -37,8 +37,8 @@ function isProductionEnvironment(environment: string): boolean {
 }
 
 const MIN_JWT_SECRET_LENGTH = 32
-const DEFAULT_JWT_ISSUER = 'vitraux'
-const DEFAULT_JWT_AUDIENCE = 'vitraux-web'
+const DEFAULT_JWT_ISSUER = 'boilerplate-webapp'
+const DEFAULT_JWT_AUDIENCE = 'boilerplate-webapp-web'
 
 export type StorageConfig = {
 	spacesEndpoint: string

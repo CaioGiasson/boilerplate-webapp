@@ -372,7 +372,7 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 			const url = URL.createObjectURL(blob)
 			const link = document.createElement('a')
 			link.href = url
-			link.download = `vitraux-export-${data.exportedAt.slice(0, 10)}.json`
+			link.download = `app-export-${data.exportedAt.slice(0, 10)}.json`
 			link.click()
 			URL.revokeObjectURL(url)
 			toast({ variant: 'success', title: t('successExport') })

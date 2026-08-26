@@ -24,7 +24,7 @@ Do **not** copy a fixed prod number from this doc — use the formula with your 
 Prisma reads pool settings from the Mongo URL query string:
 
 ```env
-DATABASE_URL="mongodb://USER:PASS@host:27017/vitraux?replicaSet=rs0&authSource=admin&connection_limit=10&connect_timeout_ms=5000"
+DATABASE_URL="mongodb://USER:PASS@host:27017/mongo?replicaSet=rs0&authSource=admin&connection_limit=10&connect_timeout_ms=5000"
 ```
 
 | Parameter            | Role                                                 |

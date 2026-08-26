@@ -1,4 +1,4 @@
-# API, Integrações e Segurança — Vitraux
+# API, Integrações e Segurança — App
 
 > Contratos HTTP: [`docs/openapi.yaml`](../openapi.yaml) + [`requests/README.md`](../../requests/README.md). Segurança: [`SECURITY-REPORT.md`](../../SECURITY-REPORT.md).
 
@@ -50,7 +50,7 @@ Smoke de **envio** de e-mail: `npm run test-email -- destino@…` (recusa produ�
 
 ### Ambiente
 
-Vitraux usa **`ENVIRONMENT`** (`dev` / `prod`) para regras de boot e operadores, e **`NODE_ENV`** onde o runtime Next/Node exige (ex.: cookie `Secure`, stack em logs). Não duplicar lógica de produto só com `NODE_ENV` quando `ENVIRONMENT` já define o comportamento de negócio.
+App usa **`ENVIRONMENT`** (`dev` / `prod`) para regras de boot e operadores, e **`NODE_ENV`** onde o runtime Next/Node exige (ex.: cookie `Secure`, stack em logs). Não duplicar lógica de produto só com `NODE_ENV` quando `ENVIRONMENT` já define o comportamento de negócio.
 
 ---
 

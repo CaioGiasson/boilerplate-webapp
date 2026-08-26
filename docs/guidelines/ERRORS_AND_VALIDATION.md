@@ -1,4 +1,4 @@
-# Erros e Validação — Vitraux
+# Erros e Validação — App
 
 ## 1. Hierarquia de erros
 

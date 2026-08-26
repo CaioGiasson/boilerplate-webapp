@@ -12,7 +12,7 @@ Infra: `EmailService` (fachada) + `BrevoService` (adapter HTTP). Use cases chama
 ```bash
 EMAIL_PROVIDER=brevo
 EMAIL_FROM="noreply@seudominio.com"
-EMAIL_FROM_NAME="Vitraux"
+EMAIL_FROM_NAME="App"
 BREVO_API_KEY="..."
 # EMAIL_TIMEOUT_MS=10000
 # BREVO_API_BASE_URL="https://api.brevo.com"

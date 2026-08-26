@@ -1,6 +1,6 @@
 # Fluxo de Issues e Tarefas
 
-Board do projeto: [Vitraux — Project board](https://github.com/users/CaioGiasson/projects/3/views/1)
+Board do projeto: [App — Project board](https://github.com/users/CaioGiasson/projects/3/views/1)
 
 ## Gate antes de implementar
 

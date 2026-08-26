@@ -3,9 +3,9 @@ import { SignJWT, jwtVerify } from 'jose'
 import { getJwtAudience, getJwtIssuer, getJwtSecret, getJwtTtlSeconds } from '@/config/env'
 import { UnauthorizedError } from '@/errors'
 
-export const HTTP_SESSION_COOKIE_NAME = 'vitraux-session'
-export const HOST_SESSION_COOKIE_NAME = '__Host-vitraux-session'
-export const DEVICE_COOKIE_NAME = 'vitraux-device'
+export const HTTP_SESSION_COOKIE_NAME = 'app-session'
+export const HOST_SESSION_COOKIE_NAME = '__Host-app-session'
+export const DEVICE_COOKIE_NAME = 'app-device'
 /** Persistência do device server-side (alerta de novo login / SEC-I13). */
 export const DEVICE_COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60
 

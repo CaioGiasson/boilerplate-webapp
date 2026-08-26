@@ -11,8 +11,8 @@ A API precisa autenticar requests stateless (Next.js serverless-friendly) sem ex
 
 - Emitir JWT (via `jose`) com claims mínimas: `userId`, `device`, `jti`.
 - Armazenar em cookie **HTTP-only**, `SameSite=Lax`, `Secure` em produção.
-- Nome do cookie: `vitraux-session` (dev) / `__Host-vitraux-session` (prod, exige HTTPS).
-- Cookie auxiliar `vitraux-device` (UUID) para alerta de novo login.
+- Nome do cookie: `app-session` (dev) / `__Host-app-session` (prod, exige HTTPS).
+- Cookie auxiliar `app-device` (UUID) para alerta de novo login.
 - TTL configurável via env; hash de `jti` persistido para revogação.
 
 ## Consequências

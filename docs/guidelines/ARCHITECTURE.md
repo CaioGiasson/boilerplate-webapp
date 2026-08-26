@@ -1,4 +1,4 @@
-# Arquitetura e Persistência — Vitraux
+# Arquitetura e Persistência — App
 
 > Alinhado a [`docs/architecture.md`](../architecture.md) e [`AGENTS.md`](../../AGENTS.md).
 

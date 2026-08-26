@@ -1,10 +1,10 @@
 services:
     mongo1:
         image: mongo:7.0
-        container_name: vitraux_mongo
+        container_name: mongo
         entrypoint: ['bash', '/scripts/mongo-docker-entrypoint.sh']
         environment:
-            MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-vitraux}
+            MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-mongo}
             MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD in .env}
         command:
             - --replSet

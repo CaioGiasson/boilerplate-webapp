@@ -17,9 +17,11 @@ const geistSans = Geist({
 	display: 'swap',
 })
 
+import { APP_NAME } from '@/constants/app'
+
 export const metadata: Metadata = {
-	title: 'Vitraux',
-	description: 'Vitraux — aplicação Next.js',
+	title: APP_NAME,
+	description: `${APP_NAME} — starter webapp Next.js`,
 }
 
 type LocaleLayoutProps = {

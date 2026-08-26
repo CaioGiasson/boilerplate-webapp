@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
-    title: Vitraux API
+    title: App API
     version: 1.0.0
     description: |
-        Contrato HTTP do Vitraux (Next.js App Router).
+        Contrato HTTP do App (Next.js App Router).
 
-        **Auth:** cookie de sessão JWT (`vitraux-session` / `__Host-vitraux-session`).
+        **Auth:** cookie de sessão JWT (`app-session` / `__Host-app-session`).
         Rotas mutáveis de auth exigem same-origin (`Origin` alinhado ao host).
 
         **Envelope v1 (sucesso):** `{ "success": true, "message": "...", "data": { ... } }`
@@ -14,7 +14,7 @@ info:
         Spec canônica no repo: `docs/openapi.yaml`. UI interativa: `GET /api/docs` (gated).
         Smoke manual: `requests/**/*.http`.
     contact:
-        name: Vitraux
+        name: App
 servers:
     - url: http://localhost:3000
       description: Dev local
@@ -398,7 +398,7 @@ paths:
     /api/v1/auth/google/link:
         post:
             tags: [auth]
-            summary: Vincula Google a conta existente (exige senha Vitraux)
+            summary: Vincula Google a conta existente (exige senha App)
             security: []
             parameters:
                 - $ref: '#/components/parameters/OriginHeader'
@@ -1057,8 +1057,8 @@ components:
         SessionCookie:
             type: apiKey
             in: cookie
-            name: vitraux-session
-            description: Em produção o cookie pode ser `__Host-vitraux-session`.
+            name: app-session
+            description: Em produção o cookie pode ser `__Host-app-session`.
         HealthToken:
             type: http
             scheme: bearer
@@ -1144,7 +1144,7 @@ components:
                 emailChallenge:
                     type: string
                     enum: [none, verify, change_old, change_new]
-                hasPassword: { type: boolean, description: Conta já definiu senha Vitraux }
+                hasPassword: { type: boolean, description: Conta já definiu senha App }
                 googleLinked: { type: boolean, description: Conta vinculada ao Google OAuth }
         MosaicImage:
             type: object

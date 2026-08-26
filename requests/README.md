@@ -17,7 +17,7 @@ Manual API smoke tests for `src/app/api/**`. Use with the [REST Client](https://
 | `sessionId`        | —                       | Session id from `GET /users/me/sessions`              |
 | `nickname`         | `alice`                 | Nickname to check availability                        |
 
-After login/register, the session cookie (`vitraux-session`) is stored automatically by REST Client when using `@name login`.
+After login/register, the session cookie (`app-session`) is stored automatically by REST Client when using `@name login`.
 
 ## Index
 

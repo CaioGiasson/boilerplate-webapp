@@ -168,7 +168,7 @@ describe('LoginUser', () => {
 		expect(emailService.send).toHaveBeenCalledWith(
 			expect.objectContaining({
 				to: 'alice@example.com',
-				subject: 'New login to your Vitraux account',
+				subject: 'New login to your App account',
 				text: expect.stringContaining('Someone just signed in'),
 			})
 		)

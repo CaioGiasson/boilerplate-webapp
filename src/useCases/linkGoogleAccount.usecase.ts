@@ -29,7 +29,7 @@ type Output = {
 }
 
 /**
- * Links Google to an existing password account after the user confirms with Vitraux password.
+ * Links Google to an existing password account after the user confirms with their current password.
  * Does not overwrite name/photo.
  */
 export default class LinkGoogleAccount extends UseCaseMasterPort<Input, Output> {

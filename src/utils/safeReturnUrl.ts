@@ -1,3 +1,5 @@
+import { APP_INVALID_ORIGIN } from '@/constants/app'
+
 /**
  * Allows only same-origin relative paths for post-OAuth redirects.
  * Rejects protocol-relative (`//`), absolute URLs, and empty/whitespace.
@@ -14,8 +16,8 @@ export function safeReturnUrl(raw: string | null | undefined, fallback = '/'): s
 		return fallback
 	}
 	try {
-		const parsed = new URL(trimmed, 'https://vitraux.invalid')
-		if (parsed.origin !== 'https://vitraux.invalid') {
+		const parsed = new URL(trimmed, APP_INVALID_ORIGIN)
+		if (parsed.origin !== APP_INVALID_ORIGIN) {
 			return fallback
 		}
 		return `${parsed.pathname}${parsed.search}${parsed.hash}` || fallback

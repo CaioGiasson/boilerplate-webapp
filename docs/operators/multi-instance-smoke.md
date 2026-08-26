@@ -49,7 +49,7 @@ BASE_URL_A=http://127.0.0.1:3000 BASE_URL_B=http://127.0.0.1:3001 npm run smoke:
 
 ## Option B — manual checklist
 
-1. Register or use a test user on instance A; confirm cookie `vitraux_session` (name per env).
+1. Register or use a test user on instance A; confirm cookie `app_session` (name per env).
 2. Copy cookie to request against instance B `/api/v1/users/me` — must succeed.
 3. Hammer login 6× in 1 minute — expect 429 on the instance receiving traffic.
 4. Upload a small image on A; list `scope=mine` on B — new image visible after write concern (may need short wait).

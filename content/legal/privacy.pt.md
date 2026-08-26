@@ -4,7 +4,7 @@
 
 ## 1. Controlador
 
-O controlador dos dados pessoais tratados nesta aplicação é **Vitraux**, operado por **Caio Felipe Giasson**. O encarregado pelo tratamento de dados pessoais é o mesmo, contato em **cainitech@gmail.com**.
+O controlador dos dados pessoais tratados nesta aplicação é **App**, operado por **Caio Felipe Giasson**. O encarregado pelo tratamento de dados pessoais é o mesmo, contato em **cainitech@gmail.com**.
 
 ## 2. Finalidades
 

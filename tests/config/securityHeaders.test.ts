@@ -7,8 +7,8 @@ import {
 
 const spacesEnv = {
 	spacesEndpoint: 'nyc3.digitaloceanspaces.com',
-	spacesBucket: 'vitraux',
-	spacesPublicBaseUrl: 'https://vitraux.nyc3.cdn.digitaloceanspaces.com',
+	spacesBucket: 'app',
+	spacesPublicBaseUrl: 'https://app.nyc3.cdn.digitaloceanspaces.com',
 }
 
 function headerMap(headers: ReturnType<typeof buildSecurityHeaders>) {
@@ -47,16 +47,16 @@ describe('securityHeaders', () => {
 		expect(origins).toEqual(
 			expect.arrayContaining([
 				'https://*.digitaloceanspaces.com',
-				'https://vitraux.nyc3.digitaloceanspaces.com',
+				'https://app.nyc3.digitaloceanspaces.com',
 				'https://*.nyc3.digitaloceanspaces.com',
-				'https://vitraux.nyc3.cdn.digitaloceanspaces.com',
+				'https://app.nyc3.cdn.digitaloceanspaces.com',
 			])
 		)
 
 		const reportOnly = buildContentSecurityPolicyReportOnly({ nodeEnv: 'production', ...spacesEnv })
 		expect(reportOnly).toContain('https://*.digitaloceanspaces.com')
-		expect(reportOnly).toContain('https://vitraux.nyc3.digitaloceanspaces.com')
-		expect(reportOnly).toContain('https://vitraux.nyc3.cdn.digitaloceanspaces.com')
+		expect(reportOnly).toContain('https://app.nyc3.digitaloceanspaces.com')
+		expect(reportOnly).toContain('https://app.nyc3.cdn.digitaloceanspaces.com')
 		expect(reportOnly).toContain("img-src 'self' data: blob:")
 	})
 

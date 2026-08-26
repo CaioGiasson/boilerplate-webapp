@@ -3,7 +3,7 @@ description: Ao aprovar uma tarefa, se a PR já estiver Reviewed, fazer merge e 
 alwaysApply: true
 ---
 
-# Aprovação de tarefa — Vitraux
+# Aprovação de tarefa — App
 
 Quando o usuário **aprova** uma tarefa (ex.: “aprovado”, “pode mergear”, “fecha a task”), execute o fluxo abaixo **somente** se houver PR vinculada.
 

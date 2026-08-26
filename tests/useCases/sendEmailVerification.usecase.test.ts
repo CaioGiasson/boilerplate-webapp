@@ -13,7 +13,7 @@ jest.mock('@/config/env', () => {
 	const actual = jest.requireActual('@/config/env') as typeof import('@/config/env')
 	return {
 		...actual,
-		getAppBaseUrl: jest.fn(() => 'https://vitraux.test'),
+		getAppBaseUrl: jest.fn(() => 'https://app.test'),
 	}
 })
 

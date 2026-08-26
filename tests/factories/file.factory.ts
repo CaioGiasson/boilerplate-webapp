@@ -26,7 +26,7 @@ export function buildFile(overrides: FileFactoryOverrides = {}): FileFactoryReco
 	return {
 		id: 'file-1',
 		key,
-		url: `https://vitraux.nyc3.digitaloceanspaces.com/${key}`,
+		url: `https://app.nyc3.digitaloceanspaces.com/${key}`,
 		category: 'images',
 		mimeType: 'image/jpeg',
 		sizeBytes: 1024,

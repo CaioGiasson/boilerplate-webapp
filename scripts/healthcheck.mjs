@@ -321,7 +321,7 @@ function printResult(result) {
 }
 
 async function main() {
-	console.log('Vitraux healthcheck\n')
+	console.log('App healthcheck\n')
 
 	const results = []
 	for (const check of [checkEnv, checkDatabase, checkSpaces, checkJwt, checkBrevo, checkGoogleOAuth]) {

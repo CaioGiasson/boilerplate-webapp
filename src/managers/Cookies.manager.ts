@@ -1,6 +1,6 @@
 export const COOKIE_KEYS = {
-	THEME: 'vitraux-theme',
-	LOCALE: 'vitraux-locale',
+	THEME: 'app-theme',
+	LOCALE: 'app-locale',
 } as const
 
 export type CookieKey = (typeof COOKIE_KEYS)[keyof typeof COOKIE_KEYS]

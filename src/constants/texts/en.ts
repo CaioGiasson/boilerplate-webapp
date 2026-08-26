@@ -11,7 +11,7 @@ const passwordChecklist = {
 
 const en: AppMessages = {
 	app: {
-		name: 'Vitraux',
+		name: 'App',
 		helloWorld: 'Hello World',
 		close: 'Close',
 	},
@@ -99,20 +99,20 @@ const en: AppMessages = {
 		googleRegisterSuccess: 'Account created with Google',
 		googleLinkTitle: 'Link Google account',
 		googleLinkMessage:
-			'A Vitraux account already exists with this email and a password. Enter your current password to link Google.',
+			'A App account already exists with this email and a password. Enter your current password to link Google.',
 		googleLinkSubmit: 'Link and sign in',
 		googleLinkSuccess: 'Google linked successfully',
 		emailChangeCancelledMessage: 'Continuing with Google cancels any pending email change on this account.',
 		googleEmailUnverifiedMessage:
-			'Your Google account email is not verified. You will need to verify your email again on Vitraux.',
+			'Your Google account email is not verified. You will need to verify your email again on App.',
 	},
 	legal: {
 		privacyTitle: 'Privacy Policy',
 		termsTitle: 'Terms of Use',
 		privacyMetaDescription:
-			'Vitraux privacy policy covering purposes, legal bases, retention, international transfers, and LGPD rights.',
+			'App privacy policy covering purposes, legal bases, retention, international transfers, and LGPD rights.',
 		termsMetaDescription:
-			'Vitraux terms of use covering accounts, uploaded content, platform rules, and cooperation with authorities.',
+			'App terms of use covering accounts, uploaded content, platform rules, and cooperation with authorities.',
 		versionLabel: 'Version {version}',
 		privacyLink: 'Privacy',
 		termsLink: 'Terms',
@@ -302,14 +302,11 @@ const en: AppMessages = {
 		},
 	},
 	home: {
-		searchLabel: 'Search images',
-		searchPlaceholder: 'Search by title or description',
-		noTagsYet: 'No tags yet',
-		empty: 'No images published yet.',
-		emptyFiltered: 'No images match these search criteria',
+		title: 'Welcome',
+		description: 'Starter webapp with auth, settings, file storage, and email.',
 		loading: 'Loading…',
-		loadError: 'Could not load images',
-		loadMore: 'Load more',
+		signedInAs: 'Signed in as',
+		guestPrompt: 'Sign in or create an account to access your profile and settings.',
 	},
 	documentTitle: {
 		images: 'My images',

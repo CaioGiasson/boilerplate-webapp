@@ -38,7 +38,7 @@ describe('EmailService', () => {
 			{
 				...baseConfig(),
 				provider: 'brevo',
-				from: 'noreply@vitraux.test',
+				from: 'noreply@app.test',
 				brevoApiKey: 'key',
 			},
 			delivery
@@ -76,7 +76,7 @@ describe('EmailService', () => {
 				new EmailService({
 					...baseConfig(),
 					provider: 'brevo',
-					from: 'noreply@vitraux.test',
+					from: 'noreply@app.test',
 					brevoApiKey: '',
 				})
 		).toThrow('BREVO_API_KEY')

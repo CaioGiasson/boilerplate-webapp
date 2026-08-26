@@ -1,5 +1,6 @@
 import type { UserEntity } from '@/repositories/User.dto'
 import type { GoogleUserInfo } from '@/services/GoogleOAuth/googleOAuth.port'
+import { APP_INVALID_ORIGIN } from '@/constants/app'
 
 export type GoogleCallbackFlags = {
 	emailChangeCancelled: boolean
@@ -90,7 +91,7 @@ export function decideGoogleOAuthCallback(input: {
 }
 
 export function appendCallbackFlags(path: string, flags: GoogleCallbackFlags): string {
-	const url = new URL(path, 'https://vitraux.invalid')
+	const url = new URL(path, APP_INVALID_ORIGIN)
 	if (flags.emailChangeCancelled) {
 		url.searchParams.set('emailChangeCancelled', '1')
 	}

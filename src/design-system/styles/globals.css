@@ -1,5 +1,5 @@
 /**
- * Guia de estilos globais do Vitraux.
+ * Guia de estilos globais do app.
  * Tokens e overrides aqui têm precedência sobre defaults de libs (shadcn, etc.).
  */
 
@@ -51,25 +51,25 @@
 }
 
 /* Scrollbar alinhada aos tokens de marca */
-.vitraux-scrollbar {
+.app-scrollbar {
 	scrollbar-width: thin;
 	scrollbar-color: var(--primary) var(--muted);
 }
 
-.vitraux-scrollbar::-webkit-scrollbar {
+.app-scrollbar::-webkit-scrollbar {
 	width: 4px;
 }
 
-.vitraux-scrollbar::-webkit-scrollbar-track {
+.app-scrollbar::-webkit-scrollbar-track {
 	background: transparent;
 	border-radius: 999px;
 }
 
-.vitraux-scrollbar::-webkit-scrollbar-thumb {
+.app-scrollbar::-webkit-scrollbar-thumb {
 	background: var(--primary);
 	border-radius: 999px;
 }
 
-.vitraux-scrollbar::-webkit-scrollbar-thumb:hover {
+.app-scrollbar::-webkit-scrollbar-thumb:hover {
 	background: var(--accent);
 }

@@ -78,7 +78,7 @@ export function swaggerUnauthorizedResponse(): NextResponse {
 	return new NextResponse('Authentication required', {
 		status: 401,
 		headers: {
-			'WWW-Authenticate': 'Basic realm="Vitraux API Docs", charset="UTF-8"',
+			'WWW-Authenticate': 'Basic realm="App API Docs", charset="UTF-8"',
 			'Cache-Control': 'no-store',
 		},
 	})

@@ -3,7 +3,7 @@ description: Toda PR aberta deve ser revisada; bloqueantes/importantes corrigido
 alwaysApply: true
 ---
 
-# Review de Pull Requests — Vitraux
+# Review de Pull Requests — App
 
 Sempre que uma **pull request for aberta** (por você ou pedida pelo usuário), execute o fluxo abaixo **na mesma sessão**, antes de considerar o trabalho pronto.
 

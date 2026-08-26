@@ -40,7 +40,7 @@ export function AppShell({ children }: AppShellProps) {
 							</Sheet>
 						</header>
 
-						<main className="vitraux-scrollbar relative min-h-0 flex-1 overflow-y-auto">
+						<main className="app-scrollbar relative min-h-0 flex-1 overflow-y-auto">
 							<PageTransition>{children}</PageTransition>
 							<CookieNotice />
 						</main>

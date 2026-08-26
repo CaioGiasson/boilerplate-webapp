@@ -4,8 +4,8 @@ import { UnauthorizedError } from '@/errors'
 import { isSecureSessionCookie, type SessionCookieRequestContext } from '@/utils/session'
 import { safeReturnUrl } from '@/utils/safeReturnUrl'
 
-export const GOOGLE_OAUTH_STATE_COOKIE = 'vitraux-google-oauth'
-export const GOOGLE_OAUTH_PENDING_COOKIE = 'vitraux-google-pending'
+export const GOOGLE_OAUTH_STATE_COOKIE = 'app-google-oauth'
+export const GOOGLE_OAUTH_PENDING_COOKIE = 'app-google-pending'
 export const GOOGLE_OAUTH_COOKIE_TTL_SECONDS = 10 * 60
 
 export const GOOGLE_OAUTH_STATE_PURPOSE = 'google_oauth_state'
@@ -21,7 +21,7 @@ export type GoogleOAuthStateClaims = {
 export type GoogleOAuthPendingClaims = {
 	flow: GoogleOAuthPendingFlow
 	email: string
-	/** Present for `link` — Vitraux user id resolved at callback (may differ from Google email when matched via pendingEmail). */
+	/** Present for `link` — app user id resolved at callback (may differ from Google email when matched via pendingEmail). */
 	userId: string | null
 	name: string | null
 	picture: string | null

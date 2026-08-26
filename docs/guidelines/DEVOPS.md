@@ -1,4 +1,4 @@
-# DevOps, Infraestrutura e Fluxo de Trabalho — Vitraux
+# DevOps, Infraestrutura e Fluxo de Trabalho — App
 
 ## 1. Node.js e tooling
 

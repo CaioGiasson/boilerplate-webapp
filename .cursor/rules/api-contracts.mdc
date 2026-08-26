@@ -3,7 +3,7 @@ description: Todo endpoint criado ou alterado exige .http + OpenAPI/Swagger — 
 alwaysApply: true
 ---
 
-# Contratos HTTP — Vitraux
+# Contratos HTTP — App
 
 ## Obrigatório (não opcional)
 

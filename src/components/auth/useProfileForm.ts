@@ -102,7 +102,7 @@ export type ProfileFormModel = {
 	formatSessionDate: (iso: string) => string
 	statisticsLoading: boolean
 	statisticsLoaded: boolean
-	statisticsImageCount: number
+	statisticsFileCount: number
 	statisticsUsedMegabytes: string
 }
 
@@ -144,7 +144,7 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 	const [revokingOthers, setRevokingOthers] = React.useState(false)
 	const [statisticsLoading, setStatisticsLoading] = React.useState(false)
 	const [statisticsLoaded, setStatisticsLoaded] = React.useState(false)
-	const [statisticsImageCount, setStatisticsImageCount] = React.useState<number | null>(null)
+	const [statisticsFileCount, setStatisticsFileCount] = React.useState<number | null>(null)
 	const [statisticsUsedMegabytes, setStatisticsUsedMegabytes] = React.useState<string | null>(null)
 	const photoInputRef = React.useRef<HTMLInputElement>(null)
 	/** Evita race: setUser(null) dispara efeito → /login antes de chegar em /account-delete. */
@@ -222,7 +222,7 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 		setStatisticsLoading(true)
 		try {
 			const result = await getUserStorageStatsRequest()
-			setStatisticsImageCount(result.imageCount)
+			setStatisticsFileCount(result.fileCount)
 			setStatisticsUsedMegabytes(formatMegabytes(result.usedBytes, locale))
 			setStatisticsLoaded(true)
 		} catch {
@@ -586,7 +586,7 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 		formatSessionDate,
 		statisticsLoading,
 		statisticsLoaded,
-		statisticsImageCount: statisticsImageCount ?? 0,
+		statisticsFileCount: statisticsFileCount ?? 0,
 		statisticsUsedMegabytes: statisticsUsedMegabytes ?? formatMegabytes(0, locale),
 	}
 }

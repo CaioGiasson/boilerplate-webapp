@@ -1,10 +1,9 @@
 import ExportUserData from '@/useCases/exportUserData.usecase'
 import { mockPrismaRuntime } from '../helpers/mockDbCommander'
-import { Visibility } from '@/constants/visibility'
 import { NotFoundError } from '@/errors'
 
 describe('ExportUserData', () => {
-	it('exporta perfil público e imagens do titular', async () => {
+	it('exporta perfil público e arquivos do titular', async () => {
 		const user = {
 			id: 'user-1',
 			name: 'Ada',
@@ -22,26 +21,22 @@ describe('ExportUserData', () => {
 			deletedAt: null,
 			sessionsRevokedAt: null,
 		}
-		const image = {
-			id: 'img-1',
-			ownerId: 'user-1',
-			url: 'https://cdn.example.com/a.jpg',
-			title: 'Glass',
-			description: null,
-			tags: ['x'],
-			fileId: 'file-1',
-			visibility: Visibility.PUBLIC,
+		const file = {
+			id: 'file-1',
+			key: 'avatars/user-1/photo.jpg',
+			url: 'https://cdn.example.com/photo.jpg',
+			category: 'avatar',
+			mimeType: 'image/jpeg',
+			sizeBytes: 1024,
 			createdAt: new Date('2026-08-19T00:00:00.000Z'),
-			updatedAt: new Date('2026-08-19T00:00:00.000Z'),
-			deletedAt: null,
 		}
 
 		mockPrismaRuntime({
 			user: {
 				findFirst: jest.fn(async () => user),
 			},
-			image: {
-				findMany: jest.fn(async () => [image]),
+			file: {
+				findMany: jest.fn(async () => [file]),
 			},
 		})
 
@@ -60,14 +55,14 @@ describe('ExportUserData', () => {
 			hasPassword: true,
 			googleLinked: false,
 		})
-		expect(result.images).toEqual([
+		expect(result.files).toEqual([
 			{
-				id: 'img-1',
-				url: 'https://cdn.example.com/a.jpg',
-				title: 'Glass',
-				description: null,
-				tags: ['x'],
-				visibility: Visibility.PUBLIC,
+				id: 'file-1',
+				key: 'avatars/user-1/photo.jpg',
+				url: 'https://cdn.example.com/photo.jpg',
+				category: 'avatar',
+				mimeType: 'image/jpeg',
+				sizeBytes: 1024,
 				createdAt: '2026-08-19T00:00:00.000Z',
 			},
 		])
@@ -76,9 +71,9 @@ describe('ExportUserData', () => {
 	it('falha se o usuário não existe', async () => {
 		mockPrismaRuntime({
 			user: { findFirst: jest.fn(async () => null) },
-			image: { findMany: jest.fn() },
+			file: { findMany: jest.fn() },
 		})
 
-		await expect(new ExportUserData().run({ userId: 'missing' })).rejects.toBeInstanceOf(NotFoundError)
+		await expect(new ExportUserData().run({ userId: 'missing' })).rejects.toThrow(NotFoundError)
 	})
 })

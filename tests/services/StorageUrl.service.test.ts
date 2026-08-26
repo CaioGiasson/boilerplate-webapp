@@ -1,9 +1,8 @@
 import StorageService from '@/services/Storage/Storage.service'
-import { Visibility } from '@/constants/visibility'
 import StorageUrlService, { PresignedUrlCache } from '@/services/Storage/StorageUrl.service'
-import { STORAGE_PRESIGN_TTL_PRIVATE_SECONDS, STORAGE_PRESIGN_TTL_PUBLIC_SECONDS } from '@/constants/storageAccess'
+import { STORAGE_PRESIGN_TTL_AVATAR_SECONDS, STORAGE_PRESIGN_TTL_PRIVATE_SECONDS } from '@/constants/storageAccess'
 
-function mockStorage(presign: jest.Mock, key: string | null = 'owner/images/abc.jpg') {
+function mockStorage(presign: jest.Mock, key: string | null = 'owner/avatars/abc.jpg') {
 	return {
 		keyFromCanonicalUrl: jest.fn(() => key),
 		getPresignedGetUrl: presign,
@@ -11,35 +10,26 @@ function mockStorage(presign: jest.Mock, key: string | null = 'owner/images/abc.
 }
 
 describe('StorageUrlService', () => {
-	it('presigns PUBLIC images with public TTL', async () => {
-		const presign = jest.fn(async () => 'https://signed.example/object')
-		const service = new StorageUrlService(mockStorage(presign, 'owner/images/abc.jpg'))
-		const url = await service.presignImageUrl('https://cdn.example/owner/images/abc.jpg', Visibility.PUBLIC)
-
-		expect(url).toBe('https://signed.example/object')
-		expect(presign).toHaveBeenCalledWith('owner/images/abc.jpg', STORAGE_PRESIGN_TTL_PUBLIC_SECONDS)
-	})
-
-	it('presigns PRIVATE images with private TTL', async () => {
+	it('presigns private files with private TTL', async () => {
 		const presign = jest.fn(async () => 'https://signed.example/private')
-		const service = new StorageUrlService(mockStorage(presign, 'owner/images/secret.jpg'))
-		await service.presignImageUrl('https://cdn.example/owner/images/secret.jpg', Visibility.PRIVATE)
+		const service = new StorageUrlService(mockStorage(presign, 'owner/files/doc.pdf'))
+		await service.presignPrivateUrl('https://cdn.example/owner/files/doc.pdf')
 
-		expect(presign).toHaveBeenCalledWith('owner/images/secret.jpg', STORAGE_PRESIGN_TTL_PRIVATE_SECONDS)
+		expect(presign).toHaveBeenCalledWith('owner/files/doc.pdf', STORAGE_PRESIGN_TTL_PRIVATE_SECONDS)
 	})
 
-	it('presigns SECRET images with private TTL', async () => {
-		const presign = jest.fn(async () => 'https://signed.example/secret')
-		const service = new StorageUrlService(mockStorage(presign, 'owner/images/top-secret.jpg'))
-		await service.presignImageUrl('https://cdn.example/owner/images/top-secret.jpg', Visibility.SECRET)
+	it('presigns avatars with avatar TTL', async () => {
+		const presign = jest.fn(async () => 'https://signed.example/avatar')
+		const service = new StorageUrlService(mockStorage(presign, 'owner/avatars/photo.jpg'))
+		await service.presignAvatarUrl('https://cdn.example/owner/avatars/photo.jpg')
 
-		expect(presign).toHaveBeenCalledWith('owner/images/top-secret.jpg', STORAGE_PRESIGN_TTL_PRIVATE_SECONDS)
+		expect(presign).toHaveBeenCalledWith('owner/avatars/photo.jpg', STORAGE_PRESIGN_TTL_AVATAR_SECONDS)
 	})
 
 	it('returns the original URL when the key cannot be derived (non-Spaces)', async () => {
 		const presign = jest.fn()
 		const service = new StorageUrlService(mockStorage(presign, null))
-		const url = await service.presignImageUrl('https://external.example/photo.jpg', Visibility.PRIVATE)
+		const url = await service.presignPrivateUrl('https://external.example/photo.jpg')
 
 		expect(url).toBe('https://external.example/photo.jpg')
 		expect(presign).not.toHaveBeenCalled()
@@ -48,8 +38,8 @@ describe('StorageUrlService', () => {
 	it('caches presigned URLs within TTL (DATA-07)', async () => {
 		const presign = jest.fn(async () => 'https://signed.example/cached')
 		const cache = new PresignedUrlCache(() => 1_000_000)
-		const service = new StorageUrlService(mockStorage(presign, 'owner/images/cache.jpg'), cache)
-		const canonical = 'https://cdn.example/owner/images/cache.jpg'
+		const service = new StorageUrlService(mockStorage(presign, 'owner/avatars/cache.jpg'), cache)
+		const canonical = 'https://cdn.example/owner/avatars/cache.jpg'
 
 		await service.presignCanonicalUrl(canonical, 3600, 'file-abc')
 		await service.presignCanonicalUrl(canonical, 3600, 'file-abc')

@@ -1,0 +1,39 @@
+---
+description: Design system — novos componentes exigem entrada no catálogo /ds-components
+globs: src/design-system/**,src/components/ds-catalog/**
+alwaysApply: false
+---
+
+# Design system e catálogo de componentes
+
+## Onde vivem os componentes
+
+- Componentes compartilhados: `src/design-system/`
+- Reexport central: `src/design-system/index.ts`
+- Catálogo interativo: rota **`/ds-components`** (`src/components/ds-catalog/`)
+
+## Obrigatório ao adicionar ou alterar componente do design system
+
+Na **mesma PR/issue**, sempre que criar, renomear ou remover export em `src/design-system/`:
+
+1. **`src/design-system/index.ts`** — export público atualizado.
+2. **`src/components/ds-catalog/catalog.ts`** — entrada em `DS_CATALOG` com:
+   - `id` e `name` iguais ao export principal;
+   - `category` (`actions` | `inputs` | `navigation` | `feedback` | `layout` | `icons`);
+   - `description` clara e objetiva (1–2 frases: o que faz e quando usar);
+   - `importLine` copiável;
+   - `keywords` para busca na página.
+3. **`src/components/ds-catalog/DsComponentExample.tsx`** — `case` com exemplo mínimo funcional do componente.
+4. Se o componente introduzir texto de UI novo visível ao usuário final, adicionar chaves em `src/constants/texts/{types,en,pt,es}.ts` — **não** deixar strings soltas nos exemplos de produção.
+
+## Remoção
+
+Ao remover componente do design system, remover também a entrada correspondente em `catalog.ts` e o `case` em `DsComponentExample.tsx`.
+
+## Review
+
+PR que adiciona componente em `src/design-system/` sem atualizar o catálogo = **bloqueante** até corrigir.
+
+## Referência
+
+Abrir localmente: `http://localhost:5000/ds-components` (ou porta `SERVER_PORT`).

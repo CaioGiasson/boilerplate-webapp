@@ -63,24 +63,12 @@ describe('parseUserSetting', () => {
 			key: SETTINGS_KEYS.LANGUAGE,
 			value: 'es',
 		})
-		expect(parseUserSetting(SETTINGS_KEYS.APPEAR_IN_GLOBAL_MOSAIC, false)).toEqual({
-			key: SETTINGS_KEYS.APPEAR_IN_GLOBAL_MOSAIC,
-			value: false,
-		})
-		expect(parseUserSetting(SETTINGS_KEYS.HOME_ZOOM_LEVEL, 3.7)).toEqual({
-			key: SETTINGS_KEYS.HOME_ZOOM_LEVEL,
-			value: 4,
-		})
 	})
 
-	it('rejeita tipos e bounds inválidos', () => {
+	it('rejeita tipos inválidos', () => {
 		expect(() => parseUserSetting(SETTINGS_KEYS.DARK_MODE, 'yes')).toThrow(ValidationError)
 		expect(() => parseUserSetting(SETTINGS_KEYS.DARK_MODE, null)).toThrow(ValidationError)
 		expect(() => parseUserSetting(SETTINGS_KEYS.LANGUAGE, 'fr')).toThrow(ValidationError)
-		expect(() => parseUserSetting(SETTINGS_KEYS.HOME_ZOOM_LEVEL, 999)).toThrow(ValidationError)
-		expect(() => parseUserSetting(SETTINGS_KEYS.IMAGES_ZOOM_LEVEL, Number.NaN)).toThrow(ValidationError)
-		expect(() => parseUserSetting(SETTINGS_KEYS.IMAGES_ZOOM_LEVEL, Number.POSITIVE_INFINITY)).toThrow(
-			ValidationError
-		)
+		expect(() => parseUserSetting('unknown', true)).toThrow(ValidationError)
 	})
 })

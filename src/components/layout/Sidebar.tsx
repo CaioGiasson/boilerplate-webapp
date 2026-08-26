@@ -6,7 +6,10 @@ import { Link } from '@/i18n/navigation'
 import { AppDropdownMenu, Avatar, Icon, NavIconButton, NavIconLink } from '@/design-system'
 import { NAV_ITEMS } from '@/constants/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { APP_NAME } from '@/constants/app'
 import { cn } from '@/lib/utils'
+
+const APP_INITIAL = APP_NAME.charAt(0).toUpperCase()
 
 type SidebarProps = {
 	className?: string
@@ -98,7 +101,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
 				aria-label={tApp('name')}
 				data-testid="sidebar-logo"
 			>
-				V
+				{APP_INITIAL}
 			</Link>
 
 			<nav className="flex flex-1 flex-col items-center gap-2" aria-label={t('mainNavigation')}>

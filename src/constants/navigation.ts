@@ -1,10 +1,10 @@
-import { Home, Images, SquarePlus, type LucideIcon } from 'lucide-react'
+import { Home, type LucideIcon } from 'lucide-react'
 
 export type NavItemConfig = {
 	id: string
-	href: '/' | '/images' | '/create'
+	href: '/'
 	icon: LucideIcon
-	labelKey: 'home' | 'images' | 'create'
+	labelKey: 'home'
 	placement: 'main' | 'footer'
 }
 
@@ -14,20 +14,6 @@ export const NAV_ITEMS: NavItemConfig[] = [
 		href: '/',
 		icon: Home,
 		labelKey: 'home',
-		placement: 'main',
-	},
-	{
-		id: 'images',
-		href: '/images',
-		icon: Images,
-		labelKey: 'images',
-		placement: 'main',
-	},
-	{
-		id: 'create',
-		href: '/create',
-		icon: SquarePlus,
-		labelKey: 'create',
 		placement: 'main',
 	},
 ]

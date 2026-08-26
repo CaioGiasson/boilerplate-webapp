@@ -31,8 +31,4 @@ model User {
   updatedAt    DateTime         @updatedAt
   deletedAt    DateTime?
   sessionsRevokedAt DateTime?
-  /// Denormalized from settings.appearInGlobalMosaic === false (DATA-04).
-  hideFromGlobalMosaic Boolean @default(false)
-
-  @@index([hideFromGlobalMosaic])
 }

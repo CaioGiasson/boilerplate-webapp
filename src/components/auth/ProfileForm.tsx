@@ -79,7 +79,7 @@ export function ProfileForm() {
 				<ProfileStatisticsSection
 					statisticsLoading={profile.statisticsLoading}
 					statisticsLoaded={profile.statisticsLoaded}
-					statisticsImageCount={profile.statisticsImageCount}
+					statisticsFileCount={profile.statisticsFileCount}
 					statisticsUsedMegabytes={profile.statisticsUsedMegabytes}
 				/>
 

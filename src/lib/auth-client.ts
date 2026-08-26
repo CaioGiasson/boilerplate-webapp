@@ -216,13 +216,13 @@ export async function setUserSettingRequest(
 export async function exportUserDataRequest(): Promise<{
 	exportedAt: string
 	user: AuthUser
-	images: Array<{
+	files: Array<{
 		id: string
+		key: string
 		url: string
-		title: string | null
-		description: string | null
-		tags: string[]
-		visibility: string
+		category: string
+		mimeType: string
+		sizeBytes: number
 		createdAt: string
 	}>
 }> {
@@ -282,7 +282,7 @@ export type ActiveSessionDto = {
 }
 
 export type UserStorageStatsDto = {
-	imageCount: number
+	fileCount: number
 	usedBytes: number
 }
 

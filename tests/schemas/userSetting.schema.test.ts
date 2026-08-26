@@ -3,8 +3,8 @@ import { MAX_USER_SETTINGS, SETTINGS_KEYS } from '@/managers/Settings.manager'
 
 describe('userSetting schemas', () => {
 	it('aceita PATCH com key da allowlist', () => {
-		expect(setSettingBodySchema.parse({ key: SETTINGS_KEYS.SHOW_SECRET_IMAGES, value: false })).toEqual({
-			key: SETTINGS_KEYS.SHOW_SECRET_IMAGES,
+		expect(setSettingBodySchema.parse({ key: SETTINGS_KEYS.DARK_MODE, value: false })).toEqual({
+			key: SETTINGS_KEYS.DARK_MODE,
 			value: false,
 		})
 	})
@@ -14,7 +14,6 @@ describe('userSetting schemas', () => {
 		expect(setSettingBodySchema.safeParse({ key: 'constructor', value: true }).success).toBe(false)
 		expect(setSettingBodySchema.safeParse({ key: SETTINGS_KEYS.DARK_MODE, value: 'true' }).success).toBe(false)
 		expect(setSettingBodySchema.safeParse({ key: SETTINGS_KEYS.LANGUAGE, value: 'fr' }).success).toBe(false)
-		expect(setSettingBodySchema.safeParse({ key: SETTINGS_KEYS.HOME_ZOOM_LEVEL, value: 999 }).success).toBe(false)
 		expect(setSettingBodySchema.safeParse({ key: SETTINGS_KEYS.DARK_MODE, value: null }).success).toBe(false)
 	})
 

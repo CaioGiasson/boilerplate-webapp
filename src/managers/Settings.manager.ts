@@ -1,15 +1,10 @@
 import type { Prisma } from '@prisma/client'
-import { BOARD_ZOOM_DESKTOP_MAX, BOARD_ZOOM_DESKTOP_MIN } from '@/constants/boardZoom'
 import { locales } from '@/constants/texts/types'
 import { ValidationError } from '@/errors'
 
 export const SETTINGS_KEYS = {
 	DARK_MODE: 'darkMode',
 	LANGUAGE: 'language',
-	HOME_ZOOM_LEVEL: 'homeZoomLevel',
-	IMAGES_ZOOM_LEVEL: 'imagesZoomLevel',
-	SHOW_SECRET_IMAGES: 'showSecretImages',
-	APPEAR_IN_GLOBAL_MOSAIC: 'appearInGlobalMosaic',
 } as const
 
 export type SettingKey = (typeof SETTINGS_KEYS)[keyof typeof SETTINGS_KEYS]
@@ -20,13 +15,7 @@ export const MAX_USER_SETTINGS = SETTING_KEY_VALUES.length
 
 const ALLOWED_SETTING_KEYS = new Set<string>(SETTING_KEY_VALUES)
 
-const BOOLEAN_SETTING_KEYS = new Set<string>([
-	SETTINGS_KEYS.DARK_MODE,
-	SETTINGS_KEYS.SHOW_SECRET_IMAGES,
-	SETTINGS_KEYS.APPEAR_IN_GLOBAL_MOSAIC,
-])
-
-const ZOOM_SETTING_KEYS = new Set<string>([SETTINGS_KEYS.HOME_ZOOM_LEVEL, SETTINGS_KEYS.IMAGES_ZOOM_LEVEL])
+const BOOLEAN_SETTING_KEYS = new Set<string>([SETTINGS_KEYS.DARK_MODE])
 
 const LOCALE_VALUES = new Set<string>(locales)
 
@@ -64,19 +53,6 @@ export function parseUserSetting(key: unknown, value: unknown): SettingEntry {
 			throw new ValidationError('Setting language must be pt, en or es')
 		}
 		return { key, value }
-	}
-
-	if (ZOOM_SETTING_KEYS.has(key)) {
-		if (typeof value !== 'number' || !Number.isFinite(value)) {
-			throw new ValidationError(`Setting ${key} must be a finite number`)
-		}
-		const rounded = Math.round(value)
-		if (rounded < BOARD_ZOOM_DESKTOP_MIN || rounded > BOARD_ZOOM_DESKTOP_MAX) {
-			throw new ValidationError(
-				`Setting ${key} must be between ${BOARD_ZOOM_DESKTOP_MIN} and ${BOARD_ZOOM_DESKTOP_MAX}`
-			)
-		}
-		return { key, value: rounded }
 	}
 
 	throw new ValidationError('Invalid setting key')
@@ -150,8 +126,4 @@ function normalizeSettings(
 	}
 
 	return Array.from(byKey.values())
-}
-
-export function showSecretImagesFromUser(user: SettingsUser): boolean {
-	return SettingsManager.get(user, SETTINGS_KEYS.SHOW_SECRET_IMAGES) === true
 }

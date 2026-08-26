@@ -2,7 +2,7 @@
  * Migra keys legadas do Spaces: `{env}/{images|avatars}/{hex}.{ext}`
  * → `{ownerId}/{category}/{32 hex}.{ext}`
  *
- * Atualiza File.key/url, Image.url e User.photoUrl; CopyObject + DeleteObject no Spaces.
+ * Atualiza File.key/url e User.photoUrl; CopyObject + DeleteObject no Spaces.
  *
  * Uso:
  *   npm run spaces:migrate-keys -- --dry-run
@@ -59,16 +59,8 @@ async function allocateUniqueKey(prisma, ownerId, category, extension) {
  * @param {import('@prisma/client').PrismaClient} prisma
  * @param {{ id: string, ownerId: string | null }} file
  */
-async function resolveOwnerId(prisma, file) {
-	if (file.ownerId) {
-		return file.ownerId
-	}
-
-	const image = await prisma.image.findFirst({
-		where: { fileId: file.id },
-		select: { ownerId: true },
-	})
-	return image?.ownerId ?? null
+async function resolveOwnerId(_prisma, file) {
+	return file.ownerId ?? null
 }
 
 async function main() {
@@ -150,11 +142,6 @@ async function main() {
 					data: { key: newKey, url: newUrl },
 				})
 
-				const imagesUpdated = await prisma.image.updateMany({
-					where: { url: oldUrl },
-					data: { url: newUrl },
-				})
-
 				const usersUpdated = await prisma.user.updateMany({
 					where: { photoUrl: oldUrl },
 					data: { photoUrl: newUrl },
@@ -168,7 +155,7 @@ async function main() {
 				)
 
 				migrated++
-				console.log(`[ok] file=${file.id} images=${imagesUpdated.count} users=${usersUpdated.count}`)
+				console.log(`[ok] file=${file.id} users=${usersUpdated.count}`)
 			} catch (error) {
 				failed++
 				console.error(`[fail] file=${file.id} key=${file.key}`)

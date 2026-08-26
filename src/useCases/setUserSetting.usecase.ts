@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
-import SettingsManager, { parseUserSetting, SETTINGS_KEYS, type SettingEntry } from '@/managers/Settings.manager'
+import SettingsManager, { parseUserSetting, type SettingEntry } from '@/managers/Settings.manager'
 import UserRepository, { type PublicUser } from '@/repositories/User.repository'
 import { NotFoundError, ValidationError } from '@/errors'
 import { toPublicUserWithSignedPhoto } from '@/utils/publicUserAccess'
@@ -33,16 +33,7 @@ export default class SetUserSetting extends UseCaseMasterPort<Input, Output> {
 		}
 
 		const settings = SettingsManager.set(user, input.key, input.value)
-		const profileUpdate: {
-			settings: SettingEntry[]
-			hideFromGlobalMosaic?: boolean
-		} = { settings }
-
-		if (input.key === SETTINGS_KEYS.APPEAR_IN_GLOBAL_MOSAIC) {
-			profileUpdate.hideFromGlobalMosaic = input.value === false
-		}
-
-		const updated = await userRepository.updateProfile(user.id, profileUpdate)
+		const updated = await userRepository.updateProfile(user.id, { settings })
 
 		return {
 			user: await toPublicUserWithSignedPhoto(updated),

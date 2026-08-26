@@ -1,10 +1,9 @@
 /**
  * PRIV-I03 retention purge:
- * 1. Soft-deleted images older than 30 days → Spaces DeleteObject + File orphan
- * 2. Spaces DeleteObject for File status=orphan older than 7 days
- * 3. Delete SessionEvent rows with exp in the past
- * 4. Delete ActiveSession rows with exp in the past
- * 5. Users with deletedAt older than 30 days → hard purge (Spaces + soft-delete images + anonymize)
+ * 1. Spaces DeleteObject for File status=orphan older than 7 days
+ * 2. Delete SessionEvent rows with exp in the past
+ * 3. Delete ActiveSession rows with exp in the past
+ * 4. Users with deletedAt older than 30 days → hard purge (Spaces + anonymize)
  *
  * Uso:
  *   npm run cron -- retention-purge --dry-run
@@ -19,7 +18,6 @@ import { parseCronArgs, requireDryRunOrConfirm } from '../lib/args.mjs'
 import { loadRepoEnv, requiredEnv } from '../lib/env.mjs'
 
 const ORPHAN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
-const SOFT_DELETED_IMAGE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 const ACCOUNT_QUARANTINE_MS = 30 * 24 * 60 * 60 * 1000
 
 /**
@@ -36,7 +34,6 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 	const secretAccessKey = requiredEnv('SPACES_SECRET_ACCESS_KEY')
 
 	const orphanCutoff = new Date(Date.now() - ORPHAN_MAX_AGE_MS)
-	const softDeletedCutoff = new Date(Date.now() - SOFT_DELETED_IMAGE_MAX_AGE_MS)
 	const accountCutoff = new Date(Date.now() - ACCOUNT_QUARANTINE_MS)
 	const now = new Date()
 	const prisma = new PrismaClient()
@@ -48,9 +45,6 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 	})
 
 	const summary = {
-		softDeletedImagesFound: 0,
-		softDeletedFilesReleased: 0,
-		softDeletedFilesFailed: 0,
 		orphansFound: 0,
 		orphansDeleted: 0,
 		orphansFailed: 0,
@@ -63,52 +57,6 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 	}
 
 	try {
-		const softDeletedImages = await prisma.image.findMany({
-			where: {
-				deletedAt: { not: null, lt: softDeletedCutoff },
-				fileId: { not: null },
-			},
-			select: { id: true, fileId: true, deletedAt: true },
-			orderBy: { deletedAt: 'asc' },
-		})
-		summary.softDeletedImagesFound = softDeletedImages.length
-		console.log(
-			`[retention-purge] soft-deleted images: ${softDeletedImages.length} with deletedAt < ${softDeletedCutoff.toISOString()} (30d)`
-		)
-
-		for (const image of softDeletedImages) {
-			if (!image.fileId) continue
-			const file = await prisma.file.findUnique({
-				where: { id: image.fileId },
-				select: { id: true, key: true, status: true },
-			})
-			if (!file) continue
-			if (file.status === 'orphan') continue
-
-			if (flags.dryRun) {
-				console.log(`[dry-run] would release soft-deleted image=${image.id} file=${file.id} key=${file.key}`)
-				continue
-			}
-
-			try {
-				await client.send(
-					new DeleteObjectCommand({
-						Bucket: bucket,
-						Key: file.key,
-					})
-				)
-				await prisma.file.update({
-					where: { id: file.id },
-					data: { status: 'orphan', updatedAt: now },
-				})
-				summary.softDeletedFilesReleased += 1
-				console.log(`Released soft-deleted image=${image.id} file=${file.id} key=${file.key}`)
-			} catch (error) {
-				summary.softDeletedFilesFailed += 1
-				console.error(`Failed release soft-deleted image=${image.id} file=${file.id}`, error)
-			}
-		}
-
 		const orphans = await prisma.file.findMany({
 			where: {
 				status: 'orphan',
@@ -203,14 +151,6 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 						})
 					}
 				}
-
-				await prisma.image.updateMany({
-					where: {
-						ownerId: user.id,
-						OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }],
-					},
-					data: { deletedAt: now },
-				})
 
 				const sentinel = createHash('sha256').update(randomBytes(32)).digest('hex')
 				await prisma.user.update({

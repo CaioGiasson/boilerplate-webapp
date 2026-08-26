@@ -7,7 +7,7 @@ Obrigado por contribuir. Este guia complementa [`README.md`](README.md) e [`AGEN
 1. Leia [`AGENTS.md`](AGENTS.md) (camadas, **Never**, comandos).
 2. Confira [`docs/architecture.md`](docs/architecture.md) se tocar API ou domínio.
 3. Guidelines do time: [`docs/guidelines/`](docs/guidelines/) (arquitetura, API, qualidade, revisão de PR).
-4. Tarefas seguem o board [App](https://github.com/users/CaioGiasson/projects/3/views/1) e [`docs/issue-workflow.md`](docs/issue-workflow.md).
+4. Tarefas seguem o board [App](https://github.com/users/CaioGiasson/projects/4/views/1) e [`docs/issue-workflow.md`](docs/issue-workflow.md).
 
 ## Setup local
 

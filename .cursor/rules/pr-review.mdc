@@ -18,6 +18,11 @@ Sempre que uma **pull request for aberta** (por você ou pedida pelo usuário), 
 4. **Comentar na PR** listando o que foi revisado e o que foi corrigido pós-review (ou “sem correções necessárias” se nada bloqueante/importante).
 5. Adicionar a label **`Reviewed`** na PR.
 
+## Ferramentas externas (Bugbot, etc.)
+
+- **Não substituem** este fluxo. Bugbot ou review automatizado de terceiros podem ser consulta **opcional**, mas a review obrigatória é: diff manual + classificação + correções + comentário na PR + label `Reviewed`.
+- Se o usuário pedir “revisar a PR”, executar **este** fluxo (`.cursor/rules/pr-review.mdc`), não delegar a subagentes de review externos como atalho.
+
 ## Label
 
 - Nome: `Reviewed`

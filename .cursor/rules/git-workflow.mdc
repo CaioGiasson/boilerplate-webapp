@@ -18,4 +18,9 @@ Permitir retomar a issue em outra máquina se houver problema no computador loca
 
 ## Antes do primeiro commit
 
-Issue criada no board + branch aberta a partir de `main`. Ver `.cursor/rules/issue-workflow.mdc`.
+Issue criada no board + branch aberta a partir de `main`. **Sem issue = sem commit de feature.** Ver `.cursor/rules/issue-workflow.mdc` (gate + seção “Sem tarefas ad-hoc”).
+
+## Proibido
+
+- Commitar implementação em `main` ou em branch **sem** issue vinculada no board
+- Tratar pedido do chat como “tarefa ad-hoc” fora do fluxo

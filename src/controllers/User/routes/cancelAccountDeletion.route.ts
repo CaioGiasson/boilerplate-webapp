@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import CancelAccountDeletion from '@/useCases/cancelAccountDeletion.usecase'
 import ApiPresenter from '@/utils/Api.presenter'
 import { handleRoute, parseJsonBodyUnknown } from '@/utils/routeHandler'
-import { requireAuthForDeletionDecision } from '@/middleware/auth.middleware'
+import { assertNotImpersonation, requireAuthForDeletionDecision } from '@/middleware/auth.middleware'
 import { assertAuthRateLimit } from '@/middleware/rateLimit.middleware'
 import { resolveRequestLocale } from '@/utils/requestLocale'
 
@@ -22,6 +22,7 @@ export default async function cancelAccountDeletionRoute(
 ): Promise<NextResponse> {
 	return handleRoute(async () => {
 		const session = await requireAuthForDeletionDecision(request, getPrismaClient())
+		assertNotImpersonation(session)
 		assertAuthRateLimit(request, session.userId)
 
 		const body = await parseJsonBodyUnknown(request)

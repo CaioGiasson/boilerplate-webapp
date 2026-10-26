@@ -110,6 +110,25 @@ export default class UserRepository {
 		}
 	}
 
+	/** Página de contas ativas, das mais recentes para as mais antigas (painel admin). */
+	async listActivePage(input: { skip: number; take: number }): Promise<{ rows: UserEntity[]; total: number }> {
+		try {
+			const where = activeWhere()
+			const [rows, total] = await Promise.all([
+				this.prisma.user.findMany({
+					where,
+					orderBy: { createdAt: 'desc' },
+					skip: input.skip,
+					take: input.take,
+				}),
+				this.prisma.user.count({ where }),
+			])
+			return { rows: rows.map((row) => mapUser(row)), total }
+		} catch (error: unknown) {
+			throw new RepositoryError('Failed to list users', error)
+		}
+	}
+
 	/** Includes soft-deleted / quarantined users (login restore + decision auth). */
 	async findByIdIncludingDeleted(id: string): Promise<UserEntity | null> {
 		try {
@@ -161,6 +180,7 @@ export default class UserRepository {
 			nickname?: string
 			settings?: SettingEntry[]
 			photoUrl?: string | null
+			photoThumbnailUrl?: string | null
 		}
 	): Promise<UserEntity> {
 		try {
@@ -180,6 +200,7 @@ export default class UserRepository {
 							}
 						: {}),
 					...(data.photoUrl !== undefined ? { photoUrl: data.photoUrl } : {}),
+					...(data.photoThumbnailUrl !== undefined ? { photoThumbnailUrl: data.photoThumbnailUrl } : {}),
 				},
 			})
 			return mapUser(user)
@@ -476,6 +497,7 @@ export default class UserRepository {
 					nickname: `deleted_${id}`,
 					name: null,
 					photoUrl: null,
+					photoThumbnailUrl: null,
 					passwordHash,
 					googleLinkedAt: null,
 					settings: [],

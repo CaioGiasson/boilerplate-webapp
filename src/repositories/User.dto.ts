@@ -1,4 +1,5 @@
 import SettingsManager, { type SettingEntry } from '@/managers/Settings.manager'
+import { normalizeUserRole, type UserRoleName } from '@/constants/userRole'
 
 export type UserEntity = {
 	id: string
@@ -7,6 +8,7 @@ export type UserEntity = {
 	email: string
 	passwordHash: string | null
 	photoUrl: string | null
+	photoThumbnailUrl: string | null
 	googleLinkedAt: Date | null
 	settings: SettingEntry[]
 	acceptedTermsAt: Date | null
@@ -25,11 +27,21 @@ export type UserEntity = {
 	updatedAt: Date
 	deletedAt: Date | null
 	sessionsRevokedAt: Date | null
+	role: UserRoleName
 }
 
 export type PublicUser = Pick<
 	UserEntity,
-	'id' | 'name' | 'nickname' | 'email' | 'photoUrl' | 'settings' | 'emailVerifiedAt' | 'pendingEmail'
+	| 'id'
+	| 'name'
+	| 'nickname'
+	| 'email'
+	| 'photoUrl'
+	| 'photoThumbnailUrl'
+	| 'settings'
+	| 'emailVerifiedAt'
+	| 'pendingEmail'
+	| 'role'
 > & {
 	emailChallenge: 'none' | 'verify' | 'change_old' | 'change_new'
 	hasPassword: boolean
@@ -43,6 +55,7 @@ export function mapUser(user: {
 	email: string
 	passwordHash: string | null
 	photoUrl: string | null
+	photoThumbnailUrl?: string | null
 	googleLinkedAt?: Date | null
 	settings: unknown
 	acceptedTermsAt: Date | null
@@ -61,6 +74,7 @@ export function mapUser(user: {
 	updatedAt: Date
 	deletedAt: Date | null
 	sessionsRevokedAt: Date | null
+	role?: string | null
 }): UserEntity {
 	const settings = SettingsManager.list({
 		settings: Array.isArray(user.settings) ? user.settings : [],
@@ -73,6 +87,7 @@ export function mapUser(user: {
 		email: user.email,
 		passwordHash: user.passwordHash ?? null,
 		photoUrl: user.photoUrl,
+		photoThumbnailUrl: user.photoThumbnailUrl ?? null,
 		googleLinkedAt: user.googleLinkedAt ?? null,
 		settings,
 		acceptedTermsAt: user.acceptedTermsAt ?? null,
@@ -91,6 +106,7 @@ export function mapUser(user: {
 		updatedAt: user.updatedAt,
 		deletedAt: user.deletedAt,
 		sessionsRevokedAt: user.sessionsRevokedAt ?? null,
+		role: normalizeUserRole(user.role),
 	}
 }
 
@@ -104,9 +120,11 @@ export function toPublicUser(user: UserEntity): PublicUser {
 		nickname: user.nickname,
 		email: user.email,
 		photoUrl: user.photoUrl,
+		photoThumbnailUrl: user.photoThumbnailUrl,
 		settings: user.settings,
 		emailVerifiedAt: user.emailVerifiedAt,
 		pendingEmail: user.pendingEmail,
+		role: user.role,
 		emailChallenge: challenge,
 		hasPassword: Boolean(user.passwordHash),
 		googleLinked: Boolean(user.googleLinkedAt),

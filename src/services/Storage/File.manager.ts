@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto'
 import { ConflictError, ForbiddenError, ServiceError, ValidationError } from '@/errors'
 import { USER_STORAGE_QUOTA_BYTES } from '@/constants/storageQuota'
 import FileRepository from '@/repositories/File.repository'
+import { SharpImageProcessor, type ImageProcessorPort, type ImageVariant } from '@/services/Storage/imageProcessor'
 import { getStorageService } from '@/services/Storage/Storage.service'
 import type { StoragePort } from '@/services/Storage/storage.port'
 import type { Prisma } from '@prisma/client'
@@ -9,45 +10,52 @@ import type { Prisma } from '@prisma/client'
 const AVATAR_CATEGORY = 'avatars'
 const IMAGE_CATEGORY = 'images'
 const KEY_ALLOCATION_ATTEMPTS = 5
+const OUTPUT_EXTENSION = 'webp'
+const THUMBNAIL_KEY_SUFFIX = '.thumb.webp'
+
+export type StoredImage = {
+	url: string
+	thumbnailUrl: string
+	fileId: string
+}
+
+/** Chave do thumbnail derivada da chave principal: nunca colide, pois a principal é única. */
+export function thumbnailKeyFor(key: string): string {
+	return key.replace(/\.webp$/, THUMBNAIL_KEY_SUFFIX)
+}
 
 export default class FileManager {
 	constructor(
 		private storageService: StoragePort,
-		private fileRepository: FileRepository
+		private fileRepository: FileRepository,
+		private imageProcessor: ImageProcessorPort = new SharpImageProcessor()
 	) {}
 
-	static create(prisma: Prisma.TransactionClient, storage: StoragePort = getStorageService()): FileManager {
-		return new FileManager(storage, new FileRepository(prisma))
+	static create(
+		prisma: Prisma.TransactionClient,
+		storage: StoragePort = getStorageService(),
+		imageProcessor?: ImageProcessorPort
+	): FileManager {
+		return new FileManager(storage, new FileRepository(prisma), imageProcessor)
 	}
 
 	/**
-	 * Faz upload e publica o avatar. Não marca o anterior como orphan —
+	 * Normaliza (WebP quadrado), gera thumbnail, faz upload e publica o avatar. Não marca o anterior como orphan —
 	 * isso só deve acontecer depois que o User.photoUrl for atualizado com sucesso.
 	 */
-	async storeAvatar(input: { buffer: Buffer; mimeType: string; ownerId: string }): Promise<string> {
-		const stored = await this.storeObject({
-			...input,
-			category: AVATAR_CATEGORY,
-		})
-		return stored.url
+	async storeAvatar(input: { buffer: Buffer; ownerId: string }): Promise<StoredImage> {
+		return this.storeObject({ ...input, category: AVATAR_CATEGORY, variant: 'avatar' })
 	}
 
-	/** Upload de imagem de galeria; retorna URL pública e id do File. */
-	async storeImage(input: {
-		buffer: Buffer
-		mimeType: string
-		ownerId: string
-	}): Promise<{ url: string; fileId: string }> {
-		return this.storeObject({
-			...input,
-			category: IMAGE_CATEGORY,
-		})
+	/** Upload de imagem de galeria (WebP, até 1600 px) com thumbnail; retorna URLs e id do File. */
+	async storeImage(input: { buffer: Buffer; ownerId: string }): Promise<StoredImage> {
+		return this.storeObject({ ...input, category: IMAGE_CATEGORY, variant: 'image' })
 	}
 
-	private async allocateUniqueKey(ownerId: string, category: string, extension: string): Promise<string> {
+	private async allocateUniqueKey(ownerId: string, category: string): Promise<string> {
 		for (let attempt = 0; attempt < KEY_ALLOCATION_ATTEMPTS; attempt++) {
 			const suffix = randomBytes(16).toString('hex')
-			const key = `${ownerId}/${category}/${suffix}.${extension}`
+			const key = `${ownerId}/${category}/${suffix}.${OUTPUT_EXTENSION}`
 			const existing = await this.fileRepository.findByKey(key)
 			if (!existing) {
 				return key
@@ -59,42 +67,59 @@ export default class FileManager {
 
 	private async storeObject(input: {
 		buffer: Buffer
-		mimeType: string
 		ownerId: string
 		category: string
-	}): Promise<{ url: string; fileId: string }> {
+		variant: ImageVariant
+	}): Promise<StoredImage> {
 		if (!input.ownerId) {
 			throw new ValidationError('ownerId is required')
 		}
 
-		const extension = extensionFromMime(input.mimeType)
+		const processed = await this.imageProcessor.process(input.buffer, input.variant)
+		const sizeBytes = processed.main.byteLength + processed.thumbnail.byteLength
+
 		const used = await this.fileRepository.sumPublishedBytesByOwner(input.ownerId)
-		if (used + input.buffer.byteLength > USER_STORAGE_QUOTA_BYTES) {
+		if (used + sizeBytes > USER_STORAGE_QUOTA_BYTES) {
 			throw new ForbiddenError('Storage quota exceeded')
 		}
 
 		for (let attempt = 0; attempt < KEY_ALLOCATION_ATTEMPTS; attempt++) {
-			const key = await this.allocateUniqueKey(input.ownerId, input.category, extension)
+			const key = await this.allocateUniqueKey(input.ownerId, input.category)
+			const thumbnailKey = thumbnailKeyFor(key)
 			const url = this.storageService.buildPublicUrl(key)
+			const thumbnailUrl = this.storageService.buildPublicUrl(thumbnailKey)
 
 			try {
 				const pending = await this.fileRepository.createPending({
 					key,
 					url,
+					thumbnailKey,
+					thumbnailUrl,
 					category: input.category,
-					mimeType: input.mimeType,
-					sizeBytes: input.buffer.byteLength,
+					mimeType: processed.mimeType,
+					sizeBytes,
 					ownerId: input.ownerId,
 				})
 
 				try {
 					const uploaded = await this.storageService.upload({
 						key,
-						buffer: input.buffer,
-						contentType: input.mimeType,
+						buffer: processed.main,
+						contentType: processed.mimeType,
 					})
-					await this.fileRepository.markPublished(pending.id)
-					return { url: uploaded.url, fileId: pending.id }
+					try {
+						const uploadedThumbnail = await this.storageService.upload({
+							key: thumbnailKey,
+							buffer: processed.thumbnail,
+							contentType: processed.mimeType,
+						})
+						await this.fileRepository.markPublished(pending.id)
+						return { url: uploaded.url, thumbnailUrl: uploadedThumbnail.url, fileId: pending.id }
+					} catch (error: unknown) {
+						// Sem o thumbnail o par fica incompleto: não deixa o objeto principal órfão no bucket.
+						await this.storageService.deleteObject(key).catch(() => undefined)
+						throw error
+					}
 				} catch (error: unknown) {
 					await this.fileRepository.markFailed(pending.id)
 					throw error
@@ -119,7 +144,7 @@ export default class FileManager {
 		if (!file) {
 			return
 		}
-		await this.storageService.deleteObject(file.key)
+		await this.deleteObjects(file)
 		await this.fileRepository.markOrphanByUrl(file.url)
 	}
 
@@ -130,23 +155,16 @@ export default class FileManager {
 	async deleteAllOwnedObjectsByOwner(ownerId: string): Promise<void> {
 		const files = await this.fileRepository.listOwnedForErasure(ownerId)
 		for (const file of files) {
-			await this.storageService.deleteObject(file.key)
+			await this.deleteObjects(file)
 			await this.fileRepository.markOrphanById(file.id)
 		}
 	}
-}
 
-function extensionFromMime(mimeType: string): string {
-	switch (mimeType) {
-		case 'image/jpeg':
-			return 'jpg'
-		case 'image/png':
-			return 'png'
-		case 'image/webp':
-			return 'webp'
-		case 'image/gif':
-			return 'gif'
-		default:
-			return 'bin'
+	/** Apaga o objeto principal e, quando existir, o thumbnail (arquivos legados não têm). */
+	private async deleteObjects(file: { key: string; thumbnailKey?: string | null }): Promise<void> {
+		await this.storageService.deleteObject(file.key)
+		if (file.thumbnailKey) {
+			await this.storageService.deleteObject(file.thumbnailKey)
+		}
 	}
 }

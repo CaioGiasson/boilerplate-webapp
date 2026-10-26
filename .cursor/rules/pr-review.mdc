@@ -12,7 +12,7 @@ Sempre que uma **pull request for aberta** (por você ou pedida pelo usuário), 
 1. **Revisar** o diff da PR (código, testes, docs, segurança, camadas, i18n quando couber).
 2. Classificar achados:
    - **Bloqueante** — deve ser corrigido antes do merge (bug, regressão, falha de segurança, violação de camadas, aceite quebrado, teste faltando no caminho crítico, **endpoint novo/alterado sem `requests/*.http` + `docs/openapi.yaml`**).
-   - **Importante** — corrigir na mesma PR (clareza, edge case real, inconsistência de API/UI, gap de docs do aceite).
+   - **Importante** — corrigir na mesma PR (clareza, edge case real, inconsistência de API/UI, gap de docs do aceite, `CONTEXT*.md` da área não atualizado).
    - **Opcional / nit** — só listar; não bloqueia merge nem a label.
 3. **Corrigir** todos os bloqueantes e importantes com commit(s) na branch da PR.
 4. **Comentar na PR** listando o que foi revisado e o que foi corrigido pós-review (ou “sem correções necessárias” se nada bloqueante/importante).

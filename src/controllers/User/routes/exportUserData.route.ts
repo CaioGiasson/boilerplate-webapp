@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import ExportUserData from '@/useCases/exportUserData.usecase'
 import ApiPresenter from '@/utils/Api.presenter'
 import { handleRoute } from '@/utils/routeHandler'
-import { requireAuth } from '@/middleware/auth.middleware'
+import { assertNotImpersonation, requireAuth } from '@/middleware/auth.middleware'
 
 type Dependencies = {
 	exportUserDataUseCase: ExportUserData
@@ -15,6 +15,7 @@ export default async function exportUserDataRoute(
 ): Promise<NextResponse> {
 	return handleRoute(async () => {
 		const session = await requireAuth(request, getPrismaClient())
+		assertNotImpersonation(session)
 		const result = await dependencies.exportUserDataUseCase.run({ userId: session.userId })
 		return NextResponse.json(ApiPresenter.success('Export ready', result), { status: 200 })
 	})

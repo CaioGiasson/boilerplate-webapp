@@ -31,6 +31,8 @@ export type AppMessages = {
 		profile: string
 		signOut: string
 		mainNavigation: string
+		admin: string
+		notifications: string
 	}
 	validation: {
 		required: string
@@ -126,6 +128,11 @@ export type AppMessages = {
 		nicknameUniquenessHint: string
 		photo: string
 		photoHelper: string
+		cropPhotoTitle: string
+		cropPhotoConfirm: string
+		cropPhotoCancel: string
+		cropPhotoZoom: string
+		cropPhotoFailed: string
 		addPhoto: string
 		removePhoto: string
 		changePhoto: string
@@ -222,6 +229,19 @@ export type AppMessages = {
 			en: string
 			es: string
 		}
+		push: {
+			title: string
+			description: string
+			enable: string
+			unsupported: string
+			denied: string
+			notConfigured: string
+			enabledToast: string
+			disabledToast: string
+			failed: string
+			sendTest: string
+			testSent: string
+		}
 	}
 	notFound: {
 		title: string
@@ -254,6 +274,66 @@ export type AppMessages = {
 		dsComponents: string
 		privacy: string
 		terms: string
+		admin: string
+		notifications: string
+	}
+	admin: {
+		title: string
+		usersTitle: string
+		loading: string
+		loadError: string
+		empty: string
+		accessDenied: string
+		columnNickname: string
+		columnEmail: string
+		columnRole: string
+		columnVerified: string
+		columnCreated: string
+		roleUser: string
+		roleAdmin: string
+		verifiedYes: string
+		verifiedNo: string
+		impersonate: string
+		impersonateHint: string
+		linkCopied: string
+		linkCopyFailed: string
+		previous: string
+		next: string
+		pageSummary: string
+	}
+	impersonation: {
+		banner: string
+		remaining: string
+		exit: string
+		startFailed: string
+		sessionActive: string
+	}
+	notifications: {
+		title: string
+		empty: string
+		loadError: string
+		loadMore: string
+		markAllRead: string
+		markRead: string
+		open: string
+		unreadBadge: string
+		bellLabel: string
+		testTitle: string
+		testText: string
+	}
+	pwa: {
+		installTitle: string
+		installDescription: string
+		installCta: string
+		iosTitle: string
+		iosShare: string
+		iosAdd: string
+		dismiss: string
+		updateTitle: string
+		updateBody: string
+		offlineTitle: string
+		offlineDescription: string
+		offlineRetry: string
 	}
 	dsCatalog: {
 		title: string

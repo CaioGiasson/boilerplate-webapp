@@ -3,7 +3,10 @@
  * 1. Spaces DeleteObject for File status=orphan older than 7 days
  * 2. Delete SessionEvent rows with exp in the past
  * 3. Delete ActiveSession rows with exp in the past
- * 4. Users with deletedAt older than 30 days → hard purge (Spaces + anonymize)
+ * 4. Users with deletedAt older than 30 days → hard purge (Spaces + anonymize + AiLog do titular)
+ * 5. AiLog older than AI_LOG_RETENTION_DAYS (default 90)
+ * 6. Notification older than NOTIFICATION_RETENTION_DAYS (default 180); hard purge também apaga
+ *    as notificações e as assinaturas push do titular
  *
  * Uso:
  *   npm run cron -- retention-purge --dry-run
@@ -19,6 +22,42 @@ import { loadRepoEnv, requiredEnv } from '../lib/env.mjs'
 
 const ORPHAN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 const ACCOUNT_QUARANTINE_MS = 30 * 24 * 60 * 60 * 1000
+const DAY_MS = 24 * 60 * 60 * 1000
+const DEFAULT_AI_LOG_RETENTION_DAYS = 90
+
+const DEFAULT_NOTIFICATION_RETENTION_DAYS = 180
+
+/**
+ * @param {string | undefined} raw
+ * @param {number} fallback
+ */
+function positiveIntegerOrDefault(raw, fallback) {
+	const parsed = Number(raw)
+	return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
+}
+
+/** @param {NodeJS.ProcessEnv} [env] */
+export function resolveAiLogRetentionDays(env = process.env) {
+	return positiveIntegerOrDefault(env.AI_LOG_RETENTION_DAYS, DEFAULT_AI_LOG_RETENTION_DAYS)
+}
+
+/** @param {NodeJS.ProcessEnv} [env] */
+export function resolveNotificationRetentionDays(env = process.env) {
+	return positiveIntegerOrDefault(env.NOTIFICATION_RETENTION_DAYS, DEFAULT_NOTIFICATION_RETENTION_DAYS)
+}
+
+/**
+ * Apaga o objeto principal e o thumbnail (arquivos anteriores ao pipeline de imagem não têm).
+ * @param {S3Client} client
+ * @param {string} bucket
+ * @param {{ key: string, thumbnailKey?: string | null }} file
+ */
+async function deleteFileObjects(client, bucket, file) {
+	await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: file.key }))
+	if (file.thumbnailKey) {
+		await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: file.thumbnailKey }))
+	}
+}
 
 /**
  * @param {{ dryRun?: boolean, confirm?: boolean }} [flags]
@@ -53,6 +92,8 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 		quarantinedAccountsFound: 0,
 		quarantinedAccountsPurged: 0,
 		quarantinedAccountsFailed: 0,
+		aiLogsDeleted: 0,
+		notificationsDeleted: 0,
 		dryRun: flags.dryRun,
 	}
 
@@ -62,7 +103,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 				status: 'orphan',
 				updatedAt: { lt: orphanCutoff },
 			},
-			select: { id: true, key: true, updatedAt: true },
+			select: { id: true, key: true, thumbnailKey: true, updatedAt: true },
 			orderBy: { updatedAt: 'asc' },
 		})
 		summary.orphansFound = orphans.length
@@ -74,12 +115,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 				continue
 			}
 			try {
-				await client.send(
-					new DeleteObjectCommand({
-						Bucket: bucket,
-						Key: file.key,
-					})
-				)
+				await deleteFileObjects(client, bucket, file)
 				summary.orphansDeleted += 1
 				console.log(`DeletedObject key=${file.key} id=${file.id}`)
 			} catch (error) {
@@ -131,16 +167,11 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 			try {
 				const files = await prisma.file.findMany({
 					where: { ownerId: user.id },
-					select: { id: true, key: true, status: true },
+					select: { id: true, key: true, thumbnailKey: true, status: true },
 				})
 				for (const file of files) {
 					try {
-						await client.send(
-							new DeleteObjectCommand({
-								Bucket: bucket,
-								Key: file.key,
-							})
-						)
+						await deleteFileObjects(client, bucket, file)
 					} catch (error) {
 						console.error(`Failed DeleteObject for purge user=${user.id} file=${file.id}`, error)
 					}
@@ -160,6 +191,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 						nickname: `deleted_${user.id}`,
 						name: null,
 						photoUrl: null,
+						photoThumbnailUrl: null,
 						passwordHash: sentinel,
 						googleLinkedAt: null,
 						settings: [],
@@ -170,6 +202,9 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 					},
 				})
 				await prisma.activeSession.deleteMany({ where: { userId: user.id } })
+				await prisma.aiLog.deleteMany({ where: { userId: user.id } })
+				await prisma.notification.deleteMany({ where: { userId: user.id } })
+				await prisma.pushSubscription.deleteMany({ where: { userId: user.id } })
 
 				summary.quarantinedAccountsPurged += 1
 				console.log(`Hard-purged quarantined user=${user.id}`)
@@ -177,6 +212,38 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 				summary.quarantinedAccountsFailed += 1
 				console.error(`Failed hard-purge user=${user.id}`, error)
 			}
+		}
+
+		const aiLogRetentionDays = resolveAiLogRetentionDays()
+		const aiLogCutoff = new Date(Date.now() - aiLogRetentionDays * DAY_MS)
+		if (flags.dryRun) {
+			summary.aiLogsDeleted = await prisma.aiLog.count({ where: { createdAt: { lt: aiLogCutoff } } })
+			console.log(
+				`[dry-run] would delete AiLog createdAt<${aiLogCutoff.toISOString()} (${aiLogRetentionDays}d): ${summary.aiLogsDeleted}`
+			)
+		} else {
+			const aiLogs = await prisma.aiLog.deleteMany({ where: { createdAt: { lt: aiLogCutoff } } })
+			summary.aiLogsDeleted = aiLogs.count
+			console.log(`[retention-purge] deleted AiLog=${aiLogs.count} (older than ${aiLogRetentionDays}d)`)
+		}
+
+		const notificationRetentionDays = resolveNotificationRetentionDays()
+		const notificationCutoff = new Date(Date.now() - notificationRetentionDays * DAY_MS)
+		if (flags.dryRun) {
+			summary.notificationsDeleted = await prisma.notification.count({
+				where: { createdAt: { lt: notificationCutoff } },
+			})
+			console.log(
+				`[dry-run] would delete Notification createdAt<${notificationCutoff.toISOString()} (${notificationRetentionDays}d): ${summary.notificationsDeleted}`
+			)
+		} else {
+			const notifications = await prisma.notification.deleteMany({
+				where: { createdAt: { lt: notificationCutoff } },
+			})
+			summary.notificationsDeleted = notifications.count
+			console.log(
+				`[retention-purge] deleted Notification=${notifications.count} (older than ${notificationRetentionDays}d)`
+			)
 		}
 
 		console.log('[retention-purge] summary', JSON.stringify(summary))

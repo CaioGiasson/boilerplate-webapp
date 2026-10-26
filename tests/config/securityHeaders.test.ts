@@ -1,5 +1,6 @@
 import {
 	buildContentSecurityPolicyReportOnly,
+	buildSameOriginFrameableHeaders,
 	buildEnforcedContentSecurityPolicy,
 	buildSecurityHeaders,
 	spacesImageSrcOrigins,
@@ -64,5 +65,19 @@ describe('securityHeaders', () => {
 		const reportOnly = buildContentSecurityPolicyReportOnly({ nodeEnv: 'development', ...spacesEnv })
 		expect(reportOnly).toContain("'unsafe-eval'")
 		expect(reportOnly).toContain('ws:')
+	})
+})
+
+describe('buildSameOriginFrameableHeaders', () => {
+	it('troca DENY/none por SAMEORIGIN/self e mantém o resto da política', () => {
+		const framed = headerMap(buildSameOriginFrameableHeaders({ nodeEnv: 'production', ...spacesEnv }))
+		const normal = headerMap(buildSecurityHeaders({ nodeEnv: 'production', ...spacesEnv }))
+
+		expect(framed['X-Frame-Options']).toBe('SAMEORIGIN')
+		expect(framed['Content-Security-Policy']).toBe("frame-ancestors 'self'")
+		expect(framed['Content-Security-Policy-Report-Only']).toContain("frame-ancestors 'self'")
+		expect(framed['Content-Security-Policy-Report-Only']).not.toContain("frame-ancestors 'none'")
+		expect(framed['X-Content-Type-Options']).toBe(normal['X-Content-Type-Options'])
+		expect(framed['Strict-Transport-Security']).toBe(normal['Strict-Transport-Security'])
 	})
 })

@@ -1,11 +1,7 @@
-import { validateEnv } from '@/config/env'
-import { registerGracefulShutdown } from '@/lib/gracefulShutdown'
-
 export async function register() {
-	if (process.env.NEXT_RUNTIME === 'edge') {
-		return
+	// O import fica dentro do ramo positivo para o bundler descartá-lo no runtime Edge (Prisma não roda lá).
+	if (process.env.NEXT_RUNTIME === 'nodejs') {
+		const { registerNodeInstrumentation } = await import('./instrumentation-node')
+		registerNodeInstrumentation()
 	}
-
-	validateEnv()
-	registerGracefulShutdown()
 }

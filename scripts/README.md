@@ -53,12 +53,13 @@ Exemplo cron: `npm run cron -- retention-purge --dry-run`
 
 ## Backfills (Mongo)
 
-| Comando                                    | Script                                 | Efeito                                   | Flags                     | Prod? |
-| ------------------------------------------ | -------------------------------------- | ---------------------------------------- | ------------------------- | ----- |
-| `npm run backfill-image-visibility`        | `backfill-image-visibility.mjs`        | Define `visibility: PUBLIC` onde ausente | —                         | 🔴    |
-| `npm run backfill:hide-from-global-mosaic` | `backfill-hide-from-global-mosaic.mjs` | Sync `hideFromGlobalMosaic` (DATA-04)    | —                         | 🔴    |
-| `npm run nickname:backfill`                | `backfill-nickname-canonical.mjs`      | Normaliza nickname canonical             | `--dry-run` · `--confirm` | 🔴    |
-| `npm run email:backfill-verified`          | `backfill-email-verified.mjs`          | Backfill `emailVerifiedAt`               | —                         | 🔴    |
+| Comando                                    | Script                                 | Efeito                                        | Flags                     | Prod? |
+| ------------------------------------------ | -------------------------------------- | --------------------------------------------- | ------------------------- | ----- |
+| `npm run backfill-image-visibility`        | `backfill-image-visibility.mjs`        | Define `visibility: PUBLIC` onde ausente      | —                         | 🔴    |
+| `npm run backfill:hide-from-global-mosaic` | `backfill-hide-from-global-mosaic.mjs` | Sync `hideFromGlobalMosaic` (DATA-04)         | —                         | 🔴    |
+| `npm run nickname:backfill`                | `backfill-nickname-canonical.mjs`      | Normaliza nickname canonical                  | `--dry-run` · `--confirm` | 🔴    |
+| `npm run files:backfill-thumbnails`        | `backfill-file-thumbnails.mjs`         | Gera thumbnail de arquivos publicados sem ele | `--dry-run` · `--confirm` | 🔴    |
+| `npm run email:backfill-verified`          | `backfill-email-verified.mjs`          | Backfill `emailVerifiedAt`                    | —                         | 🔴    |
 
 ## Operador / debug (recusa produção)
 
@@ -70,6 +71,18 @@ Scripts com `refuseIfProduction()` — **não rodar no host de `next start`**.
 | `npm run export-from-pinterest` | `export-from-pinterest.mjs` | Baixa boards Pinterest → `exports/`           | URL, `-test`  | 🟡 recusa prod |
 | `npm run test-email`            | `test-email.mjs`            | Smoke send Brevo                              | `recipient@…` | 🟡 recusa prod |
 | `npm run unconfirm-account`     | `unconfirm-account.mjs`     | Reseta verificação de e-mail                  | `user@…`      | 🟡 recusa prod |
+
+## Operador (exige `--confirm` em produção)
+
+| Comando                         | Script                      | Efeito                                               | Args                                     |
+| ------------------------------- | --------------------------- | ---------------------------------------------------- | ---------------------------------------- | --- |
+| `npm run change-user-password`  | `change-user-password.mjs`  | Define a senha de uma conta e revoga as sessões      | `<email>` · `NEW_PASSWORD` · `--confirm` |
+| `npm run change-user-role`      | `change-user-role.mjs`      | Define o papel USER/ADMIN de uma conta               | `<email> <USER\|ADMIN>` · `--confirm`    |
+| `npm run user-role:backfill`    | `backfill-user-role.mjs`    | Grava role=USER onde o campo falta                   | `--dry-run` · `--confirm`                |
+| `npm run check:lockfile-native` | `check-lockfile-native.mjs` | Confere se o lockfile lista os binários de Linux x64 | —                                        | 🟢  |
+| `npm run pwa:icons`             | `generate-pwa-icons.mjs`    | Regera os ícones PWA de placeholder em `public/`     | —                                        | 🟢  |
+| `npm run vapid:keys`            | `generate-vapid-keys.mjs`   | Gera um par de chaves VAPID e imprime as variáveis   | —                                        | 🟢  |
+| `npm run toggle-feature-flag`   | `toggle-feature-flag.mjs`   | Alterna feature flag (insere registro novo)          | `<key>` · `--confirm`                    |
 
 ## Padrão dry-run / confirm
 

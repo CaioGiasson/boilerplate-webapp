@@ -2,7 +2,7 @@ import { lookup as dnsLookup } from 'node:dns/promises'
 import { Agent, fetch as undiciFetch } from 'undici'
 import { ValidationError } from '@/errors'
 import { PROFILE_PHOTO_MAX_BYTES } from '@/useCases/uploadUserPhoto.usecase'
-import { isBlockedIp, parsePublicHttpUrl, sniffImageMime } from '@/utils/safeImageUrl'
+import { isBlockedHostname, isBlockedIp, parsePublicHttpUrl, sniffImageMime } from '@/utils/safeImageUrl'
 
 const MAX_REDIRECTS = 3
 const FETCH_TIMEOUT_MS = 10_000
@@ -101,7 +101,7 @@ export default class RemoteFetchService {
 
 	private async assertPublicHost(hostname: string): Promise<void> {
 		const host = hostname.replace(/^\[|\]$/g, '')
-		if (isBlockedIp(host)) {
+		if (isBlockedHostname(host) || isBlockedIp(host)) {
 			throw new ValidationError('Invalid image URL')
 		}
 

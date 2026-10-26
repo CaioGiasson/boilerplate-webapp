@@ -140,6 +140,8 @@ export function validateEnv(): void {
 	assertJwtSecret(process.env.JWT_SECRET ?? '')
 	assertDatabaseUrl(process.env.DATABASE_URL ?? '', process.env.ENVIRONMENT ?? '')
 	assertEmailConfig(getEmailConfig())
+	assertAiConfig(getAiConfig())
+	assertVapidConfig(process.env)
 }
 
 export function getJwtSecret(): Uint8Array {
@@ -244,6 +246,101 @@ export function assertEmailConfig(config: EmailConfig, environment: string = pro
 	}
 	if (!config.brevoApiKey) {
 		throw new Error('BREVO_API_KEY is required when EMAIL_PROVIDER=brevo')
+	}
+}
+
+export type AiProviderName = 'openai' | 'none'
+
+export type AiConfig = {
+	provider: AiProviderName
+	apiKey: string
+	textModel: string
+	timeoutMs: number
+}
+
+export const DEFAULT_OPENAI_TEXT_MODEL = 'gpt-5.4-mini'
+const DEFAULT_AI_TIMEOUT_MS = 30_000
+
+function parseAiProvider(raw: string | undefined): AiProviderName {
+	const value = raw?.trim().toLowerCase() || 'none'
+	if (value === 'openai' || value === 'none') {
+		return value
+	}
+	throw new Error('AI_PROVIDER must be openai or none')
+}
+
+/**
+ * Reads AI env. O default é `AI_PROVIDER=none`: o app sobe sem chave e o AI Service responde 503.
+ * Chave ausente com `openai` só é recusada em {@link assertAiConfig} (boot via validateEnv).
+ */
+export function getAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfig {
+	return {
+		provider: parseAiProvider(env.AI_PROVIDER),
+		apiKey: env.OPENAI_API_KEY?.trim() ?? '',
+		textModel: env.OPENAI_TEXT_MODEL?.trim() || DEFAULT_OPENAI_TEXT_MODEL,
+		timeoutMs: parsePositiveInt(env.AI_TIMEOUT_MS, DEFAULT_AI_TIMEOUT_MS, 'AI_TIMEOUT_MS'),
+	}
+}
+
+export function assertAiConfig(config: AiConfig): void {
+	if (config.provider === 'openai' && !config.apiKey) {
+		throw new Error('OPENAI_API_KEY is required when AI_PROVIDER=openai')
+	}
+}
+
+/** True quando há fornecedor configurado; a flag `ai_enabled` decide se ele é usado. */
+export function isAIReady(config: AiConfig = getAiConfig()): boolean {
+	return config.provider === 'openai' && Boolean(config.apiKey)
+}
+
+export type VapidConfig = {
+	publicKey: string
+	privateKey: string
+	subject: string
+}
+
+const VAPID_ENV_KEYS = ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT'] as const
+
+/**
+ * Sufixos de host aceitos como `endpoint` de push. O servidor faz POST nesse endpoint, então ele precisa ser
+ * de um serviço de push conhecido (nunca um host arbitrário: SSRF). `WEB_PUSH_ALLOWED_HOSTS` acrescenta outros.
+ */
+export const DEFAULT_PUSH_HOST_SUFFIXES = [
+	'fcm.googleapis.com',
+	'push.services.mozilla.com',
+	'notify.windows.com',
+	'push.apple.com',
+] as const
+
+export function getPushAllowedHostSuffixes(env: NodeJS.ProcessEnv = process.env): string[] {
+	const extra = (env.WEB_PUSH_ALLOWED_HOSTS ?? '')
+		.split(',')
+		.map((item) => item.trim().toLowerCase().replace(/^\./, ''))
+		.filter(Boolean)
+	return [...new Set([...DEFAULT_PUSH_HOST_SUFFIXES, ...extra])]
+}
+
+/** Web Push só liga com as três variáveis; sem elas devolve `null` e o app funciona só com o sino. */
+export function getVapidConfig(env: NodeJS.ProcessEnv = process.env): VapidConfig | null {
+	const [publicKey, privateKey, subject] = VAPID_ENV_KEYS.map((key) => env[key]?.trim() ?? '')
+	if (!publicKey || !privateKey || !subject) {
+		return null
+	}
+	return { publicKey, privateKey, subject }
+}
+
+/** Configuração parcial é erro de deploy (push ligado pela metade): recusa o boot em vez de falhar em silêncio. */
+export function assertVapidConfig(env: NodeJS.ProcessEnv = process.env): void {
+	const present = VAPID_ENV_KEYS.filter((key) => Boolean(env[key]?.trim()))
+	if (present.length === 0) {
+		return
+	}
+	if (present.length < VAPID_ENV_KEYS.length) {
+		throw new Error('VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT must be set together')
+	}
+	const subject = env.VAPID_SUBJECT?.trim() ?? ''
+	if (!subject.startsWith('mailto:') && !subject.startsWith('https://')) {
+		throw new Error('VAPID_SUBJECT must start with mailto: or https://')
 	}
 }
 

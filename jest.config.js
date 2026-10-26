@@ -11,6 +11,9 @@ const config = {
 			'ts-jest',
 			{
 				isolatedModules: true,
+				tsconfig: {
+					jsx: 'react-jsx',
+				},
 			},
 		],
 		'^.+\\.js$': [

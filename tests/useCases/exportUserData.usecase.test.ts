@@ -31,12 +31,52 @@ describe('ExportUserData', () => {
 			createdAt: new Date('2026-08-19T00:00:00.000Z'),
 		}
 
+		const aiLog = {
+			id: 'log-1',
+			userId: 'user-1',
+			contextId: null,
+			query: 'summarize',
+			model: 'gpt-5.4-mini',
+			prompt: 'texto',
+			response: 'resumo',
+			tokenCost: 42,
+			createdAt: new Date('2026-08-20T00:00:00.000Z'),
+		}
+
+		const notification = {
+			id: 'n1',
+			userId: 'user-1',
+			type: 'TEST',
+			title: 'Título',
+			text: 'Texto',
+			link: '/notifications',
+			readAt: null,
+			createdAt: new Date('2026-08-21T00:00:00.000Z'),
+		}
+		const pushSubscription = {
+			id: 'sub-1',
+			userId: 'user-1',
+			endpoint: 'https://push.example.com/secret-endpoint',
+			p256dh: 'secret-p256dh',
+			auth: 'secret-auth',
+			createdAt: new Date('2026-08-22T00:00:00.000Z'),
+		}
+
 		mockPrismaRuntime({
 			user: {
 				findFirst: jest.fn(async () => user),
 			},
 			file: {
 				findMany: jest.fn(async () => [file]),
+			},
+			aiLog: {
+				findMany: jest.fn(async () => [aiLog]),
+			},
+			notification: {
+				findMany: jest.fn(async () => [notification]),
+			},
+			pushSubscription: {
+				findMany: jest.fn(async () => [pushSubscription]),
 			},
 		})
 
@@ -48,22 +88,50 @@ describe('ExportUserData', () => {
 			nickname: 'ada',
 			email: 'ada@example.com',
 			photoUrl: null,
+			photoThumbnailUrl: null,
 			settings: [],
 			emailVerifiedAt: null,
 			pendingEmail: null,
 			emailChallenge: 'none',
 			hasPassword: true,
 			googleLinked: false,
+			role: 'USER',
 		})
 		expect(result.files).toEqual([
 			{
 				id: 'file-1',
 				key: 'avatars/user-1/photo.jpg',
 				url: 'https://cdn.example.com/photo.jpg',
+				thumbnailUrl: null,
 				category: 'avatar',
 				mimeType: 'image/jpeg',
 				sizeBytes: 1024,
 				createdAt: '2026-08-19T00:00:00.000Z',
+			},
+		])
+		expect(result.notifications).toEqual([
+			{
+				id: 'n1',
+				type: 'TEST',
+				title: 'Título',
+				text: 'Texto',
+				link: '/notifications',
+				read: false,
+				createdAt: '2026-08-21T00:00:00.000Z',
+			},
+		])
+		expect(result.pushSubscriptions).toEqual([{ id: 'sub-1', createdAt: '2026-08-22T00:00:00.000Z' }])
+		// Endpoint e chaves do aparelho nunca saem na exportação.
+		expect(JSON.stringify(result)).not.toMatch(/secret-endpoint|secret-p256dh|secret-auth/)
+		expect(result.aiLogs).toEqual([
+			{
+				id: 'log-1',
+				query: 'summarize',
+				model: 'gpt-5.4-mini',
+				prompt: 'texto',
+				response: 'resumo',
+				tokenCost: 42,
+				createdAt: '2026-08-20T00:00:00.000Z',
 			},
 		])
 	})
@@ -72,6 +140,9 @@ describe('ExportUserData', () => {
 		mockPrismaRuntime({
 			user: { findFirst: jest.fn(async () => null) },
 			file: { findMany: jest.fn() },
+			aiLog: { findMany: jest.fn() },
+			notification: { findMany: jest.fn() },
+			pushSubscription: { findMany: jest.fn() },
 		})
 
 		await expect(new ExportUserData().run({ userId: 'missing' })).rejects.toThrow(NotFoundError)

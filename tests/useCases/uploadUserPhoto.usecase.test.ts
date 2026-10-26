@@ -6,14 +6,19 @@ import { NotFoundError } from '@/errors'
 
 const USER_ID = 'user-1'
 
-const storeAvatar = jest.fn(async () => 'https://cdn.example.com/new.jpg')
+const storeAvatar = jest.fn(async () => ({
+	url: 'https://cdn.example.com/new.webp',
+	thumbnailUrl: 'https://cdn.example.com/new.thumb.webp',
+	fileId: 'file-1',
+}))
 const orphanByUrl = jest.fn(async () => undefined)
-const updateProfile = jest.fn(async (_id: string, data: { photoUrl: string }) => ({
+const updateProfile = jest.fn(async (_id: string, data: { photoUrl: string; photoThumbnailUrl: string }) => ({
 	id: USER_ID,
 	name: 'Ada',
 	nickname: 'ada',
 	email: 'ada@example.com',
 	photoUrl: data.photoUrl,
+	photoThumbnailUrl: data.photoThumbnailUrl,
 	settings: [],
 	emailVerifiedAt: null,
 	pendingEmail: null,
@@ -83,7 +88,7 @@ describe('UploadUserPhoto phased storage', () => {
 		).rejects.toThrow('db down')
 
 		expect(storeAvatar).toHaveBeenCalledTimes(1)
-		expect(orphanByUrl).toHaveBeenCalledWith('https://cdn.example.com/new.jpg')
+		expect(orphanByUrl).toHaveBeenCalledWith('https://cdn.example.com/new.webp')
 	})
 
 	it('rejects unknown user before storage upload', async () => {

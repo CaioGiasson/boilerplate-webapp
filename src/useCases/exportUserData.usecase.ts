@@ -1,6 +1,9 @@
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
 import UserRepository, { toPublicUser } from '@/repositories/User.repository'
 import FileRepository from '@/repositories/File.repository'
+import AiLogRepository from '@/repositories/AiLog.repository'
+import NotificationRepository from '@/repositories/Notification.repository'
+import PushSubscriptionRepository from '@/repositories/PushSubscription.repository'
 import { NotFoundError, ValidationError } from '@/errors'
 
 type Input = {
@@ -14,9 +17,30 @@ type Output = {
 		id: string
 		key: string
 		url: string
+		thumbnailUrl: string | null
 		category: string
 		mimeType: string
 		sizeBytes: number
+		createdAt: string
+	}>
+	notifications: Array<{
+		id: string
+		type: string
+		title: string
+		text: string
+		link: string | null
+		read: boolean
+		createdAt: string
+	}>
+	/** Só a data de cada aparelho inscrito: endpoint e chaves identificam/permitem enviar ao aparelho e não saem. */
+	pushSubscriptions: Array<{ id: string; createdAt: string }>
+	aiLogs: Array<{
+		id: string
+		query: string
+		model: string
+		prompt: string
+		response: string
+		tokenCost: number
 		createdAt: string
 	}>
 }
@@ -41,6 +65,9 @@ export default class ExportUserData extends UseCaseMasterPort<Input, Output> {
 
 		const fileRepository = new FileRepository(injectables.prisma)
 		const files = await fileRepository.listPublishedByOwner(user.id)
+		const aiLogs = await new AiLogRepository(injectables.prisma).listByUser(user.id)
+		const notifications = await new NotificationRepository(injectables.prisma).listAllByUser(user.id)
+		const pushSubscriptions = await new PushSubscriptionRepository(injectables.prisma).listByUser(user.id)
 
 		return {
 			exportedAt: new Date().toISOString(),
@@ -49,10 +76,33 @@ export default class ExportUserData extends UseCaseMasterPort<Input, Output> {
 				id: file.id,
 				key: file.key,
 				url: file.url,
+				thumbnailUrl: file.thumbnailUrl ?? null,
 				category: file.category,
 				mimeType: file.mimeType,
 				sizeBytes: file.sizeBytes,
 				createdAt: file.createdAt.toISOString(),
+			})),
+			notifications: notifications.map((item) => ({
+				id: item.id,
+				type: item.type,
+				title: item.title,
+				text: item.text,
+				link: item.link,
+				read: item.readAt !== null,
+				createdAt: item.createdAt.toISOString(),
+			})),
+			pushSubscriptions: pushSubscriptions.map((item) => ({
+				id: item.id,
+				createdAt: item.createdAt.toISOString(),
+			})),
+			aiLogs: aiLogs.map((log) => ({
+				id: log.id,
+				query: log.query,
+				model: log.model,
+				prompt: log.prompt,
+				response: log.response,
+				tokenCost: log.tokenCost,
+				createdAt: log.createdAt.toISOString(),
 			})),
 		}
 	}

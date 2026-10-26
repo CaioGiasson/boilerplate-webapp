@@ -8,7 +8,12 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { AuthProvider } from '@/components/auth/AuthProvider'
+import { ImpersonationConsumer } from '@/components/auth/ImpersonationConsumer'
+import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner'
 import { CookieNotice } from '@/components/legal/CookieNotice'
+import { ForceAppUpdate } from '@/components/pwa/ForceAppUpdate'
+import { PwaInstallBanner } from '@/components/pwa/PwaInstallBanner'
+import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar'
 
 type AppShellProps = {
 	children: React.ReactNode
@@ -21,7 +26,14 @@ export function AppShell({ children }: AppShellProps) {
 	return (
 		<AuthProvider>
 			<ToastProvider>
-				<div className="flex h-screen overflow-hidden bg-background text-foreground" data-testid="app-shell">
+				<ImpersonationConsumer />
+				<ServiceWorkerRegistrar />
+				<ForceAppUpdate />
+				<ImpersonationBanner />
+				<div
+					className="flex h-[calc(100vh-var(--app-banner-h,0px))] overflow-hidden bg-background text-foreground"
+					data-testid="app-shell"
+				>
 					<div className="hidden h-full shrink-0 md:flex">
 						<Sidebar />
 					</div>
@@ -42,6 +54,7 @@ export function AppShell({ children }: AppShellProps) {
 
 						<main className="app-scrollbar relative min-h-0 flex-1 overflow-y-auto">
 							<PageTransition>{children}</PageTransition>
+							<PwaInstallBanner />
 							<CookieNotice />
 						</main>
 					</div>

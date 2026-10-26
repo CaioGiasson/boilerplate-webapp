@@ -90,6 +90,22 @@ export function buildEnforcedContentSecurityPolicy(): string {
 	return "frame-ancestors 'none'"
 }
 
+/**
+ * Variante para páginas estáticas que o `error-guard.js` embute em iframe do mesmo site (`/error.html`):
+ * troca `DENY`/`frame-ancestors 'none'` por `SAMEORIGIN`/`frame-ancestors 'self'`. O resto da política é mantido.
+ */
+export function buildSameOriginFrameableHeaders(env: SecurityHeaderEnv = {}): SecurityHeader[] {
+	return buildSecurityHeaders(env).map((header) => {
+		if (header.key === 'X-Frame-Options') {
+			return { ...header, value: 'SAMEORIGIN' }
+		}
+		if (header.key.startsWith('Content-Security-Policy')) {
+			return { ...header, value: header.value.replace("frame-ancestors 'none'", "frame-ancestors 'self'") }
+		}
+		return header
+	})
+}
+
 export function buildSecurityHeaders(env: SecurityHeaderEnv = {}): SecurityHeader[] {
 	const nodeEnv = env.nodeEnv ?? process.env.NODE_ENV
 	const headers: SecurityHeader[] = [

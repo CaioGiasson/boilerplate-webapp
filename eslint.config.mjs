@@ -34,7 +34,7 @@ const eslintConfig = [
 		},
 	},
 	{
-		files: ['src/components/theme-script.tsx'],
+		files: ['src/components/theme-script.tsx', 'src/components/errors/ErrorGuardScript.tsx'],
 		rules: {
 			// Intentional blocking script from /theme.js (CSP 'self', no inline HTML).
 			'@next/next/no-sync-scripts': 'off',

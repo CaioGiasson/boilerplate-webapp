@@ -1,0 +1,23 @@
+@baseUrl = http://localhost:3000
+@targetUserId =
+@impersonationToken =
+
+### List users (needs an ADMIN session; run the login request from auth.http first)
+GET {{baseUrl}}/api/v1/admin/users?page=1
+
+###
+### Issue an impersonation token for a non-admin user (valid for 10 minutes)
+# @name issueImpersonationToken
+POST {{baseUrl}}/api/v1/admin/users/{{targetUserId}}/impersonation-token
+Origin: {{baseUrl}}
+
+###
+### Start the impersonation session.
+### Run it from a client WITHOUT an active session (409 otherwise).
+POST {{baseUrl}}/api/v1/auth/impersonate
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "token": "{{impersonationToken}}"
+}

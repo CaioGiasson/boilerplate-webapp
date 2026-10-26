@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import KeepAccountDeletion from '@/useCases/keepAccountDeletion.usecase'
 import ApiPresenter from '@/utils/Api.presenter'
 import { handleRoute } from '@/utils/routeHandler'
-import { requireAuthForDeletionDecision } from '@/middleware/auth.middleware'
+import { assertNotImpersonation, requireAuthForDeletionDecision } from '@/middleware/auth.middleware'
 import { assertAuthRateLimit } from '@/middleware/rateLimit.middleware'
 import { clearSessionCookies } from '@/utils/session'
 
@@ -17,6 +17,7 @@ export default async function keepAccountDeletionRoute(
 ): Promise<NextResponse> {
 	return handleRoute(async () => {
 		const session = await requireAuthForDeletionDecision(request, getPrismaClient())
+		assertNotImpersonation(session)
 		assertAuthRateLimit(request, session.userId)
 
 		await dependencies.keepAccountDeletionUseCase.run({

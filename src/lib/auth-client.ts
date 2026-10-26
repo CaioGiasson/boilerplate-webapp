@@ -11,12 +11,16 @@ export type AuthUser = {
 	nickname: string
 	email: string
 	photoUrl: string | null
+	photoThumbnailUrl: string | null
 	settings: SettingEntry[]
 	emailVerifiedAt: string | null
 	pendingEmail: string | null
 	emailChallenge: 'none' | 'verify' | 'change_old' | 'change_new'
 	hasPassword: boolean
 	googleLinked: boolean
+	role: 'USER' | 'ADMIN'
+	/** Preenchido enquanto a sessão é de impersonamento (admin atuando como este usuário). */
+	impersonation?: { expiresAt: string } | null
 }
 
 async function parseApi<T>(response: Response): Promise<T> {
@@ -28,8 +32,8 @@ export async function fetchCurrentUser(): Promise<AuthUser | null> {
 	if (response.status === 401) {
 		return null
 	}
-	const data = await parseApi<{ user: AuthUser }>(response)
-	return data.user
+	const data = await parseApi<{ user: AuthUser; impersonation?: { expiresAt: string } | null }>(response)
+	return { ...data.user, impersonation: data.impersonation ?? null }
 }
 
 export async function loginRequest(input: {
@@ -382,4 +386,44 @@ export function applyCloudSettingsToLocal(settings: SettingEntry[]): {
 	}
 
 	return result
+}
+
+export type AdminUserRow = {
+	id: string
+	nickname: string
+	emailMasked: string
+	role: 'USER' | 'ADMIN'
+	emailVerified: boolean
+	createdAt: string
+}
+
+export type AdminUsersPage = {
+	items: AdminUserRow[]
+	page: number
+	pageSize: number
+	total: number
+	hasMore: boolean
+}
+
+export async function listAdminUsersRequest(page: number): Promise<AdminUsersPage> {
+	const response = await fetchApi(`/api/v1/admin/users?page=${page}`, { credentials: 'include' })
+	return parseApi<AdminUsersPage>(response)
+}
+
+export async function createImpersonationTokenRequest(userId: string): Promise<{ token: string; expiresAt: string }> {
+	const response = await fetchApi(`/api/v1/admin/users/${encodeURIComponent(userId)}/impersonation-token`, {
+		method: 'POST',
+		credentials: 'include',
+	})
+	return parseApi(response)
+}
+
+export async function startImpersonationRequest(token: string): Promise<{ expiresAt: string }> {
+	const response = await fetchApi('/api/v1/auth/impersonate', {
+		method: 'POST',
+		credentials: 'include',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ token }),
+	})
+	return parseApi(response)
 }

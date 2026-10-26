@@ -18,6 +18,10 @@ Ordem obrigatória:
 3. **Branch** a partir de `main` (`feat/…`, `fix/…`) vinculada à issue; assignee ao iniciar.
 4. **Só então implementar.**
 
+## Contexto do produto
+
+Leia o `CONTEXT*.md` da área antes de refinar (índice: `CONTEXT.md`) e atualize-o **na mesma entrega** quando a mudança alterar comportamento, modelo, contrato, premissa ou arquitetura.
+
 ## Sem tarefas ad-hoc
 
 **Não existem exceções.** Todo pedido que altere código, testes, Prisma, rotas, scripts de runtime ou documentação operacional do produto **exige issue no board** — inclusive quando parecer “rápido”, “só docs” ou “checkup/refactor”.

@@ -16,6 +16,7 @@ export function buildUser(overrides: UserFactoryOverrides = {}): UserEntity {
 		email: 'alice@example.com',
 		passwordHash: 'hashed-password',
 		photoUrl: null,
+		photoThumbnailUrl: null,
 		googleLinkedAt: null,
 		settings: [],
 		acceptedTermsAt: null,
@@ -34,6 +35,7 @@ export function buildUser(overrides: UserFactoryOverrides = {}): UserEntity {
 		updatedAt: DEFAULT_DATE,
 		deletedAt: null,
 		sessionsRevokedAt: null,
+		role: 'USER',
 		...overrides,
 	}
 }

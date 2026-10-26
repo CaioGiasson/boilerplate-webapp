@@ -58,6 +58,8 @@ Script CLI (`scripts/healthcheck.mjs`) — **não** envia e-mail de produção; 
 | `database`    | Ping Mongo via Prisma (`$runCommandRaw({ ping: 1 })`)                                                                                 |
 | `spaces`      | `HeadBucket` no bucket DigitalOcean Spaces                                                                                            |
 | `jwt`         | Assina e verifica JWT de teste (segredo válido)                                                                                       |
+| `webPush`     | `VAPID_*` ausentes: **skipped** (ok). Parciais ou `VAPID_SUBJECT` inválido: falha.                                                    |
+| `ai`          | Se `AI_PROVIDER=openai`: exige `OPENAI_API_KEY` (sem chamada remota). Se `none`: **skipped** (ok).                                    |
 | `brevo`       | Se `EMAIL_PROVIDER=brevo`: `GET /v3/account` na API Brevo (API key + `EMAIL_FROM` presentes). Se `none`/`disabled`: **skipped** (ok). |
 
 ### `npm run test-environment`
@@ -153,13 +155,19 @@ Pedidos como **“Faça uma tela…”**, **“Coloque uma seção…”**, **�
 
 1. Issues refinadas com contexto, escopo e critérios de aceite — ver [`docs/issue-workflow.md`](docs/issue-workflow.md)
 2. Assignee ao iniciar; perguntas/respostas como comentários na issue
-3. Branch a partir de `main`; commits em **pt-BR**; **push** na branch remota ao concluir (sem esperar pedido de commit)
+3. Branch a partir de `main`; commits em **pt-BR**; **push** na branch remota ao concluir (sem esperar pedido de commit); atualizar o `CONTEXT*.md` da área
 4. PR com summary + test plan; vincular issue; documentação no repo quando couber
 5. **`homolog`** — branch de QA integrado (sem CI em push; o gate é a PR)
 6. **CI** — `.github/workflows/ci.yml` roda **somente em `pull_request`** (lint, typecheck, test, build). **Política humana (CI-04):** merge só com check `CI / verify` verde — branch protection não disponível em repo privado Free.
 7. Após abrir PR: review conforme [`.cursor/rules/pr-review.mdc`](.cursor/rules/pr-review.mdc) e [`docs/issue-workflow.md`](docs/issue-workflow.md) (seção Review de PRs); corrigir bloqueantes/importantes; comentar resultado; label **`Reviewed`**. Bugbot **não** substitui este fluxo.
 
 Contribuição humana: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+## Contexto do produto (`CONTEXT*.md`)
+
+Antes de refinar uma issue, leia o arquivo de contexto da **área** (o índice é [`CONTEXT.md`](CONTEXT.md)): [`CONTEXT.md`](CONTEXT.md) produto/conta/integrações, [`CONTEXT-ARCHITECTURE.md`](CONTEXT-ARCHITECTURE.md) camadas/env/rotas, [`CONTEXT-CODE.md`](CONTEXT-CODE.md) inventário para reaproveitar código, [`CONTEXT-ENTITIES.md`](CONTEXT-ENTITIES.md) models e invariantes, [`CONTEXT-DS.md`](CONTEXT-DS.md) design system.
+
+**Toda evolução que mude comportamento, modelo, contrato, premissa ou arquitetura atualiza o arquivo da área na mesma entrega** (e a data do snapshot). PR sem isso é **importante** na review. Divisão de fontes: `AGENTS.md` = processo e regras; `CONTEXT*.md` = o que o produto/código é hoje; `docs/` = ADR, guias e runbooks. Cada fato mora em um lugar só.
 
 ## Memória de lições (`tasks/lessons.md`)
 

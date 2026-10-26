@@ -57,7 +57,10 @@ Pedido urgente encurta refinamento; **não** elimina issue, branch nem PR vincul
 4. **Commit e push obrigatórios**  
    Ao concluir a implementação (ou em marcos lógicos), fazer **commit** (mensagem em pt-BR) e **push** para a branch remota **sem esperar pedido explícito**. Isso garante continuidade em outra máquina se houver problema no computador local.
 
-5. **Pull request**  
+5. **Contexto do produto**  
+   Atualize o `CONTEXT*.md` da área (índice em [`CONTEXT.md`](../CONTEXT.md)) na mesma entrega quando a mudança alterar comportamento, modelo, contrato, premissa ou arquitetura.
+
+6. **Pull request**  
    Abrir PR vinculada à issue (`Closes #N` quando couber). Um PR por issue quando possível.
 
 ## Escopo e nova issue durante o desenvolvimento
@@ -97,7 +100,7 @@ Sempre que uma **pull request for aberta**, o agente deve:
 **Bugbot e ferramentas externas não substituem este fluxo** — podem ser consulta opcional; a review mandatória é a descrita acima.
 
 - **Bloqueante:** bug, regressão, falha de segurança, violação de camadas, aceite quebrado, teste crítico ausente, endpoint novo/alterado sem `requests/*.http` + `docs/openapi.yaml`.
-- **Importante:** edge case real, inconsistência de API/UI, gap de docs do aceite — corrigir na mesma PR.
+- **Importante:** edge case real, inconsistência de API/UI, gap de docs do aceite, `CONTEXT*.md` da área não atualizado — corrigir na mesma PR.
 - **Opcional / nit:** listar no comentário; não bloqueia merge nem a label.
 
 Se a label `Reviewed` não existir, criá-la no repositório e só então aplicá-la.

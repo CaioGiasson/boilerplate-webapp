@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist } from 'next/font/google'
 import { headers } from 'next/headers'
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
@@ -6,10 +6,12 @@ import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import '../globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
+import { ErrorGuardScript } from '@/components/errors/ErrorGuardScript'
 import { ThemeScript } from '@/components/theme-script'
 import { AppShell } from '@/components/layout'
 import { resolveServerTheme } from '@/utils/theme'
 import { routing } from '@/i18n/routing'
+import { PWA_THEME_COLOR } from '@/lib/pwa/webManifest'
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -22,6 +24,12 @@ import { APP_NAME } from '@/constants/app'
 export const metadata: Metadata = {
 	title: APP_NAME,
 	description: `${APP_NAME} — starter webapp Next.js`,
+	icons: { apple: '/apple-touch-icon.png' },
+	appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: 'black-translucent' },
+}
+
+export const viewport: Viewport = {
+	themeColor: PWA_THEME_COLOR,
 }
 
 type LocaleLayoutProps = {
@@ -51,6 +59,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 		<html lang={locale} suppressHydrationWarning>
 			<head>
 				<ThemeScript />
+				<ErrorGuardScript />
 			</head>
 			<body className={`${geistSans.variable} antialiased`}>
 				{/*

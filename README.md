@@ -10,7 +10,10 @@ Aplicação Next.js 15 reutilizável, extraída e sanitizada a partir do projeto
 - **Settings:** tema escuro e idioma (pt/en/es via next-intl)
 - **Storage:** DigitalOcean Spaces (S3), `FileManager`, presigned URLs, quota por usuário
 - **Email:** módulo port/adapter com Brevo
+- **Notificações:** sino in-app e Web Push opcional (VAPID) — [`docs/operators/web-push.md`](docs/operators/web-push.md)
+- **PWA:** manifest, service worker (sem cache de páginas), páginas offline/erro estáticas e atualização forçada por versão — [`docs/operators/pwa.md`](docs/operators/pwa.md)
 - **Design system:** componentes em `src/design-system/` + primitivos Radix em `src/components/ui/`
+- **Contexto para agentes:** [`CONTEXT.md`](CONTEXT.md) (+ `CONTEXT-ARCHITECTURE/CODE/ENTITIES/DS.md`) descrevem o produto e o código de hoje
 - **IA/contribuição:** `AGENTS.md`, `.cursor/rules/`, ADRs e docs de arquitetura
 
 ## O que foi removido / sanitizado
@@ -105,15 +108,16 @@ A app Next roda com build estático/server (`next start`). O MongoDB **não** de
 
 ### Variáveis obrigatórias
 
-| Variável            | Produção                                               |
-| ------------------- | ------------------------------------------------------ |
-| `ENVIRONMENT`       | `prod`                                                 |
-| `NODE_ENV`          | `production` (definido pelo `next start`)              |
-| `DATABASE_URL`      | URL com **user:password@** e `authSource=admin`        |
-| `JWT_SECRET`        | ≥32 bytes aleatórios; **não** o placeholder do example |
-| `MONGO_ROOT_*`      | Só se o host usar o Compose deste repo; senão omita    |
-| `SPACES_*`          | Credenciais e bucket do object storage                 |
-| `HEALTHCHECK_TOKEN` | Opcional: permite probe HTTP de fora do loopback       |
+| Variável            | Produção                                                                                                                          |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `ENVIRONMENT`       | `prod`                                                                                                                            |
+| `NODE_ENV`          | `production` (definido pelo `next start`)                                                                                         |
+| `DATABASE_URL`      | URL com **user:password@** e `authSource=admin`                                                                                   |
+| `JWT_SECRET`        | ≥32 bytes aleatórios; **não** o placeholder do example                                                                            |
+| `MONGO_ROOT_*`      | Só se o host usar o Compose deste repo; senão omita                                                                               |
+| `SPACES_*`          | Credenciais e bucket do object storage                                                                                            |
+| `HEALTHCHECK_TOKEN` | Opcional: permite probe HTTP de fora do loopback                                                                                  |
+| `AI_PROVIDER`       | Opcional (`none` por padrão): `openai` + `OPENAI_API_KEY` habilitam o AI Service — [`docs/operators/ai.md`](docs/operators/ai.md) |
 
 Com `ENVIRONMENT=prod`, o boot recusa `DATABASE_URL` sem credencial ou com senha de example.
 

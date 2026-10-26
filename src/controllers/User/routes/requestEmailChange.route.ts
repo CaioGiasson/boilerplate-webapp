@@ -5,7 +5,7 @@ import RequestEmailChange from '@/useCases/requestEmailChange.usecase'
 import ApiPresenter from '@/utils/Api.presenter'
 import { ValidationError } from '@/errors'
 import { handleRoute, parseJsonBodyUnknown } from '@/utils/routeHandler'
-import { requireAuth } from '@/middleware/auth.middleware'
+import { assertNotImpersonation, requireAuth } from '@/middleware/auth.middleware'
 import { assertAuthRateLimit } from '@/middleware/rateLimit.middleware'
 import { assertSameOrigin } from '@/utils/csrfOrigin'
 import { resolveRequestLocale } from '@/utils/requestLocale'
@@ -29,6 +29,7 @@ export default async function requestEmailChangeRoute(
 	return handleRoute(async () => {
 		assertSameOrigin(request)
 		const session = await requireAuth(request, getPrismaClient())
+		assertNotImpersonation(session)
 		assertAuthRateLimit(request, session.userId)
 
 		const body = await parseJsonBodyUnknown(request)

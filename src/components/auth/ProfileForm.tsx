@@ -1,6 +1,7 @@
 'use client'
 
-import { AccordionGroup } from '@/design-system'
+import { useTranslations } from 'next-intl'
+import { AccordionGroup, ImageCropModal } from '@/design-system'
 import { ProfileBasicsSection } from '@/components/auth/ProfileBasicsSection'
 import { ProfileVerificationSection } from '@/components/auth/ProfileVerificationSection'
 import { ProfileEmailSection } from '@/components/auth/ProfileEmailSection'
@@ -12,6 +13,7 @@ import { useProfileForm } from '@/components/auth/useProfileForm'
 
 export function ProfileForm() {
 	const profile = useProfileForm()
+	const t = useTranslations('profile')
 
 	if (!profile.ready) {
 		return null
@@ -34,6 +36,18 @@ export function ProfileForm() {
 				markPhotoRemoved={profile.markPhotoRemoved}
 				saveProfile={profile.saveProfile}
 				downloadMyData={profile.downloadMyData}
+			/>
+
+			<ImageCropModal
+				open={profile.cropSourceUrl !== null}
+				imageSrc={profile.cropSourceUrl}
+				aspect={1}
+				title={t('cropPhotoTitle')}
+				confirmLabel={t('cropPhotoConfirm')}
+				cancelLabel={t('cropPhotoCancel')}
+				zoomLabel={t('cropPhotoZoom')}
+				onCancel={profile.cancelPhotoCrop}
+				onConfirm={(area) => void profile.confirmPhotoCrop(area)}
 			/>
 
 			<AccordionGroup value={profile.openAccordion} onValueChange={profile.setOpenAccordion}>
@@ -81,6 +95,7 @@ export function ProfileForm() {
 					statisticsLoaded={profile.statisticsLoaded}
 					statisticsFileCount={profile.statisticsFileCount}
 					statisticsUsedMegabytes={profile.statisticsUsedMegabytes}
+					statisticsUsedPercent={profile.statisticsUsedPercent}
 				/>
 
 				<ProfileSessionsSection

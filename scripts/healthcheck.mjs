@@ -312,6 +312,47 @@ async function checkGoogleOAuth() {
 }
 
 /**
+ * @returns {Promise<CheckResult>}
+ */
+async function checkAi() {
+	const provider = (process.env.AI_PROVIDER ?? 'none').trim().toLowerCase()
+
+	if (provider === 'none') {
+		return { name: 'ai', ok: true, detail: 'skipped (AI_PROVIDER=none)' }
+	}
+	if (provider !== 'openai') {
+		return { name: 'ai', ok: false, detail: `unsupported AI_PROVIDER=${provider}` }
+	}
+	if (!process.env.OPENAI_API_KEY?.trim()) {
+		return { name: 'ai', ok: false, detail: 'OPENAI_API_KEY missing when AI_PROVIDER=openai' }
+	}
+
+	return { name: 'ai', ok: true, detail: 'configured (no remote call; toggle ai_enabled to use)' }
+}
+
+/**
+ * @returns {Promise<CheckResult>}
+ */
+async function checkWebPush() {
+	const keys = ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT']
+	const missing = keys.filter((key) => !process.env[key]?.trim())
+
+	if (missing.length === keys.length) {
+		return { name: 'webPush', ok: true, detail: 'skipped (VAPID_* not set — in-app bell only)' }
+	}
+	if (missing.length > 0) {
+		return { name: 'webPush', ok: false, detail: `incomplete config: missing ${missing.join(', ')}` }
+	}
+
+	const subject = process.env.VAPID_SUBJECT.trim()
+	if (!subject.startsWith('mailto:') && !subject.startsWith('https://')) {
+		return { name: 'webPush', ok: false, detail: 'VAPID_SUBJECT must start with mailto: or https://' }
+	}
+
+	return { name: 'webPush', ok: true }
+}
+
+/**
  * @param {CheckResult} result
  */
 function printResult(result) {
@@ -324,7 +365,16 @@ async function main() {
 	console.log('App healthcheck\n')
 
 	const results = []
-	for (const check of [checkEnv, checkDatabase, checkSpaces, checkJwt, checkBrevo, checkGoogleOAuth]) {
+	for (const check of [
+		checkEnv,
+		checkDatabase,
+		checkSpaces,
+		checkJwt,
+		checkBrevo,
+		checkGoogleOAuth,
+		checkAi,
+		checkWebPush,
+	]) {
 		const result = await check()
 		results.push(result)
 		printResult(result)

@@ -1,31 +1,37 @@
 'use client'
 
 import * as React from 'react'
-import { Home, Upload } from 'lucide-react'
+import { Home, Star, Upload } from 'lucide-react'
 import {
 	AccordionGroup,
 	AccordionSection,
 	AppDropdownMenu,
+	AppMultiSelect,
 	AppSelect,
 	AppSlider,
 	Avatar,
 	Button,
 	CodeInput,
+	ColorPalettePicker,
 	ComplexButton,
 	ConfirmActionButton,
 	FileDropzone,
 	FileInput,
 	GoogleIcon,
+	HelperBar,
 	Icon,
 	IconButton,
+	ImageCropModal,
 	InputPassword,
 	InputTextArea,
 	InputTitle,
+	MultiIcon,
 	NavIconButton,
 	NavIconLink,
 	PasswordChecklist,
 	SearchBar,
 	SettingsSection,
+	StorageProgressBar,
 	TagsInput,
 	TextArea,
 	TextInput,
@@ -132,6 +138,28 @@ export function DsComponentExample({ componentId }: DsComponentExampleProps) {
 					<Icon icon={Home} />
 				</NavIconLink>
 			)
+		case 'HelperBar':
+			return (
+				<HelperBar dismissLabel="Dismiss" onDismiss={() => undefined}>
+					<span>Replying to Ada</span>
+				</HelperBar>
+			)
+		case 'MultiIcon':
+			return <MultiIcon icons={[{ icon: Star }, { icon: Home }]} className="size-8" />
+		case 'ColorPalettePicker':
+			return <ColorPalettePickerDemo />
+		case 'AppMultiSelect':
+			return <MultiSelectDemo />
+		case 'ImageCropModal':
+			return <ImageCropModalDemo />
+		case 'StorageProgressBar':
+			return (
+				<div className="flex w-full max-w-xs flex-col gap-3">
+					<StorageProgressBar percentUsed={30} />
+					<StorageProgressBar percentUsed={75} />
+					<StorageProgressBar percentUsed={95} />
+				</div>
+			)
 		case 'GoogleIcon':
 			return <GoogleIcon className="size-6" />
 		case 'Avatar':
@@ -221,5 +249,57 @@ function ToastDemo() {
 		>
 			Show toast
 		</Button>
+	)
+}
+
+const DEMO_COLORS = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'] as const
+
+function ColorPalettePickerDemo() {
+	const [value, setValue] = React.useState<string>(DEMO_COLORS[0])
+	return <ColorPalettePicker colors={DEMO_COLORS} value={value} onChange={setValue} label="Color" />
+}
+
+function MultiSelectDemo() {
+	const [values, setValues] = React.useState<string[]>(['a'])
+	return (
+		<AppMultiSelect
+			label="Options"
+			placeholder="Choose"
+			options={[
+				{ value: 'a', label: 'Option A' },
+				{ value: 'b', label: 'Option B' },
+				{ value: 'c', label: 'Option C' },
+			]}
+			values={values}
+			onValuesChange={setValues}
+		/>
+	)
+}
+
+const DEMO_IMAGE_SRC =
+	'data:image/svg+xml;utf8,' +
+	encodeURIComponent(
+		'<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="#3b82f6"/><circle cx="300" cy="200" r="120" fill="#f59e0b"/></svg>'
+	)
+
+function ImageCropModalDemo() {
+	const [open, setOpen] = React.useState(false)
+	return (
+		<>
+			<Button type="button" variant="outline" onClick={() => setOpen(true)}>
+				Open crop modal
+			</Button>
+			<ImageCropModal
+				open={open}
+				imageSrc={DEMO_IMAGE_SRC}
+				aspect={1}
+				title="Adjust photo"
+				confirmLabel="Use photo"
+				cancelLabel="Cancel"
+				zoomLabel="Zoom"
+				onCancel={() => setOpen(false)}
+				onConfirm={() => setOpen(false)}
+			/>
+		</>
 	)
 }

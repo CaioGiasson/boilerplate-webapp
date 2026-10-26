@@ -26,12 +26,14 @@ const ALLOWED_PUBLIC_KEYS: (keyof PublicUser)[] = [
 	'nickname',
 	'email',
 	'photoUrl',
+	'photoThumbnailUrl',
 	'settings',
 	'emailVerifiedAt',
 	'pendingEmail',
 	'emailChallenge',
 	'hasPassword',
 	'googleLinked',
+	'role',
 ]
 
 describe('toPublicUser DTO', () => {

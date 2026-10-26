@@ -4,8 +4,29 @@ import SessionEventRepository from '@/repositories/SessionEvent.repository'
 import UserRepository from '@/repositories/User.repository'
 import { ForbiddenError, UnauthorizedError } from '@/errors'
 import { isWithinAccountDeletionQuarantine } from '@/constants/accountDeletion'
-import { readSessionCookieValue, verifySessionToken, type VerifiedSession } from '@/utils/session'
+import {
+	isImpersonationSession,
+	readSessionCookieValue,
+	verifySessionToken,
+	type VerifiedSession,
+} from '@/utils/session'
 import type { Prisma } from '@prisma/client'
+
+/**
+ * Self-heal: cria `ActiveSession` a partir das claims se o jti ainda não estiver no store.
+ * Sessão de impersonamento nunca vira `ActiveSession` (não aparece em Dispositivos do alvo).
+ */
+async function rememberActiveSession(session: VerifiedSession, repository: ActiveSessionRepository): Promise<void> {
+	if (isImpersonationSession(session)) return
+	if (await repository.existsForJti(session.jti)) return
+
+	await repository.upsertFromClaims({
+		userId: session.userId,
+		jti: session.jti,
+		device: session.device,
+		exp: session.exp,
+	})
+}
 
 /**
  * Middleware de autenticação para rotas protegidas (runtime Node).
@@ -40,16 +61,7 @@ export async function requireAuth(
 		throw new UnauthorizedError('Session has been revoked')
 	}
 
-	const activeSessionRepository = new ActiveSessionRepository(prisma)
-	const exists = await activeSessionRepository.existsForJti(session.jti)
-	if (!exists) {
-		await activeSessionRepository.upsertFromClaims({
-			userId: session.userId,
-			jti: session.jti,
-			device: session.device,
-			exp: session.exp,
-		})
-	}
+	await rememberActiveSession(session, new ActiveSessionRepository(prisma))
 
 	if (options?.userIdParam && options.userIdParam !== session.userId) {
 		throw new ForbiddenError('You cannot access this resource')
@@ -92,16 +104,7 @@ export async function requireAuthForDeletionDecision(
 		throw new UnauthorizedError('Session has been revoked')
 	}
 
-	const activeSessionRepository = new ActiveSessionRepository(prisma)
-	const exists = await activeSessionRepository.existsForJti(session.jti)
-	if (!exists) {
-		await activeSessionRepository.upsertFromClaims({
-			userId: session.userId,
-			jti: session.jti,
-			device: session.device,
-			exp: session.exp,
-		})
-	}
+	await rememberActiveSession(session, new ActiveSessionRepository(prisma))
 
 	return { ...session, deletedAt: user.deletedAt }
 }
@@ -135,16 +138,7 @@ export async function tryAuthFromToken(
 			return null
 		}
 
-		const activeSessionRepository = new ActiveSessionRepository(prisma)
-		const exists = await activeSessionRepository.existsForJti(session.jti)
-		if (!exists) {
-			await activeSessionRepository.upsertFromClaims({
-				userId: session.userId,
-				jti: session.jti,
-				device: session.device,
-				exp: session.exp,
-			})
-		}
+		await rememberActiveSession(session, new ActiveSessionRepository(prisma))
 
 		return session
 	} catch {
@@ -158,4 +152,11 @@ export async function tryAuth(request: NextRequest, prisma: Prisma.TransactionCl
 
 export function readSessionTokenFromRequest(request: NextRequest): string | null {
 	return readSessionCookieValue(request.cookies)
+}
+
+/** Bloqueia ações destrutivas e de conta enquanto a sessão é de impersonamento. */
+export function assertNotImpersonation(session: Pick<VerifiedSession, 'sessionType'>): void {
+	if (isImpersonationSession(session)) {
+		throw new ForbiddenError('Not allowed while impersonating')
+	}
 }

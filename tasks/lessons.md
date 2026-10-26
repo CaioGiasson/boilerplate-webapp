@@ -93,3 +93,73 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 **Causa:** Lookup por `pendingEmail` + `googleLinkedAt` (vínculo do e-mail _atual_) levava a `session` sem prova de posse do endereço pendente.
 
 **Prevenção:** Em `decideGoogleOAuthCallback`, se `matchedBy === 'pendingEmail'`, sempre `pending_link` (senha). Nunca tratar `googleLinkedAt` como identidade do e-mail pendente.
+
+---
+
+## Prisma 6 no bundle Edge (`instrumentation.ts`)
+
+**Sintoma:** `next build` falha com `Module not found: Can't resolve './query_engine_bg.wasm?module'` apontando para `node_modules/.prisma/client/wasm-edge-light-loader.mjs`.
+
+**Causa:** `src/instrumentation.ts` importava `Db.manager` (Prisma) de forma estática; o Next compila o arquivo também para o runtime Edge e o Prisma 6 resolve a build `wasm` nesse bundle. Um `return` antecipado em `register()` não elimina o import.
+
+**Prevenção:** `instrumentation.ts` só faz `import()` dinâmico de `instrumentation-node.ts` **dentro** de `if (process.env.NEXT_RUNTIME === 'nodejs')`. Código com Prisma, `process.on` e `validateEnv` mora em `instrumentation-node.ts`.
+
+---
+
+## Hostname com 4 rótulos tratado como IPv4 inválido
+
+**Sintoma:** URL de imagem legítima como `https://static.cdn.example.com/a.png` recusada com "Invalid image URL" em `parsePublicHttpUrl`.
+
+**Causa:** `isBlockedIp` recebia o hostname e `isBlockedIpv4` devolvia `true` para qualquer string com 4 rótulos separados por ponto cujo rótulo não fosse número.
+
+**Prevenção:** `isBlockedIp` só bloqueia IP literal (via `ipaddr.js`, `range() !== 'unicast'`) ou literal malformado que _parece_ IPv4 (só dígitos/hex e pontos). Nome de host passa para `isBlockedHostname` e para a checagem do DNS em `RemoteFetch.assertPublicHost`. Teste de regressão em `tests/utils/safeImageUrl.test.ts`.
+
+---
+
+## `/error.html` em iframe bloqueado por `X-Frame-Options: DENY`
+
+**Sintoma:** o `error-guard.js` cria um iframe apontando para `/error.html`, mas o quadro fica em branco/recusado e o usuário continua vendo a tela padrão de erro do Next.
+
+**Causa:** `buildSecurityHeaders` aplica `X-Frame-Options: DENY` e `frame-ancestors 'none'` em todas as rotas, inclusive ao próprio `/error.html`.
+
+**Prevenção:** `next.config.ts` serve `/error.html` com `buildSameOriginFrameableHeaders` (`SAMEORIGIN` / `frame-ancestors 'self'`), declarado **depois** de `/:path*` (a última regra vence). Coberto por `tests/config/securityHeaders.test.ts`; conferir com `curl -I /error.html` após mudar headers.
+
+---
+
+## Campo obrigatório novo em `User` quebra contas antigas no MongoDB
+
+**Sintoma:** depois de adicionar um campo não opcional ao model `User`, a leitura de contas criadas antes dele falha (Prisma não encontra o valor obrigatório no documento).
+
+**Causa:** o MongoDB não tem migração de schema; documentos antigos simplesmente não têm o campo.
+
+**Prevenção:** campo novo em `User` entra como **opcional** (`role UserRole?`), o código normaliza ausência (`normalizeUserRole`) e um script `--dry-run`/`--confirm` faz o backfill (`npm run user-role:backfill`).
+
+---
+
+## SVG aceito por engano no pipeline de imagem (sharp)
+
+**Sintoma:** upload com `Content-Type: image/png` e conteúdo SVG é processado em vez de recusado.
+
+**Causa:** o mime vem do cliente e o `sharp` rasteriza SVG (via librsvg) mesmo quando o nome/mime diz outra coisa.
+
+**Prevenção:** `SharpImageProcessor` lê `metadata().format` e só aceita `jpeg`, `png`, `webp` e `gif`; também limita `limitInputPixels`. Teste de regressão em `tests/services/imageProcessor.test.ts`.
+
+---
+
+## Service worker cacheando HTML autenticado
+
+**Sintoma (risco):** em computador compartilhado, páginas de um usuário continuam abrindo offline depois do logout.
+
+**Causa:** estratégia network-first que grava documentos HTML no cache do service worker; o logout não limpa esse cache.
+
+**Prevenção:** `public/sw.js` **não** guarda HTML nem `/api` (ADR-014); só assets públicos e imutáveis. Teste em `tests/lib/pwa/serviceWorker.test.ts` garante que a navegação não entra em cache. Se um dia precisar cachear páginas, defina política por rota e limpe os caches no logout primeiro.
+
+---
+
+## Heredoc do shell apaga a contrabarra em `'\\'` ao anexar JS a um arquivo
+
+**Sintoma:** `public/sw.js` quebrou com `SyntaxError: missing ) after argument list`; o lint apontou `Parsing error` numa linha com `link.includes('\')`.
+
+**Causa:** o literal `'\\'` (uma contrabarra) escrito via `cat >> arquivo <<'EOF'` chegou ao arquivo como `'\'`, que escapa a aspa e abre string.
+
+**Prevenção:** edite arquivos JS/TS com a ferramenta de edição, não com heredoc de shell; depois de qualquer geração de código, rode `node --check` (para `.js` puro) e o lint.

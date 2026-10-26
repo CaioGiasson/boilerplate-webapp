@@ -94,6 +94,7 @@ export default class StorageUrlService {
 		return {
 			...user,
 			photoUrl: await this.presignAvatarUrl(user.photoUrl),
+			photoThumbnailUrl: user.photoThumbnailUrl ? await this.presignAvatarUrl(user.photoThumbnailUrl) : null,
 		}
 	}
 }

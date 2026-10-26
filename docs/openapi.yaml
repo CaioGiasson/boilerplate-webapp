@@ -23,6 +23,10 @@ tags:
     - name: docs
     - name: auth
     - name: users
+    - name: admin
+    - name: system
+    - name: notifications
+    - name: push
     - name: nickname
     - name: images
     - name: examples
@@ -182,6 +186,9 @@ paths:
         get:
             tags: [auth]
             summary: Sessão atual
+            description: |
+                Além do usuário, devolve `impersonation` — `{ expiresAt }` quando a sessão é de impersonamento
+                (admin atuando como o usuário) ou `null` na sessão comum.
             security:
                 - SessionCookie: []
             responses:
@@ -190,9 +197,375 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/SuccessUser'
+                                allOf:
+                                    - $ref: '#/components/schemas/SuccessUser'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  impersonation:
+                                                      type: object
+                                                      nullable: true
+                                                      properties:
+                                                          expiresAt: { type: string, format: date-time }
                 '401':
                     $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/notifications:
+        get:
+            tags: [notifications]
+            summary: Listar as notificações do usuário (mais recentes primeiro)
+            security:
+                - SessionCookie: []
+            parameters:
+                - name: cursor
+                  in: query
+                  required: false
+                  description: Cursor opaco da página anterior (`nextCursor`); 400 se inválido
+                  schema: { type: string }
+                - name: limit
+                  in: query
+                  required: false
+                  schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+            responses:
+                '200':
+                    description: Página de notificações
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  items:
+                                                      type: array
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              type: { type: string }
+                                                              title: { type: string }
+                                                              text: { type: string }
+                                                              link:
+                                                                  {
+                                                                      type: string,
+                                                                      nullable: true,
+                                                                      description: Caminho interno,
+                                                                  }
+                                                              read: { type: boolean }
+                                                              createdAt: { type: string, format: date-time }
+                                                  unreadCount: { type: integer }
+                                                  nextCursor: { type: string, nullable: true }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/notifications/read-all:
+        post:
+            tags: [notifications]
+            summary: Marcar todas as notificações como lidas
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            responses:
+                '200':
+                    description: Quantas foram marcadas
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  updatedCount: { type: integer }
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/notifications/{id}/read:
+        post:
+            tags: [notifications]
+            summary: Marcar uma notificação como lida
+            description: Notificação inexistente ou de outro usuário responde 404 igual.
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+                - $ref: '#/components/parameters/UserId'
+            responses:
+                '200':
+                    description: Marcada (idempotente)
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    description: Notificação não encontrada
+
+    /api/v1/push/vapid-public-key:
+        get:
+            tags: [push]
+            summary: Configuração pública do Web Push
+            description: 'Público. `enabled: false` e `publicKey: null` quando o servidor não tem `VAPID_*`.'
+            responses:
+                '200':
+                    description: Configuração
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  enabled: { type: boolean }
+                                                  publicKey: { type: string, nullable: true }
+
+    /api/v1/push/subscriptions:
+        post:
+            tags: [push]
+            summary: Registrar o aparelho para receber push
+            description: |
+                Formato de `PushSubscription.toJSON()`. Exige HTTPS público no `endpoint`; máximo de 10 aparelhos por usuário (409).
+                Recusado (403) durante impersonamento e (503) sem `VAPID_*`. Rate limit de autenticação.
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [endpoint, keys]
+                            properties:
+                                endpoint: { type: string }
+                                keys:
+                                    type: object
+                                    required: [p256dh, auth]
+                                    properties:
+                                        p256dh: { type: string }
+                                        auth: { type: string }
+            responses:
+                '200':
+                    description: Assinatura salva (substitui a de outra conta no mesmo aparelho)
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+                '409':
+                    description: Limite de aparelhos
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+                '503':
+                    description: Push não configurado
+        delete:
+            tags: [push]
+            summary: Cancelar a assinatura do aparelho
+            description: Idempotente; só remove assinatura do próprio usuário.
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [endpoint]
+                            properties:
+                                endpoint: { type: string }
+            responses:
+                '200':
+                    description: Resultado (`removed`)
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+
+    /api/v1/push/test:
+        post:
+            tags: [push]
+            summary: Enviar uma notificação de teste para a própria conta
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            responses:
+                '200':
+                    description: Notificação criada e push enviado
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+                '503':
+                    description: Push não configurado
+
+    /api/v1/version:
+        get:
+            tags: [system]
+            summary: Versão do app em execução
+            description: |
+                Público, sem estado e sem cache (`Cache-Control: no-store`). O cliente compara com a versão do próprio
+                bundle (`package.json`) a cada 5 min e ao voltar para a aba; se diferir, recarrega o app (PWA).
+            responses:
+                '200':
+                    description: Versão atual
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  version: { type: string, example: 0.1.0 }
+
+    /api/v1/auth/impersonate:
+        post:
+            tags: [auth]
+            summary: Iniciar sessão de impersonamento a partir do token emitido por um admin
+            description: |
+                Troca o token de `POST /api/v1/admin/users/{id}/impersonation-token` por um cookie de sessão
+                de **10 minutos, sem renovação**. Durante essa sessão respondem **403**: troca de senha, troca e verificação de e-mail, exclusão de conta e decisão de quarentena, exportação de dados, revogação de sessões, assinatura/cancelamento/teste de push e as rotas `admin/*`. Só funciona em navegador **sem sessão válida** (409 caso contrário).
+                A sessão não aparece em Dispositivos do alvo e não dispara aviso de novo login. Qualquer falha do token
+                responde 401 sem revelar o motivo. Rate limit de autenticação.
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [token]
+                            properties:
+                                token: { type: string }
+            responses:
+                '200':
+                    description: Sessão iniciada (cookie definido)
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  expiresAt: { type: string, format: date-time }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '409':
+                    description: O navegador já tem uma sessão ativa
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/admin/users:
+        get:
+            tags: [admin]
+            summary: Listar usuários ativos (somente ADMIN)
+            description: 20 por página, mais recentes primeiro. E-mail sempre mascarado. Recusado (403) durante impersonamento.
+            security:
+                - SessionCookie: []
+            parameters:
+                - name: page
+                  in: query
+                  required: false
+                  schema: { type: integer, minimum: 1, default: 1 }
+            responses:
+                '200':
+                    description: Página de usuários
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  items:
+                                                      type: array
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              nickname: { type: string }
+                                                              emailMasked: { type: string, example: 'a***@e***.com' }
+                                                              role: { type: string, enum: [USER, ADMIN] }
+                                                              emailVerified: { type: boolean }
+                                                              createdAt: { type: string, format: date-time }
+                                                  page: { type: integer }
+                                                  pageSize: { type: integer }
+                                                  total: { type: integer }
+                                                  hasMore: { type: boolean }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sem papel ADMIN ou sessão de impersonamento
+
+    /api/v1/admin/users/{id}/impersonation-token:
+        post:
+            tags: [admin]
+            summary: Emitir token de impersonamento de um usuário (somente ADMIN)
+            description: |
+                Token válido por 10 minutos, entregue por link `/?impersonate=<token>` e consumido por
+                `POST /api/v1/auth/impersonate`. Recusa o próprio admin e outros admins. O token é o próprio JWT
+                de sessão: quem tem o link vira o alvo até expirar; não há revogação antes disso além do logout,
+                da troca de senha do alvo ou do emissor deixar de ser ADMIN.
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+                - $ref: '#/components/parameters/UserId'
+            responses:
+                '200':
+                    description: Token emitido
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  token: { type: string }
+                                                  expiresAt: { type: string, format: date-time }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sem papel ADMIN, sessão de impersonamento ou alvo é admin
+                '404':
+                    description: Usuário não encontrado
 
     /api/v1/auth/password/forgot:
         post:
@@ -656,6 +1029,22 @@ paths:
                                                   images:
                                                       type: array
                                                       items: { type: object }
+                                                  files:
+                                                      type: array
+                                                      items: { type: object }
+                                                  aiLogs:
+                                                      type: array
+                                                      description: Chamadas de IA do titular dentro da janela de retenção (prompt, resposta, tokens)
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              query: { type: string }
+                                                              model: { type: string }
+                                                              prompt: { type: string }
+                                                              response: { type: string }
+                                                              tokenCost: { type: integer }
+                                                              createdAt: { type: string, format: date-time }
 
     /api/v1/users/me/stats:
         get:
@@ -1138,6 +1527,10 @@ components:
                 nickname: { type: string }
                 email: { type: string }
                 photoUrl: { type: string, nullable: true }
+                photoThumbnailUrl:
+                    type: string
+                    nullable: true
+                    description: Thumbnail WebP de 200 px (URL assinada). Nulo em avatares anteriores ao pipeline de imagem; use photoUrl nesse caso.
                 settings: { type: object }
                 emailVerifiedAt: { type: string, format: date-time, nullable: true }
                 pendingEmail: { type: string, nullable: true }
@@ -1146,6 +1539,10 @@ components:
                     enum: [none, verify, change_old, change_new]
                 hasPassword: { type: boolean, description: Conta já definiu senha App }
                 googleLinked: { type: boolean, description: Conta vinculada ao Google OAuth }
+                role:
+                    type: string
+                    enum: [USER, ADMIN]
+                    description: Papel de acesso (conta sem o campo conta como USER)
         MosaicImage:
             type: object
             description: DTO de mosaico (URL já assinada quando aplicável)

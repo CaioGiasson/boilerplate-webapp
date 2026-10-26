@@ -25,6 +25,8 @@ export default class FileRepository {
 		mimeType: string
 		sizeBytes: number
 		ownerId?: string
+		thumbnailKey?: string
+		thumbnailUrl?: string
 	}) {
 		try {
 			return await this.prisma.file.create({
@@ -35,6 +37,8 @@ export default class FileRepository {
 					mimeType: input.mimeType,
 					sizeBytes: input.sizeBytes,
 					ownerId: input.ownerId,
+					thumbnailKey: input.thumbnailKey,
+					thumbnailUrl: input.thumbnailUrl,
 					status: FileStatus.pending,
 				},
 			})

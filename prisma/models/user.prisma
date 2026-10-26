@@ -1,3 +1,8 @@
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id           String           @id @default(auto()) @map("_id") @db.ObjectId
   name         String?
@@ -6,6 +11,8 @@ model User {
   /// Null for Google-only accounts until the user sets a password in profile.
   passwordHash String?
   photoUrl     String?
+  /// Thumbnail do avatar (URL canônica); ausente em avatares anteriores ao pipeline de imagem.
+  photoThumbnailUrl String?
   /// Set when the account is linked to Google OAuth (matched by email). Cleared on email change.
   googleLinkedAt DateTime?
   settings     KeyValueObject[]
@@ -31,4 +38,8 @@ model User {
   updatedAt    DateTime         @updatedAt
   deletedAt    DateTime?
   sessionsRevokedAt DateTime?
+  /// Papel de acesso. Ausente (conta anterior ao campo) conta como USER; `npm run user-role:backfill` grava USER.
+  role              UserRole?
+
+  @@index([role])
 }

@@ -1,0 +1,19 @@
+/// Auditoria de cada chamada de IA: prompt, resposta e tokens. Contém conteúdo do usuário (dado pessoal).
+model AiLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// Titular da chamada; null para chamadas de sistema.
+  userId    String?  @db.ObjectId
+  /// Correlação opcional definida por quem chama (ex.: id de um recurso).
+  contextId String?
+  /// Operação executada (ex.: summarize, generateTitle).
+  query     String
+  model     String
+  prompt    String
+  response  String
+  tokenCost Int
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([query, createdAt])
+}

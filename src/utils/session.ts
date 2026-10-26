@@ -11,9 +11,19 @@ export const DEVICE_COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60
 
 const DEVICE_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+/** Sessão emitida por admin para atuar como outro usuário; curta, sem renovação e sem `ActiveSession`. */
+export const SESSION_TYPE_IMPERSONATION = 'IMPERSONATION'
+export const IMPERSONATION_DEVICE = 'Admin Impersonation'
+export const IMPERSONATION_TTL_SECONDS = 10 * 60
+
+export type SessionType = typeof SESSION_TYPE_IMPERSONATION
+
 export type SessionClaims = {
 	userId: string
 	device: string
+	sessionType?: SessionType
+	/** Id do admin que emitiu a sessão de impersonamento. */
+	impersonatedBy?: string
 }
 
 export type VerifiedSession = SessionClaims & {
@@ -61,8 +71,11 @@ export type SignedSessionToken = {
 /**
  * Emite JWT de sessão com userId, device e jti.
  */
-export async function signSessionToken(claims: SessionClaims): Promise<SignedSessionToken> {
-	const ttlSeconds = getJwtTtlSeconds()
+export async function signSessionToken(
+	claims: SessionClaims,
+	options: { ttlSeconds?: number } = {}
+): Promise<SignedSessionToken> {
+	const ttlSeconds = options.ttlSeconds ?? getJwtTtlSeconds()
 	const jti = crypto.randomUUID()
 	const nowSeconds = Math.floor(Date.now() / 1000)
 	const exp = nowSeconds + ttlSeconds
@@ -70,6 +83,8 @@ export async function signSessionToken(claims: SessionClaims): Promise<SignedSes
 	const token = await new SignJWT({
 		userId: claims.userId,
 		device: claims.device,
+		...(claims.sessionType ? { sessionType: claims.sessionType } : {}),
+		...(claims.impersonatedBy ? { impersonatedBy: claims.impersonatedBy } : {}),
 	})
 		.setProtectedHeader({ alg: 'HS256' })
 		.setJti(jti)
@@ -101,10 +116,39 @@ export async function verifySessionToken(token: string): Promise<VerifiedSession
 			throw new UnauthorizedError('Invalid session token')
 		}
 
-		return { userId, device, token, jti, exp, iat }
+		const sessionType = payload.sessionType === SESSION_TYPE_IMPERSONATION ? SESSION_TYPE_IMPERSONATION : undefined
+		const impersonatedBy = typeof payload.impersonatedBy === 'string' ? payload.impersonatedBy : undefined
+
+		return {
+			userId,
+			device,
+			token,
+			jti,
+			exp,
+			iat,
+			...(sessionType ? { sessionType } : {}),
+			...(impersonatedBy ? { impersonatedBy } : {}),
+		}
 	} catch {
 		throw new UnauthorizedError('Invalid session token')
 	}
+}
+
+/** Emite o JWT de impersonamento (10 min, sem renovação). O consumo é feito por `POST /api/v1/auth/impersonate`. */
+export function signImpersonationToken(input: { userId: string; adminId: string }): Promise<SignedSessionToken> {
+	return signSessionToken(
+		{
+			userId: input.userId,
+			device: IMPERSONATION_DEVICE,
+			sessionType: SESSION_TYPE_IMPERSONATION,
+			impersonatedBy: input.adminId,
+		},
+		{ ttlSeconds: IMPERSONATION_TTL_SECONDS }
+	)
+}
+
+export function isImpersonationSession(session: Pick<SessionClaims, 'sessionType'>): boolean {
+	return session.sessionType === SESSION_TYPE_IMPERSONATION
 }
 
 export function createSessionDeviceId(): string {
@@ -216,7 +260,17 @@ export function applySessionCookie(
 	cookies.set(getSessionCookieName(context), token, options)
 }
 
-export function clearSessionCookies(cookies: MutableCookies, _context?: SessionCookieRequestContext): void {
+/**
+ * Remove os cookies de sessão e, por padrão, o de device. Em sessão de impersonamento use `keepDevice`:
+ * o device do navegador não pertence ao alvo e apagá-lo geraria alerta de novo login.
+ */
+export function clearSessionCookies(
+	cookies: MutableCookies,
+	_context?: SessionCookieRequestContext,
+	options: { keepDevice?: boolean } = {}
+): void {
 	expireLegacySessionCookies(cookies)
-	expireDeviceCookies(cookies)
+	if (!options.keepDevice) {
+		expireDeviceCookies(cookies)
+	}
 }

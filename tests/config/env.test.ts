@@ -2,13 +2,19 @@ import {
 	EXAMPLE_JWT_SECRET,
 	EXAMPLE_MONGO_ROOT_PASSWORD,
 	assertDatabaseUrl,
+	assertAiConfig,
+	assertVapidConfig,
+	getPushAllowedHostSuffixes,
+	getVapidConfig,
 	assertEmailConfig,
+	getAiConfig,
 	assertJwtSecret,
 	getEmailConfig,
 	getGoogleOAuthConfig,
 	getJwtAudience,
 	getJwtIssuer,
 	getJwtSecret,
+	isAIReady,
 	isGoogleOAuthReady,
 	validateEnv,
 } from '@/config/env'
@@ -217,5 +223,83 @@ describe('getGoogleOAuthConfig / isGoogleOAuthReady', () => {
 		expect(getGoogleOAuthConfig().timeoutMs).toBe(10_000)
 		process.env.GOOGLE_OAUTH_TIMEOUT_MS = '5000'
 		expect(getGoogleOAuthConfig().timeoutMs).toBe(5000)
+	})
+})
+
+describe('getAiConfig', () => {
+	it('sem variáveis: provider none, modelo padrão gpt-5.4-mini e app sobe', () => {
+		const config = getAiConfig({})
+		expect(config).toEqual({ provider: 'none', apiKey: '', textModel: 'gpt-5.4-mini', timeoutMs: 30_000 })
+		expect(isAIReady(config)).toBe(false)
+		expect(() => assertAiConfig(config)).not.toThrow()
+	})
+
+	it('lê provider, chave, modelo e timeout do env', () => {
+		const config = getAiConfig({
+			AI_PROVIDER: ' OpenAI ',
+			OPENAI_API_KEY: ' sk-test ',
+			OPENAI_TEXT_MODEL: 'outro-modelo',
+			AI_TIMEOUT_MS: '5000',
+		})
+		expect(config).toEqual({ provider: 'openai', apiKey: 'sk-test', textModel: 'outro-modelo', timeoutMs: 5000 })
+		expect(isAIReady(config)).toBe(true)
+	})
+
+	it('recusa provider desconhecido', () => {
+		expect(() => getAiConfig({ AI_PROVIDER: 'foo' })).toThrow('AI_PROVIDER must be openai or none')
+	})
+
+	it('exige OPENAI_API_KEY quando AI_PROVIDER=openai', () => {
+		expect(() => assertAiConfig(getAiConfig({ AI_PROVIDER: 'openai' }))).toThrow('OPENAI_API_KEY is required')
+	})
+})
+
+describe('VAPID (Web Push)', () => {
+	const COMPLETE = { VAPID_PUBLIC_KEY: 'pub', VAPID_PRIVATE_KEY: 'priv', VAPID_SUBJECT: 'mailto:ops@example.com' }
+
+	it('sem variáveis o push fica desligado e o boot segue', () => {
+		expect(getVapidConfig({})).toBeNull()
+		expect(() => assertVapidConfig({})).not.toThrow()
+	})
+
+	it('com as três variáveis devolve a configuração', () => {
+		expect(getVapidConfig({ ...COMPLETE, VAPID_PUBLIC_KEY: ' pub ' })).toEqual({
+			publicKey: 'pub',
+			privateKey: 'priv',
+			subject: 'mailto:ops@example.com',
+		})
+		expect(() => assertVapidConfig(COMPLETE)).not.toThrow()
+	})
+
+	it('configuração parcial é erro de deploy', () => {
+		expect(() => assertVapidConfig({ VAPID_PUBLIC_KEY: 'pub' })).toThrow('must be set together')
+		expect(() => assertVapidConfig({ ...COMPLETE, VAPID_PRIVATE_KEY: '' })).toThrow('must be set together')
+		expect(getVapidConfig({ VAPID_PUBLIC_KEY: 'pub' })).toBeNull()
+	})
+
+	it('o subject precisa ser mailto: ou https://', () => {
+		expect(() => assertVapidConfig({ ...COMPLETE, VAPID_SUBJECT: 'https://example.com' })).not.toThrow()
+		expect(() => assertVapidConfig({ ...COMPLETE, VAPID_SUBJECT: 'ops@example.com' })).toThrow('mailto:')
+	})
+})
+
+describe('getPushAllowedHostSuffixes', () => {
+	it('por padrão só FCM, Mozilla, Windows e Apple', () => {
+		expect(getPushAllowedHostSuffixes({})).toEqual([
+			'fcm.googleapis.com',
+			'push.services.mozilla.com',
+			'notify.windows.com',
+			'push.apple.com',
+		])
+	})
+
+	it('WEB_PUSH_ALLOWED_HOSTS acrescenta sufixos normalizados, sem duplicar', () => {
+		const suffixes = getPushAllowedHostSuffixes({
+			WEB_PUSH_ALLOWED_HOSTS: ' .Push.Example.com , fcm.googleapis.com ,, ',
+		})
+
+		expect(suffixes).toContain('push.example.com')
+		expect(suffixes.filter((item) => item === 'fcm.googleapis.com')).toHaveLength(1)
+		expect(suffixes).toHaveLength(5)
 	})
 })

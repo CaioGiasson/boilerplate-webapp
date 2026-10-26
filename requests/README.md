@@ -23,15 +23,16 @@ After login/register, the session cookie (`app-session`) is stored automatically
 
 ## Index
 
-| File                                                                 | Routes covered                                                        |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| [health/healthcheck.http](./health/healthcheck.http)                 | `GET /api/health`, `GET /api/health/database`                         |
-| [auth/auth.http](./auth/auth.http)                                   | Login, register, logout, me, password reset, email verification       |
-| [users/users.http](./users/users.http)                               | Profile, password, photo, settings, export, stats, sessions, nickname |
-| [system/version.http](./system/version.http)                         | `GET /api/v1/version`                                                 |
-| [admin/admin.http](./admin/admin.http)                               | Admin users list, impersonation token, `POST /auth/impersonate`       |
-| [images/images.http](./images/images.http)                           | List, create, CRUD, visibility, report, import, tags                  |
-| [examples/recoverOrGenerate.http](./examples/recoverOrGenerate.http) | `GET /api/v1/examples` (dev only)                                     |
+| File                                                                   | Routes covered                                                        |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [health/healthcheck.http](./health/healthcheck.http)                   | `GET /api/health`, `GET /api/health/database`                         |
+| [auth/auth.http](./auth/auth.http)                                     | Login, register, logout, me, password reset, email verification       |
+| [users/users.http](./users/users.http)                                 | Profile, password, photo, settings, export, stats, sessions, nickname |
+| [notifications/notifications.http](./notifications/notifications.http) | Notifications list/read, Web Push config, subscribe/unsubscribe, test |
+| [system/version.http](./system/version.http)                           | `GET /api/v1/version`                                                 |
+| [admin/admin.http](./admin/admin.http)                                 | Admin users list, impersonation token, `POST /auth/impersonate`       |
+| [images/images.http](./images/images.http)                             | List, create, CRUD, visibility, report, import, tags                  |
+| [examples/recoverOrGenerate.http](./examples/recoverOrGenerate.http)   | `GET /api/v1/examples` (dev only)                                     |
 
 ## Route inventory (`src/app/api`)
 
@@ -43,6 +44,13 @@ After login/register, the session cookie (`app-session`) is stored automatically
 | POST   | `/api/v1/auth/login`                           | No                     | `v1/auth/login/route.ts`                           |
 | POST   | `/api/v1/auth/logout`                          | Optional               | `v1/auth/logout/route.ts`                          |
 | GET    | `/api/v1/auth/me`                              | Yes                    | `v1/auth/me/route.ts`                              |
+| GET    | `/api/v1/notifications`                        | Yes                    | `v1/notifications/route.ts`                        |
+| POST   | `/api/v1/notifications/read-all`               | Yes                    | `v1/notifications/read-all/route.ts`               |
+| POST   | `/api/v1/notifications/[id]/read`              | Yes                    | `v1/notifications/[id]/read/route.ts`              |
+| GET    | `/api/v1/push/vapid-public-key`                | No                     | `v1/push/vapid-public-key/route.ts`                |
+| POST   | `/api/v1/push/subscriptions`                   | Yes                    | `v1/push/subscriptions/route.ts`                   |
+| DELETE | `/api/v1/push/subscriptions`                   | Yes                    | `v1/push/subscriptions/route.ts`                   |
+| POST   | `/api/v1/push/test`                            | Yes                    | `v1/push/test/route.ts`                            |
 | GET    | `/api/v1/version`                              | No                     | `v1/version/route.ts`                              |
 | POST   | `/api/v1/auth/impersonate`                     | No (token in body)     | `v1/auth/impersonate/route.ts`                     |
 | GET    | `/api/v1/admin/users`                          | Yes (ADMIN)            | `v1/admin/users/route.ts`                          |

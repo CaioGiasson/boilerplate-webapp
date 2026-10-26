@@ -15,6 +15,7 @@ O app deve ser instalável (manifest, ícones, service worker) e não pode ficar
 - **Atualização forçada:** `ForceAppUpdate` consulta `GET /api/v1/version` a cada 5 min e ao voltar para a aba. Versão do servidor diferente da do bundle (`APP_VERSION`, lida do `package.json`) → aviso e `SKIP_WAITING` + reload após 1,8 s. O reload é **adiado enquanto há um campo em foco**, para não perder o que está sendo digitado (melhoria sobre o tribal).
 - **A versão só muda quando alguém altera `version` no `package.json`.** Deploy sem bump não recarrega os clientes; bump recarrega todos os que estiverem abertos.
 - **Manifest** gerado por `src/app/manifest.ts`; ícones de placeholder (`npm run pwa:icons`) a serem trocados pela marca do produto.
+- **Push:** os handlers `push` e `notificationclick` do `sw.js` pertencem ao ADR-015 (notificações); eles não guardam nada em cache.
 - `/sw.js` é servido com `Cache-Control: no-cache, no-store, must-revalidate`: um SW com bug nunca fica preso no navegador.
 
 ## Consequências

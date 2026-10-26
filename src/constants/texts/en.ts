@@ -28,6 +28,7 @@ const en: AppMessages = {
 		signOut: 'Sign out',
 		mainNavigation: 'Main navigation',
 		admin: 'Administration',
+		notifications: 'Notifications',
 	},
 	validation: {
 		required: 'This field is required',
@@ -236,6 +237,19 @@ const en: AppMessages = {
 			en: 'English',
 			es: 'Spanish',
 		},
+		push: {
+			title: 'Device notifications',
+			description: 'Get alerts in this browser even when the app is closed.',
+			enable: 'Enable notifications on this device',
+			unsupported: 'This browser does not support push notifications.',
+			denied: 'Notifications are blocked in the browser. Allow them in the site settings.',
+			notConfigured: 'Push notifications are not configured in this environment.',
+			enabledToast: 'Notifications enabled on this device.',
+			disabledToast: 'Notifications disabled on this device.',
+			failed: 'Could not change notifications.',
+			sendTest: 'Send a test notification',
+			testSent: 'Test notification sent.',
+		},
 	},
 	notFound: {
 		title: 'Page not found',
@@ -269,6 +283,7 @@ const en: AppMessages = {
 		privacy: 'Privacy',
 		terms: 'Terms',
 		admin: 'Administration',
+		notifications: 'Notifications',
 	},
 	admin: {
 		title: 'Administration',
@@ -301,6 +316,18 @@ const en: AppMessages = {
 		startFailed:
 			'Could not start the session. The link expired, is invalid, or this browser already has an active session.',
 		sessionActive: 'Impersonation session active',
+	},
+	notifications: {
+		title: 'Notifications',
+		empty: 'You have no notifications.',
+		loadError: 'Could not load notifications.',
+		loadMore: 'Load more',
+		markAllRead: 'Mark all as read',
+		markRead: 'Mark as read',
+		unreadBadge: '{count} unread',
+		bellLabel: 'Notifications',
+		testTitle: 'Test notification',
+		testText: 'If you are reading this, notifications are working.',
 	},
 	pwa: {
 		installTitle: 'Install the app',

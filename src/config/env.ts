@@ -141,6 +141,7 @@ export function validateEnv(): void {
 	assertDatabaseUrl(process.env.DATABASE_URL ?? '', process.env.ENVIRONMENT ?? '')
 	assertEmailConfig(getEmailConfig())
 	assertAiConfig(getAiConfig())
+	assertVapidConfig(process.env)
 }
 
 export function getJwtSecret(): Uint8Array {
@@ -290,6 +291,38 @@ export function assertAiConfig(config: AiConfig): void {
 /** True quando há fornecedor configurado; a flag `ai_enabled` decide se ele é usado. */
 export function isAIReady(config: AiConfig = getAiConfig()): boolean {
 	return config.provider === 'openai' && Boolean(config.apiKey)
+}
+
+export type VapidConfig = {
+	publicKey: string
+	privateKey: string
+	subject: string
+}
+
+const VAPID_ENV_KEYS = ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT'] as const
+
+/** Web Push só liga com as três variáveis; sem elas devolve `null` e o app funciona só com o sino. */
+export function getVapidConfig(env: NodeJS.ProcessEnv = process.env): VapidConfig | null {
+	const [publicKey, privateKey, subject] = VAPID_ENV_KEYS.map((key) => env[key]?.trim() ?? '')
+	if (!publicKey || !privateKey || !subject) {
+		return null
+	}
+	return { publicKey, privateKey, subject }
+}
+
+/** Configuração parcial é erro de deploy (push ligado pela metade): recusa o boot em vez de falhar em silêncio. */
+export function assertVapidConfig(env: NodeJS.ProcessEnv = process.env): void {
+	const present = VAPID_ENV_KEYS.filter((key) => Boolean(env[key]?.trim()))
+	if (present.length === 0) {
+		return
+	}
+	if (present.length < VAPID_ENV_KEYS.length) {
+		throw new Error('VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT must be set together')
+	}
+	const subject = env.VAPID_SUBJECT?.trim() ?? ''
+	if (!subject.startsWith('mailto:') && !subject.startsWith('https://')) {
+		throw new Error('VAPID_SUBJECT must start with mailto: or https://')
+	}
 }
 
 export function getAppBaseUrl(env: NodeJS.ProcessEnv = process.env): string {

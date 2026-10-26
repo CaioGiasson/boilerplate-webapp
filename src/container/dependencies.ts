@@ -31,6 +31,15 @@ import SummarizeText from '@/useCases/summarizeText.usecase'
 import CreateImpersonationToken from '@/useCases/createImpersonationToken.usecase'
 import ConsumeImpersonationToken from '@/useCases/consumeImpersonationToken.usecase'
 import ListAdminUsers from '@/useCases/listAdminUsers.usecase'
+import CreateNotification from '@/useCases/createNotification.usecase'
+import ListNotifications from '@/useCases/listNotifications.usecase'
+import MarkNotificationRead from '@/useCases/markNotificationRead.usecase'
+import MarkAllNotificationsRead from '@/useCases/markAllNotificationsRead.usecase'
+import RegisterPushSubscription from '@/useCases/registerPushSubscription.usecase'
+import UnregisterPushSubscription from '@/useCases/unregisterPushSubscription.usecase'
+import SendTestPushNotification from '@/useCases/sendTestPushNotification.usecase'
+import { getWebPushService } from '@/services/WebPush/WebPush.service'
+import type { WebPushPort } from '@/services/WebPush/webPush.port'
 import AIService, { getAIService } from '@/services/AI/AI.service'
 
 export type AppDependencies = {
@@ -68,6 +77,14 @@ export type AppDependencies = {
 	createImpersonationTokenUseCase: CreateImpersonationToken
 	consumeImpersonationTokenUseCase: ConsumeImpersonationToken
 	listAdminUsersUseCase: ListAdminUsers
+	webPushService: WebPushPort
+	createNotificationUseCase: CreateNotification
+	listNotificationsUseCase: ListNotifications
+	markNotificationReadUseCase: MarkNotificationRead
+	markAllNotificationsReadUseCase: MarkAllNotificationsRead
+	registerPushSubscriptionUseCase: RegisterPushSubscription
+	unregisterPushSubscriptionUseCase: UnregisterPushSubscription
+	sendTestPushNotificationUseCase: SendTestPushNotification
 }
 
 let cachedDependencies: AppDependencies | null = null
@@ -111,6 +128,14 @@ export function getDependencies(): AppDependencies {
 	const createImpersonationTokenUseCase = new CreateImpersonationToken()
 	const consumeImpersonationTokenUseCase = new ConsumeImpersonationToken()
 	const listAdminUsersUseCase = new ListAdminUsers()
+	const webPushService = getWebPushService()
+	const createNotificationUseCase = new CreateNotification(webPushService)
+	const listNotificationsUseCase = new ListNotifications()
+	const markNotificationReadUseCase = new MarkNotificationRead()
+	const markAllNotificationsReadUseCase = new MarkAllNotificationsRead()
+	const registerPushSubscriptionUseCase = new RegisterPushSubscription(webPushService)
+	const unregisterPushSubscriptionUseCase = new UnregisterPushSubscription()
+	const sendTestPushNotificationUseCase = new SendTestPushNotification(createNotificationUseCase, webPushService)
 
 	cachedDependencies = {
 		exampleService,
@@ -147,6 +172,14 @@ export function getDependencies(): AppDependencies {
 		createImpersonationTokenUseCase,
 		consumeImpersonationTokenUseCase,
 		listAdminUsersUseCase,
+		webPushService,
+		createNotificationUseCase,
+		listNotificationsUseCase,
+		markNotificationReadUseCase,
+		markAllNotificationsReadUseCase,
+		registerPushSubscriptionUseCase,
+		unregisterPushSubscriptionUseCase,
+		sendTestPushNotificationUseCase,
 	}
 
 	return cachedDependencies

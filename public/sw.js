@@ -5,10 +5,11 @@
  *  - NUNCA guarda HTML de páginas nem respostas de /api: o conteúdo autenticado não sobrevive ao logout.
  *  - Só guarda assets públicos e imutáveis (/_next/static, ícones, imagens e fontes da mesma origem).
  *  - Offline, navegações caem em /offline.html; erro 5xx cai em /error.html (ambos estáticos e públicos).
+ *  - Push: mostra só o que o servidor mandou (título, texto, link interno). O link é revalidado aqui (só caminho relativo).
  *
  * Mudou algo aqui? Suba SW_VERSION. O cliente recarrega quando a versão do app muda (ForceAppUpdate).
  */
-const SW_VERSION = 'v1'
+const SW_VERSION = 'v2'
 const CACHE_PREFIX = 'app-'
 const STATIC_CACHE = `${CACHE_PREFIX}static-v1`
 const NEXT_STATIC_CACHE = `${CACHE_PREFIX}next-static-v1`
@@ -150,3 +151,64 @@ async function handleNavigation(request) {
 		return (await fallbackResponse(OFFLINE_PATH)) ?? Response.error()
 	}
 }
+
+const PUSH_ICON = '/pwa-192.png'
+const PUSH_FALLBACK_TITLE = 'Notification'
+
+/** Mesma regra de `isSafeInAppLink` (src/utils/safeInAppLink.ts): só caminho interno; qualquer outra coisa vira `/`. */
+function resolveNotificationUrl(link) {
+	if (typeof link !== 'string') return '/'
+	if (!link.startsWith('/') || link.startsWith('//')) return '/'
+	if (link.includes('\\') || link.includes(':') || /[\r\n\t]/.test(link) || link.length > 500) return '/'
+	return link
+}
+
+function readPushPayload(event) {
+	try {
+		const parsed = event.data ? event.data.json() : null
+		return parsed && typeof parsed === 'object' ? parsed : {}
+	} catch {
+		return {}
+	}
+}
+
+async function handlePush(event) {
+	const payload = readPushPayload(event)
+	const title = typeof payload.title === 'string' && payload.title ? payload.title : PUSH_FALLBACK_TITLE
+	const notificationId = typeof payload.notificationId === 'string' ? payload.notificationId : undefined
+
+	await self.registration.showNotification(title, {
+		body: typeof payload.text === 'string' ? payload.text : '',
+		icon: PUSH_ICON,
+		badge: PUSH_ICON,
+		// Mesma notificação reenviada substitui a anterior em vez de empilhar.
+		tag: notificationId,
+		data: { link: resolveNotificationUrl(payload.link), notificationId },
+	})
+}
+
+async function handleNotificationClick(event) {
+	const target = new URL(
+		resolveNotificationUrl(event.notification.data && event.notification.data.link),
+		self.location.origin
+	)
+	const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+
+	for (const client of windows) {
+		if (new URL(client.url).origin === target.origin && 'focus' in client) {
+			await client.focus()
+			if ('navigate' in client) await client.navigate(target.href)
+			return
+		}
+	}
+	await self.clients.openWindow(target.href)
+}
+
+self.addEventListener('push', (event) => {
+	event.waitUntil(handlePush(event))
+})
+
+self.addEventListener('notificationclick', (event) => {
+	event.notification.close()
+	event.waitUntil(handleNotificationClick(event))
+})

@@ -1,0 +1,17 @@
+/// Notificação in-app (sino). Dado pessoal: entra na exportação e é apagada na exclusão definitiva.
+model Notification {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  /// Categoria livre definida por quem cria (ex.: TEST, SYSTEM). Não influencia o envio do push.
+  type      String
+  title     String
+  text      String
+  /// Caminho interno (começa com `/`), validado na criação e de novo ao abrir.
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@index([createdAt])
+}

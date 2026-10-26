@@ -331,6 +331,28 @@ async function checkAi() {
 }
 
 /**
+ * @returns {Promise<CheckResult>}
+ */
+async function checkWebPush() {
+	const keys = ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT']
+	const missing = keys.filter((key) => !process.env[key]?.trim())
+
+	if (missing.length === keys.length) {
+		return { name: 'webPush', ok: true, detail: 'skipped (VAPID_* not set — in-app bell only)' }
+	}
+	if (missing.length > 0) {
+		return { name: 'webPush', ok: false, detail: `incomplete config: missing ${missing.join(', ')}` }
+	}
+
+	const subject = process.env.VAPID_SUBJECT.trim()
+	if (!subject.startsWith('mailto:') && !subject.startsWith('https://')) {
+		return { name: 'webPush', ok: false, detail: 'VAPID_SUBJECT must start with mailto: or https://' }
+	}
+
+	return { name: 'webPush', ok: true }
+}
+
+/**
  * @param {CheckResult} result
  */
 function printResult(result) {
@@ -343,7 +365,16 @@ async function main() {
 	console.log('App healthcheck\n')
 
 	const results = []
-	for (const check of [checkEnv, checkDatabase, checkSpaces, checkJwt, checkBrevo, checkGoogleOAuth, checkAi]) {
+	for (const check of [
+		checkEnv,
+		checkDatabase,
+		checkSpaces,
+		checkJwt,
+		checkBrevo,
+		checkGoogleOAuth,
+		checkAi,
+		checkWebPush,
+	]) {
 		const result = await check()
 		results.push(result)
 		printResult(result)

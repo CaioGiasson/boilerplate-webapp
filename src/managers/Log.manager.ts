@@ -61,6 +61,20 @@ export default class LogManager {
 		process.stdout.write(`[INFO] ${timestamp} - ${message} ${serializeLogData(data)}\n`)
 	}
 
+	static warn(message: string, data: unknown = null): void {
+		if (LOG_LEVEL === 'silent') {
+			return
+		}
+
+		const timestamp = Datetime.format(Datetime.now(), 'YYYY-MM-DD HH:mm:ss')
+		if (data === null) {
+			process.stderr.write(`[WARN] ${timestamp} - ${message}\n`)
+			return
+		}
+
+		process.stderr.write(`[WARN] ${timestamp} - ${message} ${serializeLogData(data)}\n`)
+	}
+
 	static error(message: string, data: unknown = null): void {
 		const timestamp = Datetime.format(Datetime.now(), 'YYYY-MM-DD HH:mm:ss')
 		if (data === null) {

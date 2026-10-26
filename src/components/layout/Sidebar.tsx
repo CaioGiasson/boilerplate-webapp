@@ -1,11 +1,12 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { User } from 'lucide-react'
+import { Bell, User } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { AppDropdownMenu, Avatar, Icon, NavIconButton, NavIconLink } from '@/design-system'
 import { NAV_ITEMS } from '@/constants/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount'
 import { APP_NAME } from '@/constants/app'
 import { cn } from '@/lib/utils'
 
@@ -22,6 +23,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
 	const tApp = useTranslations('app')
 	const { user, loading, logout } = useAuth()
 	const mainItems = NAV_ITEMS.filter((item) => item.placement === 'main')
+	const { count: unreadCount } = useUnreadNotificationCount(Boolean(user))
 
 	const legalItems = [
 		{
@@ -132,6 +134,26 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
 						</Link>
 					</NavIconLink>
 				))}
+				{user ? (
+					<NavIconLink
+						asChild
+						label={t('notifications')}
+						tooltip={t('notifications')}
+						data-testid="nav-notifications"
+					>
+						<Link href="/notifications" onClick={onNavigate} className="relative">
+							<Icon icon={Bell} />
+							{unreadCount > 0 ? (
+								<span
+									className="absolute -top-1 -right-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] leading-4 font-medium text-white"
+									data-testid="nav-notifications-badge"
+								>
+									{unreadCount > 99 ? '99+' : unreadCount}
+								</span>
+							) : null}
+						</Link>
+					</NavIconLink>
+				) : null}
 			</nav>
 
 			<div className="mt-auto flex flex-col items-center">

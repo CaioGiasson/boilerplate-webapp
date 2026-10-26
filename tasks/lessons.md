@@ -153,3 +153,13 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 **Causa:** estratégia network-first que grava documentos HTML no cache do service worker; o logout não limpa esse cache.
 
 **Prevenção:** `public/sw.js` **não** guarda HTML nem `/api` (ADR-014); só assets públicos e imutáveis. Teste em `tests/lib/pwa/serviceWorker.test.ts` garante que a navegação não entra em cache. Se um dia precisar cachear páginas, defina política por rota e limpe os caches no logout primeiro.
+
+---
+
+## Heredoc do shell apaga a contrabarra em `'\\'` ao anexar JS a um arquivo
+
+**Sintoma:** `public/sw.js` quebrou com `SyntaxError: missing ) after argument list`; o lint apontou `Parsing error` numa linha com `link.includes('\')`.
+
+**Causa:** o literal `'\\'` (uma contrabarra) escrito via `cat >> arquivo <<'EOF'` chegou ao arquivo como `'\'`, que escapa a aspa e abre string.
+
+**Prevenção:** edite arquivos JS/TS com a ferramenta de edição, não com heredoc de shell; depois de qualquer geração de código, rode `node --check` (para `.js` puro) e o lint.

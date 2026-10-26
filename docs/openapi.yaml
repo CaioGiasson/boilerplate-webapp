@@ -25,6 +25,8 @@ tags:
     - name: users
     - name: admin
     - name: system
+    - name: notifications
+    - name: push
     - name: nickname
     - name: images
     - name: examples
@@ -209,6 +211,211 @@ paths:
                                                           expiresAt: { type: string, format: date-time }
                 '401':
                     $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/notifications:
+        get:
+            tags: [notifications]
+            summary: Listar as notificações do usuário (mais recentes primeiro)
+            security:
+                - SessionCookie: []
+            parameters:
+                - name: before
+                  in: query
+                  required: false
+                  description: '`createdAt` ISO da última notificação já carregada (cursor)'
+                  schema: { type: string, format: date-time }
+                - name: limit
+                  in: query
+                  required: false
+                  schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+            responses:
+                '200':
+                    description: Página de notificações
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  items:
+                                                      type: array
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              type: { type: string }
+                                                              title: { type: string }
+                                                              text: { type: string }
+                                                              link:
+                                                                  {
+                                                                      type: string,
+                                                                      nullable: true,
+                                                                      description: Caminho interno,
+                                                                  }
+                                                              read: { type: boolean }
+                                                              createdAt: { type: string, format: date-time }
+                                                  unreadCount: { type: integer }
+                                                  nextBefore: { type: string, format: date-time, nullable: true }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/notifications/read-all:
+        post:
+            tags: [notifications]
+            summary: Marcar todas as notificações como lidas
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            responses:
+                '200':
+                    description: Quantas foram marcadas
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  updatedCount: { type: integer }
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/notifications/{id}/read:
+        post:
+            tags: [notifications]
+            summary: Marcar uma notificação como lida
+            description: Notificação inexistente ou de outro usuário responde 404 igual.
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+                - $ref: '#/components/parameters/UserId'
+            responses:
+                '200':
+                    description: Marcada (idempotente)
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    description: Notificação não encontrada
+
+    /api/v1/push/vapid-public-key:
+        get:
+            tags: [push]
+            summary: Configuração pública do Web Push
+            description: 'Público. `enabled: false` e `publicKey: null` quando o servidor não tem `VAPID_*`.'
+            responses:
+                '200':
+                    description: Configuração
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  enabled: { type: boolean }
+                                                  publicKey: { type: string, nullable: true }
+
+    /api/v1/push/subscriptions:
+        post:
+            tags: [push]
+            summary: Registrar o aparelho para receber push
+            description: |
+                Formato de `PushSubscription.toJSON()`. Exige HTTPS público no `endpoint`; máximo de 10 aparelhos por usuário (409).
+                Recusado (403) durante impersonamento e (503) sem `VAPID_*`. Rate limit de autenticação.
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [endpoint, keys]
+                            properties:
+                                endpoint: { type: string }
+                                keys:
+                                    type: object
+                                    required: [p256dh, auth]
+                                    properties:
+                                        p256dh: { type: string }
+                                        auth: { type: string }
+            responses:
+                '200':
+                    description: Assinatura salva (substitui a de outra conta no mesmo aparelho)
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+                '409':
+                    description: Limite de aparelhos
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+                '503':
+                    description: Push não configurado
+        delete:
+            tags: [push]
+            summary: Cancelar a assinatura do aparelho
+            description: Idempotente; só remove assinatura do próprio usuário.
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [endpoint]
+                            properties:
+                                endpoint: { type: string }
+            responses:
+                '200':
+                    description: Resultado (`removed`)
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+
+    /api/v1/push/test:
+        post:
+            tags: [push]
+            summary: Enviar uma notificação de teste para a própria conta
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            responses:
+                '200':
+                    description: Notificação criada e push enviado
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+                '503':
+                    description: Push não configurado
 
     /api/v1/version:
         get:

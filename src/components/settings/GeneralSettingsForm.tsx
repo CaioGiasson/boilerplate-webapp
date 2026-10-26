@@ -10,6 +10,7 @@ import { SETTINGS_KEYS } from '@/managers/Settings.manager'
 import type { AppLocale } from '@/constants/texts'
 import { locales } from '@/constants/texts'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { PushNotificationsSetting } from '@/components/settings/PushNotificationsSetting'
 import { setUserSettingRequest } from '@/lib/auth-client'
 
 export function GeneralSettingsForm() {
@@ -75,6 +76,12 @@ export function GeneralSettingsForm() {
 					</div>
 				</div>
 			</SettingsSection>
+
+			{user ? (
+				<SettingsSection title={t('push.title')} description={t('push.description')}>
+					<PushNotificationsSetting />
+				</SettingsSection>
+			) : null}
 		</div>
 	)
 }

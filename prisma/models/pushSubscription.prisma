@@ -1,0 +1,13 @@
+/// Assinatura Web Push de um navegador/dispositivo. `endpoint`, `p256dh` e `auth` identificam e permitem
+/// enviar ao aparelho: tratar como dado pessoal e como segredo (nunca exportar nem logar `p256dh`/`auth`).
+model PushSubscription {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}

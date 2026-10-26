@@ -1,0 +1,48 @@
+@baseUrl = http://localhost:3000
+@notificationId =
+
+### List notifications (session cookie from auth.http login)
+GET {{baseUrl}}/api/v1/notifications?limit=20
+
+###
+### Next page: pass nextBefore from the previous response
+GET {{baseUrl}}/api/v1/notifications?before=2026-10-26T12:00:00.000Z
+
+###
+### Mark one as read
+POST {{baseUrl}}/api/v1/notifications/{{notificationId}}/read
+Origin: {{baseUrl}}
+
+###
+### Mark all as read
+POST {{baseUrl}}/api/v1/notifications/read-all
+Origin: {{baseUrl}}
+
+###
+### Web Push public config (public)
+GET {{baseUrl}}/api/v1/push/vapid-public-key
+
+###
+### Register a device (PushSubscription.toJSON() from the browser; needs VAPID_* configured)
+POST {{baseUrl}}/api/v1/push/subscriptions
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "endpoint": "https://fcm.googleapis.com/fcm/send/EXAMPLE",
+  "keys": { "p256dh": "BASE64URL_P256DH", "auth": "BASE64URL_AUTH" }
+}
+
+###
+### Cancel a device
+DELETE {{baseUrl}}/api/v1/push/subscriptions
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{ "endpoint": "https://fcm.googleapis.com/fcm/send/EXAMPLE" }
+
+###
+### Send a test notification to your own account
+POST {{baseUrl}}/api/v1/push/test
+Origin: {{baseUrl}}
+Accept-Language: pt

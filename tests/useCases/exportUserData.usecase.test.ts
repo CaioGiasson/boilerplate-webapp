@@ -43,6 +43,25 @@ describe('ExportUserData', () => {
 			createdAt: new Date('2026-08-20T00:00:00.000Z'),
 		}
 
+		const notification = {
+			id: 'n1',
+			userId: 'user-1',
+			type: 'TEST',
+			title: 'Título',
+			text: 'Texto',
+			link: '/notifications',
+			readAt: null,
+			createdAt: new Date('2026-08-21T00:00:00.000Z'),
+		}
+		const pushSubscription = {
+			id: 'sub-1',
+			userId: 'user-1',
+			endpoint: 'https://push.example.com/secret-endpoint',
+			p256dh: 'secret-p256dh',
+			auth: 'secret-auth',
+			createdAt: new Date('2026-08-22T00:00:00.000Z'),
+		}
+
 		mockPrismaRuntime({
 			user: {
 				findFirst: jest.fn(async () => user),
@@ -52,6 +71,12 @@ describe('ExportUserData', () => {
 			},
 			aiLog: {
 				findMany: jest.fn(async () => [aiLog]),
+			},
+			notification: {
+				findMany: jest.fn(async () => [notification]),
+			},
+			pushSubscription: {
+				findMany: jest.fn(async () => [pushSubscription]),
 			},
 		})
 
@@ -84,6 +109,20 @@ describe('ExportUserData', () => {
 				createdAt: '2026-08-19T00:00:00.000Z',
 			},
 		])
+		expect(result.notifications).toEqual([
+			{
+				id: 'n1',
+				type: 'TEST',
+				title: 'Título',
+				text: 'Texto',
+				link: '/notifications',
+				read: false,
+				createdAt: '2026-08-21T00:00:00.000Z',
+			},
+		])
+		expect(result.pushSubscriptions).toEqual([{ id: 'sub-1', createdAt: '2026-08-22T00:00:00.000Z' }])
+		// Endpoint e chaves do aparelho nunca saem na exportação.
+		expect(JSON.stringify(result)).not.toMatch(/secret-endpoint|secret-p256dh|secret-auth/)
 		expect(result.aiLogs).toEqual([
 			{
 				id: 'log-1',
@@ -102,6 +141,8 @@ describe('ExportUserData', () => {
 			user: { findFirst: jest.fn(async () => null) },
 			file: { findMany: jest.fn() },
 			aiLog: { findMany: jest.fn() },
+			notification: { findMany: jest.fn() },
+			pushSubscription: { findMany: jest.fn() },
 		})
 
 		await expect(new ExportUserData().run({ userId: 'missing' })).rejects.toThrow(NotFoundError)

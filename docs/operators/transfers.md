@@ -34,6 +34,10 @@ O TOS oficial declara que documentos adicionais, incluindo o DPA, “are incorpo
 
 Não afirmar adequação UE–EUA inexistente ou não verificada; a salvaguarda documentada aqui é **ToS + DPA incorporado** (LGPD art. 33 / GDPR art. 46 quando aplicável).
 
+## Web Push (opcional)
+
+Com `VAPID_*` configurado, o texto das notificações passa pelo serviço de push do navegador do titular (Google FCM, Mozilla autopush ou Apple), normalmente fora do Brasil. É uma transferência internacional **iniciada pelo próprio titular** ao ativar o push no aparelho. Não coloque dado sensível no `title`/`text`. Desligado por padrão. Operação em `docs/operators/web-push.md`.
+
 ## OpenAI (opcional)
 
 Quando `AI_PROVIDER=openai` e a flag `ai_enabled` estão ligadas, o texto enviado pelos use cases que usam o AI Service sai do app host para a API da OpenAI (EUA). É uma **transferência internacional** adicional, separada do Spaces.

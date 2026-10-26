@@ -34,6 +34,9 @@ function loadServiceWorker(fetchImpl: FetchImpl) {
 	const cachesByName = new Map<string, FakeCache>()
 	const skipWaiting = jest.fn()
 	const claim = jest.fn()
+	const showNotification = jest.fn(async () => undefined)
+	const matchAll = jest.fn(async () => [] as Array<Record<string, unknown>>)
+	const openWindow = jest.fn(async () => undefined)
 
 	const sandbox = {
 		self: {
@@ -42,7 +45,8 @@ function loadServiceWorker(fetchImpl: FetchImpl) {
 				listeners[name] = listener
 			},
 			skipWaiting,
-			clients: { claim },
+			registration: { showNotification },
+			clients: { claim, matchAll, openWindow },
 		},
 		caches: {
 			open: async (name: string) => {
@@ -78,7 +82,17 @@ function loadServiceWorker(fetchImpl: FetchImpl) {
 		await pending
 	}
 
-	return { listeners, cachesByName, dispatchFetch, runLifecycle, skipWaiting, claim }
+	return {
+		listeners,
+		cachesByName,
+		dispatchFetch,
+		runLifecycle,
+		skipWaiting,
+		claim,
+		showNotification,
+		matchAll,
+		openWindow,
+	}
 }
 
 function okResponse(body: string, status = 200) {
@@ -206,6 +220,114 @@ describe('public/sw.js', () => {
 
 			loaded.listeners.message({ data: 'SKIP_WAITING' })
 			expect(loaded.skipWaiting).toHaveBeenCalledTimes(1)
+		})
+	})
+})
+
+describe('public/sw.js — push', () => {
+	function pushEvent(payload: unknown) {
+		let pending: Promise<unknown> = Promise.resolve()
+		const event = {
+			data:
+				payload === undefined
+					? null
+					: { json: () => (typeof payload === 'string' ? JSON.parse(payload) : payload) },
+			waitUntil: (promise: Promise<unknown>) => {
+				pending = promise
+			},
+		}
+		return { event, done: () => pending }
+	}
+
+	async function receive(loaded: ReturnType<typeof loadServiceWorker>, payload: unknown) {
+		const { event, done } = pushEvent(payload)
+		loaded.listeners.push(event)
+		await done()
+	}
+
+	it('mostra a notificação com título, texto, tag e link seguro', async () => {
+		const loaded = loadServiceWorker(async () => okResponse('x'))
+
+		await receive(loaded, { title: 'Olá', text: 'Corpo', link: '/pt/notifications', notificationId: 'n1' })
+
+		expect(loaded.showNotification).toHaveBeenCalledWith('Olá', {
+			body: 'Corpo',
+			icon: '/pwa-192.png',
+			badge: '/pwa-192.png',
+			tag: 'n1',
+			data: { link: '/pt/notifications', notificationId: 'n1' },
+		})
+	})
+
+	it('troca link externo ou malicioso por / (open redirect)', async () => {
+		const loaded = loadServiceWorker(async () => okResponse('x'))
+
+		for (const link of ['https://evil.com', '//evil.com', 'javascript:alert(1)', '/\\evil.com', 42]) {
+			loaded.showNotification.mockClear()
+			await receive(loaded, { title: 'T', text: 'x', link })
+			expect(loaded.showNotification.mock.calls[0][1]).toMatchObject({ data: { link: '/' } })
+		}
+	})
+
+	it('payload ausente, inválido ou sem título ainda mostra uma notificação com título padrão', async () => {
+		const loaded = loadServiceWorker(async () => okResponse('x'))
+
+		await receive(loaded, undefined)
+		await receive(loaded, '{not json')
+		await receive(loaded, { text: 'sem título' })
+
+		expect(loaded.showNotification.mock.calls.map((call) => call[0])).toEqual([
+			'Notification',
+			'Notification',
+			'Notification',
+		])
+	})
+
+	describe('notificationclick', () => {
+		async function click(loaded: ReturnType<typeof loadServiceWorker>, link: string) {
+			let pending: Promise<unknown> = Promise.resolve()
+			const close = jest.fn()
+			loaded.listeners.notificationclick({
+				notification: { close, data: { link } },
+				waitUntil: (promise: Promise<unknown>) => {
+					pending = promise
+				},
+			})
+			await pending
+			return close
+		}
+
+		it('fecha a notificação e abre uma janela quando não há nenhuma', async () => {
+			const loaded = loadServiceWorker(async () => okResponse('x'))
+
+			const close = await click(loaded, '/pt/notifications')
+
+			expect(close).toHaveBeenCalled()
+			expect(loaded.openWindow).toHaveBeenCalledWith(`${ORIGIN}/pt/notifications`)
+		})
+
+		it('reaproveita a janela da mesma origem: foca e navega', async () => {
+			const loaded = loadServiceWorker(async () => okResponse('x'))
+			const client = {
+				url: `${ORIGIN}/pt`,
+				focus: jest.fn(async () => undefined),
+				navigate: jest.fn(async () => undefined),
+			}
+			loaded.matchAll.mockResolvedValue([client])
+
+			await click(loaded, '/pt/notifications')
+
+			expect(client.focus).toHaveBeenCalled()
+			expect(client.navigate).toHaveBeenCalledWith(`${ORIGIN}/pt/notifications`)
+			expect(loaded.openWindow).not.toHaveBeenCalled()
+		})
+
+		it('link inseguro abre a raiz do próprio site, nunca outro host', async () => {
+			const loaded = loadServiceWorker(async () => okResponse('x'))
+
+			await click(loaded, 'https://evil.com/phish')
+
+			expect(loaded.openWindow).toHaveBeenCalledWith(`${ORIGIN}/`)
 		})
 	})
 })

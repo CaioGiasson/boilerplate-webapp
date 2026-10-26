@@ -28,6 +28,7 @@ const pt: AppMessages = {
 		signOut: 'Sair',
 		mainNavigation: 'Navegação principal',
 		admin: 'Administração',
+		notifications: 'Notificações',
 	},
 	validation: {
 		required: 'Este campo é obrigatório',
@@ -238,6 +239,19 @@ const pt: AppMessages = {
 			en: 'Inglês',
 			es: 'Espanhol',
 		},
+		push: {
+			title: 'Notificações no dispositivo',
+			description: 'Receba avisos neste navegador mesmo com o app fechado.',
+			enable: 'Ativar notificações neste dispositivo',
+			unsupported: 'Este navegador não suporta notificações push.',
+			denied: 'As notificações estão bloqueadas no navegador. Libere nas configurações do site.',
+			notConfigured: 'As notificações push não estão configuradas neste ambiente.',
+			enabledToast: 'Notificações ativadas neste dispositivo.',
+			disabledToast: 'Notificações desativadas neste dispositivo.',
+			failed: 'Não foi possível alterar as notificações.',
+			sendTest: 'Enviar notificação de teste',
+			testSent: 'Notificação de teste enviada.',
+		},
 	},
 	notFound: {
 		title: 'Página não encontrada',
@@ -271,6 +285,7 @@ const pt: AppMessages = {
 		privacy: 'Privacidade',
 		terms: 'Termos',
 		admin: 'Administração',
+		notifications: 'Notificações',
 	},
 	admin: {
 		title: 'Administração',
@@ -303,6 +318,18 @@ const pt: AppMessages = {
 		startFailed:
 			'Não foi possível iniciar o acesso. O link expirou, é inválido ou já há uma sessão ativa neste navegador.',
 		sessionActive: 'Sessão de impersonamento ativa',
+	},
+	notifications: {
+		title: 'Notificações',
+		empty: 'Você não tem notificações.',
+		loadError: 'Não foi possível carregar as notificações.',
+		loadMore: 'Carregar mais',
+		markAllRead: 'Marcar todas como lidas',
+		markRead: 'Marcar como lida',
+		unreadBadge: '{count} não lidas',
+		bellLabel: 'Notificações',
+		testTitle: 'Notificação de teste',
+		testText: 'Se você está lendo isto, as notificações estão funcionando.',
 	},
 	pwa: {
 		installTitle: 'Instalar o app',

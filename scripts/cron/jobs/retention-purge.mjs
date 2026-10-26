@@ -5,6 +5,8 @@
  * 3. Delete ActiveSession rows with exp in the past
  * 4. Users with deletedAt older than 30 days → hard purge (Spaces + anonymize + AiLog do titular)
  * 5. AiLog older than AI_LOG_RETENTION_DAYS (default 90)
+ * 6. Notification older than NOTIFICATION_RETENTION_DAYS (default 180); hard purge também apaga
+ *    as notificações e as assinaturas push do titular
  *
  * Uso:
  *   npm run cron -- retention-purge --dry-run
@@ -23,10 +25,25 @@ const ACCOUNT_QUARANTINE_MS = 30 * 24 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
 const DEFAULT_AI_LOG_RETENTION_DAYS = 90
 
+const DEFAULT_NOTIFICATION_RETENTION_DAYS = 180
+
+/**
+ * @param {string | undefined} raw
+ * @param {number} fallback
+ */
+function positiveIntegerOrDefault(raw, fallback) {
+	const parsed = Number(raw)
+	return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
+}
+
 /** @param {NodeJS.ProcessEnv} [env] */
 export function resolveAiLogRetentionDays(env = process.env) {
-	const parsed = Number(env.AI_LOG_RETENTION_DAYS)
-	return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_AI_LOG_RETENTION_DAYS
+	return positiveIntegerOrDefault(env.AI_LOG_RETENTION_DAYS, DEFAULT_AI_LOG_RETENTION_DAYS)
+}
+
+/** @param {NodeJS.ProcessEnv} [env] */
+export function resolveNotificationRetentionDays(env = process.env) {
+	return positiveIntegerOrDefault(env.NOTIFICATION_RETENTION_DAYS, DEFAULT_NOTIFICATION_RETENTION_DAYS)
 }
 
 /**
@@ -76,6 +93,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 		quarantinedAccountsPurged: 0,
 		quarantinedAccountsFailed: 0,
 		aiLogsDeleted: 0,
+		notificationsDeleted: 0,
 		dryRun: flags.dryRun,
 	}
 
@@ -185,6 +203,8 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 				})
 				await prisma.activeSession.deleteMany({ where: { userId: user.id } })
 				await prisma.aiLog.deleteMany({ where: { userId: user.id } })
+				await prisma.notification.deleteMany({ where: { userId: user.id } })
+				await prisma.pushSubscription.deleteMany({ where: { userId: user.id } })
 
 				summary.quarantinedAccountsPurged += 1
 				console.log(`Hard-purged quarantined user=${user.id}`)
@@ -205,6 +225,25 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 			const aiLogs = await prisma.aiLog.deleteMany({ where: { createdAt: { lt: aiLogCutoff } } })
 			summary.aiLogsDeleted = aiLogs.count
 			console.log(`[retention-purge] deleted AiLog=${aiLogs.count} (older than ${aiLogRetentionDays}d)`)
+		}
+
+		const notificationRetentionDays = resolveNotificationRetentionDays()
+		const notificationCutoff = new Date(Date.now() - notificationRetentionDays * DAY_MS)
+		if (flags.dryRun) {
+			summary.notificationsDeleted = await prisma.notification.count({
+				where: { createdAt: { lt: notificationCutoff } },
+			})
+			console.log(
+				`[dry-run] would delete Notification createdAt<${notificationCutoff.toISOString()} (${notificationRetentionDays}d): ${summary.notificationsDeleted}`
+			)
+		} else {
+			const notifications = await prisma.notification.deleteMany({
+				where: { createdAt: { lt: notificationCutoff } },
+			})
+			summary.notificationsDeleted = notifications.count
+			console.log(
+				`[retention-purge] deleted Notification=${notifications.count} (older than ${notificationRetentionDays}d)`
+			)
 		}
 
 		console.log('[retention-purge] summary', JSON.stringify(summary))

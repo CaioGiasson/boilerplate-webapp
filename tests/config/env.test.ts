@@ -3,6 +3,8 @@ import {
 	EXAMPLE_MONGO_ROOT_PASSWORD,
 	assertDatabaseUrl,
 	assertAiConfig,
+	assertVapidConfig,
+	getVapidConfig,
 	assertEmailConfig,
 	getAiConfig,
 	assertJwtSecret,
@@ -248,5 +250,34 @@ describe('getAiConfig', () => {
 
 	it('exige OPENAI_API_KEY quando AI_PROVIDER=openai', () => {
 		expect(() => assertAiConfig(getAiConfig({ AI_PROVIDER: 'openai' }))).toThrow('OPENAI_API_KEY is required')
+	})
+})
+
+describe('VAPID (Web Push)', () => {
+	const COMPLETE = { VAPID_PUBLIC_KEY: 'pub', VAPID_PRIVATE_KEY: 'priv', VAPID_SUBJECT: 'mailto:ops@example.com' }
+
+	it('sem variáveis o push fica desligado e o boot segue', () => {
+		expect(getVapidConfig({})).toBeNull()
+		expect(() => assertVapidConfig({})).not.toThrow()
+	})
+
+	it('com as três variáveis devolve a configuração', () => {
+		expect(getVapidConfig({ ...COMPLETE, VAPID_PUBLIC_KEY: ' pub ' })).toEqual({
+			publicKey: 'pub',
+			privateKey: 'priv',
+			subject: 'mailto:ops@example.com',
+		})
+		expect(() => assertVapidConfig(COMPLETE)).not.toThrow()
+	})
+
+	it('configuração parcial é erro de deploy', () => {
+		expect(() => assertVapidConfig({ VAPID_PUBLIC_KEY: 'pub' })).toThrow('must be set together')
+		expect(() => assertVapidConfig({ ...COMPLETE, VAPID_PRIVATE_KEY: '' })).toThrow('must be set together')
+		expect(getVapidConfig({ VAPID_PUBLIC_KEY: 'pub' })).toBeNull()
+	})
+
+	it('o subject precisa ser mailto: ou https://', () => {
+		expect(() => assertVapidConfig({ ...COMPLETE, VAPID_SUBJECT: 'https://example.com' })).not.toThrow()
+		expect(() => assertVapidConfig({ ...COMPLETE, VAPID_SUBJECT: 'ops@example.com' })).toThrow('mailto:')
 	})
 })

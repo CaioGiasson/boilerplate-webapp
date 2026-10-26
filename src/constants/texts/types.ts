@@ -32,6 +32,7 @@ export type AppMessages = {
 		signOut: string
 		mainNavigation: string
 		admin: string
+		notifications: string
 	}
 	validation: {
 		required: string
@@ -228,6 +229,19 @@ export type AppMessages = {
 			en: string
 			es: string
 		}
+		push: {
+			title: string
+			description: string
+			enable: string
+			unsupported: string
+			denied: string
+			notConfigured: string
+			enabledToast: string
+			disabledToast: string
+			failed: string
+			sendTest: string
+			testSent: string
+		}
 	}
 	notFound: {
 		title: string
@@ -261,6 +275,7 @@ export type AppMessages = {
 		privacy: string
 		terms: string
 		admin: string
+		notifications: string
 	}
 	admin: {
 		title: string
@@ -292,6 +307,18 @@ export type AppMessages = {
 		exit: string
 		startFailed: string
 		sessionActive: string
+	}
+	notifications: {
+		title: string
+		empty: string
+		loadError: string
+		loadMore: string
+		markAllRead: string
+		markRead: string
+		unreadBadge: string
+		bellLabel: string
+		testTitle: string
+		testText: string
 	}
 	pwa: {
 		installTitle: string

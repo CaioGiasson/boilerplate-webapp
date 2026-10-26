@@ -76,7 +76,7 @@ describe('NotificationsPageClient', () => {
 	})
 
 	it('mostra o estado vazio', async () => {
-		listNotificationsRequest.mockResolvedValue({ items: [], unreadCount: 0, nextBefore: null })
+		listNotificationsRequest.mockResolvedValue({ items: [], unreadCount: 0, nextCursor: null })
 
 		const { container, unmount } = renderInJsdom(<NotificationsPageClient />)
 		await flush()
@@ -89,7 +89,7 @@ describe('NotificationsPageClient', () => {
 		listNotificationsRequest.mockResolvedValue({
 			items: [item('n1'), item('n2', true, null)],
 			unreadCount: 1,
-			nextBefore: null,
+			nextCursor: null,
 		})
 
 		const { container, unmount } = renderInJsdom(<NotificationsPageClient />)
@@ -105,7 +105,7 @@ describe('NotificationsPageClient', () => {
 	})
 
 	it('marcar como lida atualiza a lista e chama a API', async () => {
-		listNotificationsRequest.mockResolvedValue({ items: [item('n1')], unreadCount: 1, nextBefore: null })
+		listNotificationsRequest.mockResolvedValue({ items: [item('n1')], unreadCount: 1, nextCursor: null })
 		const { container, unmount } = renderInJsdom(<NotificationsPageClient />)
 		await flush()
 
@@ -124,7 +124,7 @@ describe('NotificationsPageClient', () => {
 		listNotificationsRequest.mockResolvedValue({
 			items: [item('n1'), item('n2')],
 			unreadCount: 2,
-			nextBefore: null,
+			nextCursor: null,
 		})
 		const { container, unmount } = renderInJsdom(<NotificationsPageClient />)
 		await flush()
@@ -142,8 +142,8 @@ describe('NotificationsPageClient', () => {
 
 	it('carrega a próxima página com o cursor', async () => {
 		listNotificationsRequest
-			.mockResolvedValueOnce({ items: [item('n1')], unreadCount: 0, nextBefore: '2026-10-26T12:00:00.000Z' })
-			.mockResolvedValueOnce({ items: [item('n0', true)], unreadCount: 0, nextBefore: null })
+			.mockResolvedValueOnce({ items: [item('n1')], unreadCount: 0, nextCursor: '2026-10-26T12:00:00.000Z' })
+			.mockResolvedValueOnce({ items: [item('n0', true)], unreadCount: 0, nextCursor: null })
 		const { container, unmount } = renderInJsdom(<NotificationsPageClient />)
 		await flush()
 
@@ -153,7 +153,7 @@ describe('NotificationsPageClient', () => {
 				?.click()
 		})
 
-		expect(listNotificationsRequest).toHaveBeenLastCalledWith({ before: '2026-10-26T12:00:00.000Z' })
+		expect(listNotificationsRequest).toHaveBeenLastCalledWith({ cursor: '2026-10-26T12:00:00.000Z' })
 		expect(container.querySelectorAll('li')).toHaveLength(2)
 		unmount()
 	})

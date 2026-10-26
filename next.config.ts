@@ -7,6 +7,8 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === 'true' })
 
 const nextConfig: NextConfig = {
+	// Dependências com CJS/Node nativo que não devem ser empacotadas pelo webpack.
+	serverExternalPackages: ['web-push', 'sharp'],
 	experimental: {
 		globalNotFound: true,
 	},

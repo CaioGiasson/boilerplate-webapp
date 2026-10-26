@@ -13,14 +13,14 @@ export type NotificationItem = {
 export type NotificationsPage = {
 	items: NotificationItem[]
 	unreadCount: number
-	nextBefore: string | null
+	nextCursor: string | null
 }
 
 export async function listNotificationsRequest(
-	options: { before?: string; limit?: number } = {}
+	options: { cursor?: string; limit?: number } = {}
 ): Promise<NotificationsPage> {
 	const params = new URLSearchParams()
-	if (options.before) params.set('before', options.before)
+	if (options.cursor) params.set('cursor', options.cursor)
 	if (options.limit) params.set('limit', String(options.limit))
 	const query = params.size > 0 ? `?${params.toString()}` : ''
 

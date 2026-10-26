@@ -2,7 +2,8 @@ import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport
 import { ConflictError, ServiceUnavailableError, ValidationError } from '@/errors'
 import PushSubscriptionRepository, { MAX_PUSH_SUBSCRIPTIONS_PER_USER } from '@/repositories/PushSubscription.repository'
 import type { WebPushPort } from '@/services/WebPush/webPush.port'
-import { isBlockedHostname } from '@/utils/safeImageUrl'
+import { getPushAllowedHostSuffixes } from '@/config/env'
+import { isBlockedHostname, isBlockedIp } from '@/utils/safeImageUrl'
 
 export const PUSH_ENDPOINT_MAX_LENGTH = 2048
 export const PUSH_KEY_MAX_LENGTH = 512
@@ -18,12 +19,32 @@ type Output = {
 	ok: true
 }
 
-/** Só aceita endpoint HTTPS de um serviço de push público (nunca localhost/rede interna). */
-export function isAcceptablePushEndpoint(endpoint: string): boolean {
+function isAllowedPushHost(hostname: string, suffixes: readonly string[]): boolean {
+	const host = hostname.toLowerCase().replace(/\.$/, '')
+	return suffixes.some((suffix) => host === suffix || host.endsWith(`.${suffix}`))
+}
+
+/**
+ * Só aceita endpoint HTTPS, sem credencial nem porta explícita, de um serviço de push conhecido
+ * (`getPushAllowedHostSuffixes`) e que não seja nome/IP interno. O servidor envia o push por POST a esse endereço:
+ * aceitar host arbitrário seria SSRF (IP literal, `localhost`, serviço interno).
+ */
+export function isAcceptablePushEndpoint(
+	endpoint: string,
+	allowedSuffixes: readonly string[] = getPushAllowedHostSuffixes()
+): boolean {
 	if (endpoint.length > PUSH_ENDPOINT_MAX_LENGTH) return false
 	try {
 		const url = new URL(endpoint)
-		return url.protocol === 'https:' && !url.username && !url.password && !isBlockedHostname(url.hostname)
+		return (
+			url.protocol === 'https:' &&
+			!url.username &&
+			!url.password &&
+			url.port === '' &&
+			!isBlockedHostname(url.hostname) &&
+			!isBlockedIp(url.hostname) &&
+			isAllowedPushHost(url.hostname, allowedSuffixes)
+		)
 	} catch {
 		return false
 	}

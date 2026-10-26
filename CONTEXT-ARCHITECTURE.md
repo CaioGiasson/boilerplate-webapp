@@ -35,15 +35,15 @@ Next 15.5 · React 19 · TypeScript strict · Tailwind 4 · Radix UI (`src/compo
 
 Validadas no boot por `validateEnv()` (`src/config/env.ts`, chamada em `instrumentation-node.ts`). Exemplo comentado em `.env.example`.
 
-| Grupo        | Variáveis                                                                                                                                  |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Obrigatórias | `DATABASE_URL`, `JWT_SECRET` (≥ 32, não o placeholder), `CACHE_LIFETIME_SECONDS`, `SPACES_*`, `ENVIRONMENT`                                |
-| Sessão       | `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_TTL_SECONDS`                                                                                            |
-| E-mail       | `EMAIL_PROVIDER`, `EMAIL_FROM`, `BREVO_API_KEY`, `EMAIL_TIMEOUT_MS`                                                                        |
-| Google       | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`                                                        |
-| IA           | `AI_PROVIDER` (`none`\|`openai`), `OPENAI_API_KEY`, `OPENAI_TEXT_MODEL` (default `gpt-5.4-mini`), `AI_TIMEOUT_MS`, `AI_LOG_RETENTION_DAYS` |
-| Web Push     | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (as três ou nenhuma), `NOTIFICATION_RETENTION_DAYS`                               |
-| Operação     | `HEALTHCHECK_TOKEN`, `SWAGGER_*`, `APP_BASE_URL`, `SERVER_PORT`, `LOG_LEVEL`                                                               |
+| Grupo        | Variáveis                                                                                                                                      |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Obrigatórias | `DATABASE_URL`, `JWT_SECRET` (≥ 32, não o placeholder), `CACHE_LIFETIME_SECONDS`, `SPACES_*`, `ENVIRONMENT`                                    |
+| Sessão       | `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_TTL_SECONDS`                                                                                                |
+| E-mail       | `EMAIL_PROVIDER`, `EMAIL_FROM`, `BREVO_API_KEY`, `EMAIL_TIMEOUT_MS`                                                                            |
+| Google       | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`                                                            |
+| IA           | `AI_PROVIDER` (`none`\|`openai`), `OPENAI_API_KEY`, `OPENAI_TEXT_MODEL` (default `gpt-5.4-mini`), `AI_TIMEOUT_MS`, `AI_LOG_RETENTION_DAYS`     |
+| Web Push     | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (as três ou nenhuma), `WEB_PUSH_ALLOWED_HOSTS` (extra), `NOTIFICATION_RETENTION_DAYS` |
+| Operação     | `HEALTHCHECK_TOKEN`, `SWAGGER_*`, `APP_BASE_URL`, `SERVER_PORT`, `LOG_LEVEL`                                                                   |
 
 ## Rotas HTTP
 
@@ -85,7 +85,7 @@ Ver `CONTEXT.md` (produto) e [`docs/operators/pwa.md`](docs/operators/pwa.md). `
 
 ## Notificações e push
 
-`CreateNotification` grava (fora de TX) e depois chama `WebPushService.sendToUser`. Falha de push é logada e engolida; assinatura 404/410 é removida. Payload ≤ 4 KB (texto cortado). Opt-in por aparelho (`PushSubscription`, até 10). ADR-015, [`docs/operators/web-push.md`](docs/operators/web-push.md).
+`CreateNotification` grava (fora de TX) e depois chama `WebPushService.sendToUser`. Falha de push é logada e engolida; assinatura 404/410 é removida. Payload ≤ 4 KB (texto cortado). Opt-in por aparelho (`PushSubscription`, até 10). O `endpoint` só é aceito em serviço de push conhecido (FCM, Mozilla, Windows, Apple; `WEB_PUSH_ALLOWED_HOSTS` acrescenta) — o servidor faz POST nele, então host livre seria SSRF. ADR-015, [`docs/operators/web-push.md`](docs/operators/web-push.md).
 
 ## Jobs e operação
 

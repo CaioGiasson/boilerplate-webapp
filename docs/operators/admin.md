@@ -34,7 +34,7 @@ Grava `USER` nas contas sem o campo. O app funciona sem rodar; o backfill unifor
 1. Entre como admin e abra **Administração** no menu da conta.
 2. Na linha do usuário, use **Copiar link de acesso**. O link vale **10 minutos** e não pode ser emitido para si mesmo nem para outro admin.
 3. Abra o link em uma **janela anônima** (sem sessão ativa; com sessão a resposta é 409 e nada muda).
-4. Uma faixa vermelha mostra o alvo e o tempo restante. **Sair** encerra a sessão. Nada do que exige senha ou e-mail está disponível (troca de senha/e-mail, exclusão, exportação, sessões).
+4. Uma faixa vermelha mostra o alvo e o tempo restante. **Sair** encerra a sessão. Nada do que exige senha ou e-mail está disponível (troca de senha/e-mail, verificação de e-mail, exclusão e decisão de quarentena, exportação, sessões, assinar push) e responde 403. Perfil (nome, nickname, foto), tema/idioma e notificações continuam editáveis: o admin age como o usuário.
 
 Boas práticas: não cole o link em canais compartilhados; use só com o consentimento do titular ou base legal de suporte; registre o motivo no ticket.
 

@@ -26,7 +26,7 @@ export function NotificationsPageClient() {
 	const { user, loading: authLoading } = useAuth()
 	const [items, setItems] = React.useState<NotificationItem[]>([])
 	const [unreadCount, setUnreadCount] = React.useState(0)
-	const [nextBefore, setNextBefore] = React.useState<string | null>(null)
+	const [nextCursor, setNextCursor] = React.useState<string | null>(null)
 	const [loading, setLoading] = React.useState(true)
 	const [failed, setFailed] = React.useState(false)
 
@@ -36,14 +36,14 @@ export function NotificationsPageClient() {
 		}
 	}, [authLoading, user, router])
 
-	const load = React.useCallback(async (before?: string) => {
+	const load = React.useCallback(async (cursor?: string) => {
 		setLoading(true)
 		setFailed(false)
 		try {
-			const page = await listNotificationsRequest({ before })
-			setItems((current) => (before ? [...current, ...page.items] : page.items))
+			const page = await listNotificationsRequest({ cursor })
+			setItems((current) => (cursor ? [...current, ...page.items] : page.items))
 			setUnreadCount(page.unreadCount)
-			setNextBefore(page.nextBefore)
+			setNextCursor(page.nextCursor)
 		} catch {
 			setFailed(true)
 		} finally {
@@ -144,8 +144,8 @@ export function NotificationsPageClient() {
 				))}
 			</ul>
 
-			{nextBefore ? (
-				<Button type="button" variant="outline" disabled={loading} onClick={() => void load(nextBefore)}>
+			{nextCursor ? (
+				<Button type="button" variant="outline" disabled={loading} onClick={() => void load(nextCursor)}>
 					{t('loadMore')}
 				</Button>
 			) : null}

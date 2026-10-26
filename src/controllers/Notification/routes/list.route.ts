@@ -26,7 +26,7 @@ export default async function listNotificationsRoute(
 
 		const result = await dependencies.listNotificationsUseCase.run({
 			userId: session.userId,
-			before: params.get('before') ?? undefined,
+			cursor: params.get('cursor') ?? undefined,
 			limit,
 		})
 

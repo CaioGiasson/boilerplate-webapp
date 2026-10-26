@@ -14,17 +14,26 @@ describe('NotificationRepository', () => {
 		expect(create).toHaveBeenCalledWith({ data: { userId: 'u1', type: 'TEST', title: 'T', text: 'x', link: null } })
 	})
 
-	it('lista mais recentes primeiro e pagina por createdAt', async () => {
+	it('lista mais recentes primeiro; o cursor desempata por id para não pular linhas com o mesmo createdAt', async () => {
 		const findMany = jest.fn(async () => [])
 		const repository = new NotificationRepository({ notification: { findMany } } as never)
 
-		await repository.listByUser({ userId: 'u1', before: AT, limit: 21 })
+		await repository.listByUser({ userId: 'u1', before: { createdAt: AT, id: 'n5' }, limit: 21 })
 
 		expect(findMany).toHaveBeenCalledWith({
-			where: { userId: 'u1', createdAt: { lt: AT } },
+			where: { userId: 'u1', OR: [{ createdAt: { lt: AT } }, { createdAt: AT, id: { lt: 'n5' } }] },
 			orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
 			take: 21,
 		})
+	})
+
+	it('sem cursor não filtra por data', async () => {
+		const findMany = jest.fn(async () => [])
+		const repository = new NotificationRepository({ notification: { findMany } } as never)
+
+		await repository.listByUser({ userId: 'u1', limit: 5 })
+
+		expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: 'u1' } }))
 	})
 
 	it('conta não lidas tratando readAt nulo ou ausente', async () => {

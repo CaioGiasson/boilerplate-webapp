@@ -1,5 +1,8 @@
 import CreateNotification from '@/useCases/createNotification.usecase'
-import ListNotifications from '@/useCases/listNotifications.usecase'
+import ListNotifications, {
+	encodeNotificationCursor,
+	parseNotificationCursor,
+} from '@/useCases/listNotifications.usecase'
 import MarkAllNotificationsRead from '@/useCases/markAllNotificationsRead.usecase'
 import MarkNotificationRead from '@/useCases/markNotificationRead.usecase'
 import SendTestPushNotification from '@/useCases/sendTestPushNotification.usecase'
@@ -8,6 +11,8 @@ import type { WebPushPort } from '@/services/WebPush/webPush.port'
 import { mockPrismaRuntime } from '../helpers/mockDbCommander'
 
 const CREATED_AT = new Date('2026-10-26T12:00:00.000Z')
+
+const OBJECT_ID = '507f1f77bcf86cd799439011'
 
 function row(overrides: Record<string, unknown> = {}) {
 	return {
@@ -123,26 +128,53 @@ describe('ListNotifications', () => {
 		])
 		expect(result.items[0]).not.toHaveProperty('userId')
 		expect(result.unreadCount).toBe(2)
-		expect(result.nextBefore).toBe('2026-10-26T12:02:00.000Z')
+		expect(result.nextCursor).toBe('2026-10-26T12:02:00.000Z_n2')
 	})
 
-	it('na última página nextBefore é null', async () => {
+	it('na última página nextCursor é null', async () => {
 		mockPrismaRuntime({ notification: { findMany: jest.fn(async () => [row()]), count: jest.fn(async () => 1) } })
 
 		const result = await new ListNotifications().run({ userId: 'u1' })
 
-		expect(result.nextBefore).toBeNull()
+		expect(result.nextCursor).toBeNull()
 	})
 
 	it.each([
 		['limit 0', { limit: 0 }],
 		['limit acima do teto', { limit: 51 }],
 		['limit fracionário', { limit: 1.5 }],
-		['before inválido', { before: 'ontem' }],
+		['cursor sem id', { cursor: '2026-10-26T12:00:00.000Z' }],
+		['cursor com data inválida', { cursor: `ontem_${OBJECT_ID}` }],
+		['cursor com id que não é ObjectId', { cursor: '2026-10-26T12:00:00.000Z_abc' }],
 	])('recusa %s', async (_label, override) => {
 		mockPrismaRuntime({ notification: {} })
 
 		await expect(new ListNotifications().run({ userId: 'u1', ...override })).rejects.toBeInstanceOf(ValidationError)
+	})
+})
+
+describe('cursor de notificações', () => {
+	it('codifica e decodifica createdAt + id', () => {
+		const cursor = { createdAt: new Date('2026-10-26T12:00:00.000Z'), id: OBJECT_ID }
+
+		expect(parseNotificationCursor(encodeNotificationCursor(cursor))).toEqual(cursor)
+	})
+
+	it('passa o cursor para o repository como filtro composto', async () => {
+		const findMany = jest.fn(async () => [])
+		mockPrismaRuntime({ notification: { findMany, count: jest.fn(async () => 0) } })
+		const createdAt = new Date('2026-10-26T12:00:00.000Z')
+
+		await new ListNotifications().run({
+			userId: 'u1',
+			cursor: encodeNotificationCursor({ createdAt, id: OBJECT_ID }),
+		})
+
+		expect(findMany).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: { userId: 'u1', OR: [{ createdAt: { lt: createdAt } }, { createdAt, id: { lt: OBJECT_ID } }] },
+			})
+		)
 	})
 })
 

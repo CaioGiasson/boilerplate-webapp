@@ -5,8 +5,8 @@
 GET {{baseUrl}}/api/v1/notifications?limit=20
 
 ###
-### Next page: pass nextBefore from the previous response
-GET {{baseUrl}}/api/v1/notifications?before=2026-10-26T12:00:00.000Z
+### Next page: pass nextCursor from the previous response
+GET {{baseUrl}}/api/v1/notifications?cursor=2026-10-26T12:00:00.000Z_507f1f77bcf86cd799439011
 
 ###
 ### Mark one as read

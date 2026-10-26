@@ -301,6 +301,25 @@ export type VapidConfig = {
 
 const VAPID_ENV_KEYS = ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT'] as const
 
+/**
+ * Sufixos de host aceitos como `endpoint` de push. O servidor faz POST nesse endpoint, então ele precisa ser
+ * de um serviço de push conhecido (nunca um host arbitrário: SSRF). `WEB_PUSH_ALLOWED_HOSTS` acrescenta outros.
+ */
+export const DEFAULT_PUSH_HOST_SUFFIXES = [
+	'fcm.googleapis.com',
+	'push.services.mozilla.com',
+	'notify.windows.com',
+	'push.apple.com',
+] as const
+
+export function getPushAllowedHostSuffixes(env: NodeJS.ProcessEnv = process.env): string[] {
+	const extra = (env.WEB_PUSH_ALLOWED_HOSTS ?? '')
+		.split(',')
+		.map((item) => item.trim().toLowerCase().replace(/^\./, ''))
+		.filter(Boolean)
+	return [...new Set([...DEFAULT_PUSH_HOST_SUFFIXES, ...extra])]
+}
+
 /** Web Push só liga com as três variáveis; sem elas devolve `null` e o app funciona só com o sino. */
 export function getVapidConfig(env: NodeJS.ProcessEnv = process.env): VapidConfig | null {
 	const [publicKey, privateKey, subject] = VAPID_ENV_KEYS.map((key) => env[key]?.trim() ?? '')

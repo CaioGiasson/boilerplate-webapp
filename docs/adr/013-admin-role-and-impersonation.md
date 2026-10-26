@@ -18,8 +18,9 @@ Suporte e operação precisam listar contas e reproduzir o que um usuário vê. 
     - A sessão é o JWT normal com `sessionType: 'IMPERSONATION'` e `impersonatedBy`, **10 minutos, sem renovação**, nunca vira `ActiveSession` (não aparece em Dispositivos do alvo) e não dispara e-mail de novo login.
     - Cai se o alvo trocar a senha (`sessionsRevokedAt`), se o jti for revogado, se o alvo sumir ou se o admin emissor deixar de ser `ADMIN`.
     - Durante o impersonamento, rotas destrutivas e de conta respondem 403 (`assertNotImpersonation`): troca de senha, troca/verificação de e-mail, exclusão e decisão de quarentena, exportação, revogação de sessões e as próprias rotas admin.
+    - **Continuam permitidos** (o admin age como o usuário): ler o perfil, editar nome, nickname e foto, mudar tema/idioma e ler/marcar notificações como lidas. Quem não deve ter isso precisa de uma regra própria.
     - Não é possível impersonar a si mesmo nem outro admin (endurecimento em relação ao tribal).
-    - Uma faixa vermelha com o alvo, o tempo restante e o botão Sair aparece em todas as telas.
+        - Uma faixa vermelha com o alvo, o tempo restante e o botão Sair aparece em todas as telas.
 - A listagem admin devolve **e-mail mascarado** e nenhum campo sensível.
 
 ## Consequências

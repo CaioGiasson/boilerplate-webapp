@@ -7,7 +7,7 @@
 	function currentPath() {
 		try {
 			return location.pathname
-		} catch (e) {
+		} catch {
 			return ''
 		}
 	}
@@ -20,7 +20,7 @@
 	function isOffline() {
 		try {
 			return navigator.onLine === false
-		} catch (e) {
+		} catch {
 			return false
 		}
 	}

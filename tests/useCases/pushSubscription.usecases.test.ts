@@ -24,24 +24,55 @@ function existing(count: number, endpoint?: string) {
 }
 
 describe('isAcceptablePushEndpoint', () => {
-	it.each([ENDPOINT, 'https://updates.push.services.mozilla.com/wpush/v2/x', 'https://web.push.apple.com/x'])(
-		'aceita %s',
-		(endpoint) => {
-			expect(isAcceptablePushEndpoint(endpoint)).toBe(true)
-		}
-	)
+	it.each([
+		ENDPOINT,
+		'https://updates.push.services.mozilla.com/wpush/v2/x',
+		'https://web.push.apple.com/x',
+		'https://wns2-par02p.notify.windows.com/w/?token=abc',
+	])('aceita o serviço de push conhecido %s', (endpoint) => {
+		expect(isAcceptablePushEndpoint(endpoint)).toBe(true)
+	})
 
 	it.each([
-		'',
-		'not a url',
-		'http://push.example.com/x',
-		'https://localhost/x',
-		'https://app.localhost/x',
-		'https://printer.local/x',
-		'https://user:pass@push.example.com/x',
-		`https://push.example.com/${'a'.repeat(2100)}`,
-	])('recusa %j', (endpoint) => {
+		['vazio', ''],
+		['não é URL', 'not a url'],
+		['http', 'http://fcm.googleapis.com/fcm/send/x'],
+		['localhost', 'https://localhost/x'],
+		['subdomínio localhost', 'https://app.localhost/x'],
+		['.local', 'https://printer.local/x'],
+		['credenciais', 'https://user:pass@fcm.googleapis.com/x'],
+		['porta explícita', 'https://fcm.googleapis.com:8443/x'],
+		['URL longa', `https://fcm.googleapis.com/${'a'.repeat(2100)}`],
+	])('recusa %s', (_label, endpoint) => {
 		expect(isAcceptablePushEndpoint(endpoint)).toBe(false)
+	})
+
+	it.each([
+		['IP de metadata de nuvem', 'https://169.254.169.254/latest/meta-data'],
+		['loopback IPv4', 'https://127.0.0.1/x'],
+		['rede privada', 'https://10.0.0.5/x'],
+		['loopback IPv6', 'https://[::1]/x'],
+		['IPv4 decimal', 'https://2130706433/x'],
+		['IP público que não é serviço de push', 'https://8.8.8.8/x'],
+	])('SSRF: recusa %s', (_label, endpoint) => {
+		expect(isAcceptablePushEndpoint(endpoint)).toBe(false)
+	})
+
+	it.each([
+		['host público fora da lista', 'https://push.example.com/x'],
+		['sufixo sem a fronteira do ponto', 'https://notfcm.googleapis.com/x'],
+		['serviço conhecido como subdomínio de outro domínio', 'https://fcm.googleapis.com.evil.com/x'],
+		['serviço conhecido no caminho', 'https://evil.com/fcm.googleapis.com'],
+	])('SSRF: recusa %s', (_label, endpoint) => {
+		expect(isAcceptablePushEndpoint(endpoint)).toBe(false)
+	})
+
+	it('WEB_PUSH_ALLOWED_HOSTS acrescenta um serviço, mas não libera IP nem nome interno', () => {
+		const suffixes = ['fcm.googleapis.com', 'push.example.com']
+
+		expect(isAcceptablePushEndpoint('https://eu.push.example.com/x', suffixes)).toBe(true)
+		expect(isAcceptablePushEndpoint('https://127.0.0.1/x', suffixes)).toBe(false)
+		expect(isAcceptablePushEndpoint('https://app.localhost/x', ['localhost', ...suffixes])).toBe(false)
 	})
 })
 
@@ -81,8 +112,10 @@ describe('RegisterPushSubscription', () => {
 	})
 
 	it.each([
-		['endpoint http', { endpoint: 'http://push.example.com/x' }],
+		['endpoint http', { endpoint: 'http://fcm.googleapis.com/x' }],
 		['endpoint interno', { endpoint: 'https://localhost/x' }],
+		['endpoint com IP literal (SSRF)', { endpoint: 'https://169.254.169.254/x' }],
+		['endpoint de host qualquer (SSRF)', { endpoint: 'https://push.example.com/x' }],
 		['chave vazia', { p256dh: ' ' }],
 		['auth vazio', { auth: '' }],
 		['chave longa', { p256dh: 'k'.repeat(513) }],

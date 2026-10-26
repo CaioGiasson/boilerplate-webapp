@@ -28,6 +28,10 @@ Sem as variáveis o app funciona só com o sino. O toggle mostra "não configura
 
 Chave nova invalida **todas** as assinaturas existentes (o navegador as amarrou à chave antiga): cada usuário precisa reativar o push em cada aparelho. Faça só em caso de vazamento da chave privada.
 
+## Quais serviços de push são aceitos
+
+O servidor envia o push por POST ao `endpoint` que o navegador informa. Para evitar SSRF, só são aceitos endpoints **HTTPS, sem porta explícita**, em hosts de: `fcm.googleapis.com` (Chrome/Edge/Android), `push.services.mozilla.com` (Firefox), `notify.windows.com` (Edge/Windows) e `push.apple.com` (Safari/iOS). Outro serviço? Acrescente o sufixo em `WEB_PUSH_ALLOWED_HOSTS` (separado por vírgula). IP literal, `localhost` e nomes internos são sempre recusados (400).
+
 ## Notificar alguém a partir de código
 
 Receba `CreateNotification` no construtor e chame **depois do commit** do seu use case:
@@ -50,7 +54,7 @@ await this.createNotification.run({
 
 | Rota                                         | Uso                                                |
 | -------------------------------------------- | -------------------------------------------------- |
-| `GET /api/v1/notifications`                  | Lista paginada (`before`, `limit`) + `unreadCount` |
+| `GET /api/v1/notifications`                  | Lista paginada (`cursor`, `limit`) + `unreadCount` |
 | `POST /api/v1/notifications/{id}/read`       | Marca uma como lida                                |
 | `POST /api/v1/notifications/read-all`        | Marca todas                                        |
 | `GET /api/v1/push/vapid-public-key`          | `{ enabled, publicKey }` (público)                 |

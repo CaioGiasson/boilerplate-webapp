@@ -219,11 +219,11 @@ paths:
             security:
                 - SessionCookie: []
             parameters:
-                - name: before
+                - name: cursor
                   in: query
                   required: false
-                  description: '`createdAt` ISO da última notificação já carregada (cursor)'
-                  schema: { type: string, format: date-time }
+                  description: Cursor opaco da página anterior (`nextCursor`); 400 se inválido
+                  schema: { type: string }
                 - name: limit
                   in: query
                   required: false
@@ -259,7 +259,7 @@ paths:
                                                               read: { type: boolean }
                                                               createdAt: { type: string, format: date-time }
                                                   unreadCount: { type: integer }
-                                                  nextBefore: { type: string, format: date-time, nullable: true }
+                                                  nextCursor: { type: string, nullable: true }
                 '400':
                     $ref: '#/components/responses/ValidationError'
                 '401':
@@ -445,7 +445,7 @@ paths:
             summary: Iniciar sessão de impersonamento a partir do token emitido por um admin
             description: |
                 Troca o token de `POST /api/v1/admin/users/{id}/impersonation-token` por um cookie de sessão
-                de **10 minutos, sem renovação**. Só funciona em navegador **sem sessão válida** (409 caso contrário).
+                de **10 minutos, sem renovação**. Durante essa sessão respondem **403**: troca de senha, troca e verificação de e-mail, exclusão de conta e decisão de quarentena, exportação de dados, revogação de sessões, assinatura/cancelamento/teste de push e as rotas `admin/*`. Só funciona em navegador **sem sessão válida** (409 caso contrário).
                 A sessão não aparece em Dispositivos do alvo e não dispara aviso de novo login. Qualquer falha do token
                 responde 401 sem revelar o motivo. Rate limit de autenticação.
             parameters:

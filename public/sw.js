@@ -9,6 +9,7 @@
  *
  * Mudou algo aqui? Suba SW_VERSION. O cliente recarrega quando a versão do app muda (ForceAppUpdate).
  */
+// eslint-disable-next-line no-unused-vars -- marcador de versão: mudar este valor muda os bytes do sw.js e força a troca
 const SW_VERSION = 'v2'
 const CACHE_PREFIX = 'app-'
 const STATIC_CACHE = `${CACHE_PREFIX}static-v1`

@@ -4,6 +4,7 @@ import {
 	assertDatabaseUrl,
 	assertAiConfig,
 	assertVapidConfig,
+	getPushAllowedHostSuffixes,
 	getVapidConfig,
 	assertEmailConfig,
 	getAiConfig,
@@ -279,5 +280,26 @@ describe('VAPID (Web Push)', () => {
 	it('o subject precisa ser mailto: ou https://', () => {
 		expect(() => assertVapidConfig({ ...COMPLETE, VAPID_SUBJECT: 'https://example.com' })).not.toThrow()
 		expect(() => assertVapidConfig({ ...COMPLETE, VAPID_SUBJECT: 'ops@example.com' })).toThrow('mailto:')
+	})
+})
+
+describe('getPushAllowedHostSuffixes', () => {
+	it('por padrão só FCM, Mozilla, Windows e Apple', () => {
+		expect(getPushAllowedHostSuffixes({})).toEqual([
+			'fcm.googleapis.com',
+			'push.services.mozilla.com',
+			'notify.windows.com',
+			'push.apple.com',
+		])
+	})
+
+	it('WEB_PUSH_ALLOWED_HOSTS acrescenta sufixos normalizados, sem duplicar', () => {
+		const suffixes = getPushAllowedHostSuffixes({
+			WEB_PUSH_ALLOWED_HOSTS: ' .Push.Example.com , fcm.googleapis.com ,, ',
+		})
+
+		expect(suffixes).toContain('push.example.com')
+		expect(suffixes.filter((item) => item === 'fcm.googleapis.com')).toHaveLength(1)
+		expect(suffixes).toHaveLength(5)
 	})
 })

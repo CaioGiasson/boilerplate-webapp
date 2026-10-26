@@ -12,6 +12,11 @@ export type NotificationRecord = {
 	createdAt: Date
 }
 
+export type NotificationCursor = {
+	createdAt: Date
+	id: string
+}
+
 export type CreateNotificationInput = {
 	userId: string
 	type: string
@@ -46,11 +51,29 @@ export default class NotificationRepository {
 		}
 	}
 
-	/** Mais recentes primeiro; `before` pagina por `createdAt` (cursor). */
-	async listByUser(input: { userId: string; before?: Date; limit: number }): Promise<NotificationRecord[]> {
+	/**
+	 * Mais recentes primeiro. `before` é o cursor (`createdAt` + `id` da última linha vista): o desempate por `id`
+	 * evita pular notificações criadas no mesmo instante (envio em lote) na virada de página.
+	 */
+	async listByUser(input: {
+		userId: string
+		before?: NotificationCursor
+		limit: number
+	}): Promise<NotificationRecord[]> {
 		try {
+			const { before } = input
 			return await this.prisma.notification.findMany({
-				where: { userId: input.userId, ...(input.before ? { createdAt: { lt: input.before } } : {}) },
+				where: {
+					userId: input.userId,
+					...(before
+						? {
+								OR: [
+									{ createdAt: { lt: before.createdAt } },
+									{ createdAt: before.createdAt, id: { lt: before.id } },
+								],
+							}
+						: {}),
+				},
 				orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
 				take: input.limit,
 			})

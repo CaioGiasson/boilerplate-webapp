@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="pt">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="dark light" />
+		<title>Error</title>
+		<style>
+			:root {
+				--background: #f8fafc;
+				--foreground: #0f172a;
+				--accent: #b91c1c;
+			}
+			html.dark {
+				--background: #151519;
+				--foreground: #ececf1;
+				--accent: #f87171;
+			}
+			html,
+			body {
+				margin: 0;
+				min-height: 100%;
+				background: var(--background);
+				color: var(--foreground);
+				font-family: ui-sans-serif, system-ui, sans-serif;
+			}
+			.screen {
+				position: fixed;
+				inset: 0;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 1.5rem;
+				padding: 1.5rem;
+			}
+			.icon {
+				width: 4rem;
+				height: 4rem;
+				color: var(--accent);
+			}
+			.message {
+				max-width: 28rem;
+				margin: 0;
+				text-align: center;
+				white-space: pre-line;
+				font-size: 1.125rem;
+				line-height: 1.625;
+			}
+			.actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.75rem;
+				justify-content: center;
+			}
+			.button {
+				cursor: pointer;
+				border: 1px solid var(--foreground);
+				border-radius: 0.375rem;
+				background: var(--foreground);
+				color: var(--background);
+				padding: 0.5rem 1rem;
+				font: inherit;
+				font-size: 0.875rem;
+				text-decoration: none;
+			}
+			.button.secondary {
+				background: transparent;
+				color: var(--foreground);
+			}
+		</style>
+	</head>
+	<body>
+		<div class="screen" role="alert" data-testid="app-error-screen">
+			<svg
+				class="icon"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+			>
+				<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+				<path d="M12 9v4" />
+				<path d="M12 17h.01" />
+			</svg>
+			<p class="message" id="app-error-message">
+				Algo deu errado Não foi possível carregar esta página. Tente novamente ou volte ao início.
+			</p>
+			<div class="actions">
+				<button class="button" type="button" id="app-error-retry">Tentar novamente</button>
+				<a class="button secondary" id="app-error-home" href="/" target="_top">Voltar ao início</a>
+			</div>
+		</div>
+		<script src="/theme.js"></script>
+		<script>
+			;(function () {
+				// Textos espelham os catálogos `error.*` de src/constants/texts (tests/lib/errors/errorHtml.test.ts confere).
+				var messages = {
+					pt: {
+						title: 'Algo deu errado',
+						description: 'Não foi possível carregar esta página. Tente novamente ou volte ao início.',
+						retry: 'Tentar novamente',
+						backHome: 'Voltar ao início',
+					},
+					en: {
+						title: 'Something went wrong',
+						description: 'This page could not be loaded. Try again or go back to home.',
+						retry: 'Try again',
+						backHome: 'Back to home',
+					},
+					es: {
+						title: 'Algo salió mal',
+						description: 'No se pudo cargar esta página. Inténtalo de nuevo o vuelve al inicio.',
+						retry: 'Intentar de nuevo',
+						backHome: 'Volver al inicio',
+					},
+				}
+				function localeFromCookie() {
+					try {
+						var match = document.cookie.match(/(?:^|; )app-locale=([^;]*)/)
+						return match ? decodeURIComponent(match[1]) : ''
+					} catch (e) {
+						return ''
+					}
+				}
+				function localeFromPath() {
+					try {
+						return (
+							(window.parent !== window ? window.parent.location.pathname : location.pathname)
+								.split('/')
+								.filter(Boolean)[0] || ''
+						)
+					} catch (e) {
+						return ''
+					}
+				}
+				var candidate = localeFromCookie() || localeFromPath()
+				var locale = messages[candidate] ? candidate : 'pt'
+				var copy = messages[locale]
+				document.documentElement.lang = locale
+				document.getElementById('app-error-message').textContent = copy.title + '\n\n' + copy.description
+				var retry = document.getElementById('app-error-retry')
+				retry.textContent = copy.retry
+				retry.addEventListener('click', function () {
+					try {
+						window.top.location.reload()
+					} catch (e) {
+						location.reload()
+					}
+				})
+				var home = document.getElementById('app-error-home')
+				home.textContent = copy.backHome
+				home.setAttribute('href', '/' + locale)
+			})()
+		</script>
+	</body>
+</html>

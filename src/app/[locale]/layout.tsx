@@ -6,6 +6,7 @@ import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import '../globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
+import { ErrorGuardScript } from '@/components/errors/ErrorGuardScript'
 import { ThemeScript } from '@/components/theme-script'
 import { AppShell } from '@/components/layout'
 import { resolveServerTheme } from '@/utils/theme'
@@ -51,6 +52,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 		<html lang={locale} suppressHydrationWarning>
 			<head>
 				<ThemeScript />
+				<ErrorGuardScript />
 			</head>
 			<body className={`${geistSans.variable} antialiased`}>
 				{/*

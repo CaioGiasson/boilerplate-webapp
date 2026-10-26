@@ -113,3 +113,13 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 **Causa:** `isBlockedIp` recebia o hostname e `isBlockedIpv4` devolvia `true` para qualquer string com 4 rótulos separados por ponto cujo rótulo não fosse número.
 
 **Prevenção:** `isBlockedIp` só bloqueia IP literal (via `ipaddr.js`, `range() !== 'unicast'`) ou literal malformado que _parece_ IPv4 (só dígitos/hex e pontos). Nome de host passa para `isBlockedHostname` e para a checagem do DNS em `RemoteFetch.assertPublicHost`. Teste de regressão em `tests/utils/safeImageUrl.test.ts`.
+
+---
+
+## `/error.html` em iframe bloqueado por `X-Frame-Options: DENY`
+
+**Sintoma:** o `error-guard.js` cria um iframe apontando para `/error.html`, mas o quadro fica em branco/recusado e o usuário continua vendo a tela padrão de erro do Next.
+
+**Causa:** `buildSecurityHeaders` aplica `X-Frame-Options: DENY` e `frame-ancestors 'none'` em todas as rotas, inclusive ao próprio `/error.html`.
+
+**Prevenção:** `next.config.ts` serve `/error.html` com `buildSameOriginFrameableHeaders` (`SAMEORIGIN` / `frame-ancestors 'self'`), declarado **depois** de `/:path*` (a última regra vence). Coberto por `tests/config/securityHeaders.test.ts`; conferir com `curl -I /error.html` após mudar headers.

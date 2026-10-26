@@ -101,7 +101,7 @@ export default class RemoteFetchService {
 
 	private async assertPublicHost(hostname: string): Promise<void> {
 		const host = hostname.replace(/^\[|\]$/g, '')
-		if (isBlockedIp(host)) {
+		if (isBlockedHostname(host) || isBlockedIp(host)) {
 			throw new ValidationError('Invalid image URL')
 		}
 

@@ -93,3 +93,13 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 **Causa:** Lookup por `pendingEmail` + `googleLinkedAt` (vínculo do e-mail _atual_) levava a `session` sem prova de posse do endereço pendente.
 
 **Prevenção:** Em `decideGoogleOAuthCallback`, se `matchedBy === 'pendingEmail'`, sempre `pending_link` (senha). Nunca tratar `googleLinkedAt` como identidade do e-mail pendente.
+
+---
+
+## Prisma 6 no bundle Edge (`instrumentation.ts`)
+
+**Sintoma:** `next build` falha com `Module not found: Can't resolve './query_engine_bg.wasm?module'` apontando para `node_modules/.prisma/client/wasm-edge-light-loader.mjs`.
+
+**Causa:** `src/instrumentation.ts` importava `Db.manager` (Prisma) de forma estática; o Next compila o arquivo também para o runtime Edge e o Prisma 6 resolve a build `wasm` nesse bundle. Um `return` antecipado em `register()` não elimina o import.
+
+**Prevenção:** `instrumentation.ts` só faz `import()` dinâmico de `instrumentation-node.ts` **dentro** de `if (process.env.NEXT_RUNTIME === 'nodejs')`. Código com Prisma, `process.on` e `validateEnv` mora em `instrumentation-node.ts`.

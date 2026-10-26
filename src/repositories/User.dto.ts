@@ -8,6 +8,7 @@ export type UserEntity = {
 	email: string
 	passwordHash: string | null
 	photoUrl: string | null
+	photoThumbnailUrl: string | null
 	googleLinkedAt: Date | null
 	settings: SettingEntry[]
 	acceptedTermsAt: Date | null
@@ -31,7 +32,16 @@ export type UserEntity = {
 
 export type PublicUser = Pick<
 	UserEntity,
-	'id' | 'name' | 'nickname' | 'email' | 'photoUrl' | 'settings' | 'emailVerifiedAt' | 'pendingEmail' | 'role'
+	| 'id'
+	| 'name'
+	| 'nickname'
+	| 'email'
+	| 'photoUrl'
+	| 'photoThumbnailUrl'
+	| 'settings'
+	| 'emailVerifiedAt'
+	| 'pendingEmail'
+	| 'role'
 > & {
 	emailChallenge: 'none' | 'verify' | 'change_old' | 'change_new'
 	hasPassword: boolean
@@ -45,6 +55,7 @@ export function mapUser(user: {
 	email: string
 	passwordHash: string | null
 	photoUrl: string | null
+	photoThumbnailUrl?: string | null
 	googleLinkedAt?: Date | null
 	settings: unknown
 	acceptedTermsAt: Date | null
@@ -76,6 +87,7 @@ export function mapUser(user: {
 		email: user.email,
 		passwordHash: user.passwordHash ?? null,
 		photoUrl: user.photoUrl,
+		photoThumbnailUrl: user.photoThumbnailUrl ?? null,
 		googleLinkedAt: user.googleLinkedAt ?? null,
 		settings,
 		acceptedTermsAt: user.acceptedTermsAt ?? null,
@@ -108,6 +120,7 @@ export function toPublicUser(user: UserEntity): PublicUser {
 		nickname: user.nickname,
 		email: user.email,
 		photoUrl: user.photoUrl,
+		photoThumbnailUrl: user.photoThumbnailUrl,
 		settings: user.settings,
 		emailVerifiedAt: user.emailVerifiedAt,
 		pendingEmail: user.pendingEmail,

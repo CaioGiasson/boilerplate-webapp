@@ -11,6 +11,8 @@ model User {
   /// Null for Google-only accounts until the user sets a password in profile.
   passwordHash String?
   photoUrl     String?
+  /// Thumbnail do avatar (URL canônica); ausente em avatares anteriores ao pipeline de imagem.
+  photoThumbnailUrl String?
   /// Set when the account is linked to Google OAuth (matched by email). Cleared on email change.
   googleLinkedAt DateTime?
   settings     KeyValueObject[]

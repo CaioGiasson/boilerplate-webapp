@@ -30,6 +30,19 @@ export function resolveAiLogRetentionDays(env = process.env) {
 }
 
 /**
+ * Apaga o objeto principal e o thumbnail (arquivos anteriores ao pipeline de imagem não têm).
+ * @param {S3Client} client
+ * @param {string} bucket
+ * @param {{ key: string, thumbnailKey?: string | null }} file
+ */
+async function deleteFileObjects(client, bucket, file) {
+	await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: file.key }))
+	if (file.thumbnailKey) {
+		await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: file.thumbnailKey }))
+	}
+}
+
+/**
  * @param {{ dryRun?: boolean, confirm?: boolean }} [flags]
  */
 export async function runRetentionPurge(flags = parseCronArgs()) {
@@ -72,7 +85,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 				status: 'orphan',
 				updatedAt: { lt: orphanCutoff },
 			},
-			select: { id: true, key: true, updatedAt: true },
+			select: { id: true, key: true, thumbnailKey: true, updatedAt: true },
 			orderBy: { updatedAt: 'asc' },
 		})
 		summary.orphansFound = orphans.length
@@ -84,12 +97,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 				continue
 			}
 			try {
-				await client.send(
-					new DeleteObjectCommand({
-						Bucket: bucket,
-						Key: file.key,
-					})
-				)
+				await deleteFileObjects(client, bucket, file)
 				summary.orphansDeleted += 1
 				console.log(`DeletedObject key=${file.key} id=${file.id}`)
 			} catch (error) {
@@ -141,16 +149,11 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 			try {
 				const files = await prisma.file.findMany({
 					where: { ownerId: user.id },
-					select: { id: true, key: true, status: true },
+					select: { id: true, key: true, thumbnailKey: true, status: true },
 				})
 				for (const file of files) {
 					try {
-						await client.send(
-							new DeleteObjectCommand({
-								Bucket: bucket,
-								Key: file.key,
-							})
-						)
+						await deleteFileObjects(client, bucket, file)
 					} catch (error) {
 						console.error(`Failed DeleteObject for purge user=${user.id} file=${file.id}`, error)
 					}
@@ -170,6 +173,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 						nickname: `deleted_${user.id}`,
 						name: null,
 						photoUrl: null,
+						photoThumbnailUrl: null,
 						passwordHash: sentinel,
 						googleLinkedAt: null,
 						settings: [],

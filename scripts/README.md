@@ -53,12 +53,13 @@ Exemplo cron: `npm run cron -- retention-purge --dry-run`
 
 ## Backfills (Mongo)
 
-| Comando                                    | Script                                 | Efeito                                   | Flags                     | Prod? |
-| ------------------------------------------ | -------------------------------------- | ---------------------------------------- | ------------------------- | ----- |
-| `npm run backfill-image-visibility`        | `backfill-image-visibility.mjs`        | Define `visibility: PUBLIC` onde ausente | —                         | 🔴    |
-| `npm run backfill:hide-from-global-mosaic` | `backfill-hide-from-global-mosaic.mjs` | Sync `hideFromGlobalMosaic` (DATA-04)    | —                         | 🔴    |
-| `npm run nickname:backfill`                | `backfill-nickname-canonical.mjs`      | Normaliza nickname canonical             | `--dry-run` · `--confirm` | 🔴    |
-| `npm run email:backfill-verified`          | `backfill-email-verified.mjs`          | Backfill `emailVerifiedAt`               | —                         | 🔴    |
+| Comando                                    | Script                                 | Efeito                                        | Flags                     | Prod? |
+| ------------------------------------------ | -------------------------------------- | --------------------------------------------- | ------------------------- | ----- |
+| `npm run backfill-image-visibility`        | `backfill-image-visibility.mjs`        | Define `visibility: PUBLIC` onde ausente      | —                         | 🔴    |
+| `npm run backfill:hide-from-global-mosaic` | `backfill-hide-from-global-mosaic.mjs` | Sync `hideFromGlobalMosaic` (DATA-04)         | —                         | 🔴    |
+| `npm run nickname:backfill`                | `backfill-nickname-canonical.mjs`      | Normaliza nickname canonical                  | `--dry-run` · `--confirm` | 🔴    |
+| `npm run files:backfill-thumbnails`        | `backfill-file-thumbnails.mjs`         | Gera thumbnail de arquivos publicados sem ele | `--dry-run` · `--confirm` | 🔴    |
+| `npm run email:backfill-verified`          | `backfill-email-verified.mjs`          | Backfill `emailVerifiedAt`                    | —                         | 🔴    |
 
 ## Operador / debug (recusa produção)
 

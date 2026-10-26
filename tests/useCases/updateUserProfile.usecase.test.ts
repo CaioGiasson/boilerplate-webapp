@@ -49,14 +49,19 @@ describe('UpdateUserProfile', () => {
 			userRecord({ photoUrl: data.photoUrl ?? null })
 		)
 
-		mockPrismaRuntime({ user: { findFirst, update } })
+		const updateMany = jest.fn(async () => ({ count: 1 }))
+		mockPrismaRuntime({ user: { findFirst, update }, file: { updateMany } })
 
 		const useCase = new UpdateUserProfile()
 		const result = await useCase.run({ userId: 'user-1', photoUrl: null })
 
+		expect(updateMany).toHaveBeenCalledWith(
+			expect.objectContaining({ where: expect.objectContaining({ url: 'https://cdn.example/a.jpg' }) })
+		)
+
 		expect(update).toHaveBeenCalledWith(
 			expect.objectContaining({
-				data: expect.objectContaining({ photoUrl: null }),
+				data: expect.objectContaining({ photoUrl: null, photoThumbnailUrl: null }),
 			})
 		)
 		expect(result.user.photoUrl).toBeNull()

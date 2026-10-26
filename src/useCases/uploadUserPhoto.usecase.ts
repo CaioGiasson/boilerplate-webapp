@@ -52,16 +52,15 @@ export default class UploadUserPhoto extends UseCaseMasterPort<Input, Output> {
 		return runStorageUploadThenTransaction({
 			storageUpload: async (storageRoot) => {
 				const fileManager = FileManager.create(storageRoot)
-				const photoUrl = await fileManager.storeAvatar({
-					buffer: input.buffer,
-					mimeType: input.mimeType,
-					ownerId: user.id,
-				})
-				return { photoUrl, previousUrl }
+				const stored = await fileManager.storeAvatar({ buffer: input.buffer, ownerId: user.id })
+				return { photoUrl: stored.url, photoThumbnailUrl: stored.thumbnailUrl, previousUrl }
 			},
 			transactionPhase: async (injectables, stored) => {
 				const txUserRepository = new UserRepository(injectables.prisma)
-				const updated = await txUserRepository.updateProfile(user.id, { photoUrl: stored.photoUrl })
+				const updated = await txUserRepository.updateProfile(user.id, {
+					photoUrl: stored.photoUrl,
+					photoThumbnailUrl: stored.photoThumbnailUrl,
+				})
 				return { user: await toPublicUserWithSignedPhoto(updated) }
 			},
 			compensateStorage: async (storageRoot, stored) => {

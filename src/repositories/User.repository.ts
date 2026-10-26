@@ -180,6 +180,7 @@ export default class UserRepository {
 			nickname?: string
 			settings?: SettingEntry[]
 			photoUrl?: string | null
+			photoThumbnailUrl?: string | null
 		}
 	): Promise<UserEntity> {
 		try {
@@ -199,6 +200,7 @@ export default class UserRepository {
 							}
 						: {}),
 					...(data.photoUrl !== undefined ? { photoUrl: data.photoUrl } : {}),
+					...(data.photoThumbnailUrl !== undefined ? { photoThumbnailUrl: data.photoThumbnailUrl } : {}),
 				},
 			})
 			return mapUser(user)
@@ -495,6 +497,7 @@ export default class UserRepository {
 					nickname: `deleted_${id}`,
 					name: null,
 					photoUrl: null,
+					photoThumbnailUrl: null,
 					passwordHash,
 					googleLinkedAt: null,
 					settings: [],

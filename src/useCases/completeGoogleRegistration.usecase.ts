@@ -115,15 +115,14 @@ export default class CompleteGoogleRegistration extends UseCaseMasterPort<Input,
 				ageVerifiedAt: acceptedAt,
 			})
 
-			let photoUrl: string | null = null
-			if (pending.picture) {
-				photoUrl = await this.importAvatarBestEffort(user.id, pending.picture, injectables.prisma)
-				if (photoUrl) {
-					await userRepository.updateProfile(user.id, { photoUrl })
-				}
+			const avatar = pending.picture
+				? await this.importAvatarBestEffort(user.id, pending.picture, injectables.prisma)
+				: null
+			if (avatar) {
+				await userRepository.updateProfile(user.id, avatar)
 			}
 
-			const finalUser = photoUrl ? { ...user, photoUrl } : user
+			const finalUser = avatar ? { ...user, ...avatar } : user
 			return this.mintSession(finalUser, input.deviceCookie, pending.returnUrl, injectables)
 		} catch (error: unknown) {
 			if (isUniqueConstraintError(error)) {
@@ -181,7 +180,7 @@ export default class CompleteGoogleRegistration extends UseCaseMasterPort<Input,
 		ownerId: string,
 		pictureUrl: string,
 		prisma: Prisma.TransactionClient
-	): Promise<string | null> {
+	): Promise<{ photoUrl: string; photoThumbnailUrl: string } | null> {
 		try {
 			const remote = await this.remoteFetchService.fetchImage(pictureUrl)
 			if (!PROFILE_PHOTO_MIME_TYPES.includes(remote.mimeType as (typeof PROFILE_PHOTO_MIME_TYPES)[number])) {
@@ -191,11 +190,8 @@ export default class CompleteGoogleRegistration extends UseCaseMasterPort<Input,
 				return null
 			}
 			const fileManager = FileManager.create(prisma)
-			return await fileManager.storeAvatar({
-				buffer: remote.buffer,
-				mimeType: remote.mimeType,
-				ownerId,
-			})
+			const stored = await fileManager.storeAvatar({ buffer: remote.buffer, ownerId })
+			return { photoUrl: stored.url, photoThumbnailUrl: stored.thumbnailUrl }
 		} catch (error: unknown) {
 			LogManager.error('Failed to import Google profile photo', error)
 			return null

@@ -11,7 +11,11 @@ model File {
   url       String
   category  String
   mimeType  String
+  /// Soma do objeto principal e do thumbnail (conta na cota). Arquivos legados não têm thumbnail.
   sizeBytes Int
+  /// URL canônica e chave do thumbnail WebP de 200 px; ausentes em arquivos anteriores ao pipeline de imagem.
+  thumbnailUrl String?
+  thumbnailKey String?
   status    FileStatus @default(pending)
   ownerId   String?    @db.ObjectId
   createdAt DateTime   @default(now())

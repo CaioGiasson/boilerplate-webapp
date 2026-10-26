@@ -37,3 +37,5 @@ export type { ColorPalettePickerProps } from '@/design-system/ColorPalettePicker
 export { AppMultiSelect } from '@/design-system/MultiSelect'
 export type { AppMultiSelectProps } from '@/design-system/MultiSelect'
 export { StorageProgressBar } from '@/design-system/StorageProgressBar'
+export { ImageCropModal } from '@/design-system/ImageCropModal'
+export type { ImageCropModalProps } from '@/design-system/ImageCropModal'

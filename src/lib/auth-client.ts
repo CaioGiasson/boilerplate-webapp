@@ -11,6 +11,7 @@ export type AuthUser = {
 	nickname: string
 	email: string
 	photoUrl: string | null
+	photoThumbnailUrl: string | null
 	settings: SettingEntry[]
 	emailVerifiedAt: string | null
 	pendingEmail: string | null

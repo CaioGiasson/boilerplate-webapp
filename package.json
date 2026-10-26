@@ -15,6 +15,7 @@
 		"cron:retention": "node scripts/cron/jobs/retention-purge.mjs",
 		"dev": "npm run prisma-merge && prisma generate && node scripts/next-port.mjs dev",
 		"email:backfill-verified": "node scripts/backfill-email-verified.mjs",
+		"files:backfill-thumbnails": "node scripts/backfill-file-thumbnails.mjs",
 		"healthcheck": "node scripts/healthcheck.mjs",
 		"lint": "eslint .",
 		"list-users": "node scripts/list-users.mjs",
@@ -64,6 +65,8 @@
 		"openai": "^6.49.0",
 		"react": "19.1.0",
 		"react-dom": "19.1.0",
+		"react-easy-crop": "^6.2.4",
+		"sharp": "^0.34.5",
 		"tailwind-merge": "^2.6.0",
 		"undici": "^8.10.0",
 		"zod": "3.25.76"

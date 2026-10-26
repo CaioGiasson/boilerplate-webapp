@@ -127,6 +127,11 @@ export type AppMessages = {
 		nicknameUniquenessHint: string
 		photo: string
 		photoHelper: string
+		cropPhotoTitle: string
+		cropPhotoConfirm: string
+		cropPhotoCancel: string
+		cropPhotoZoom: string
+		cropPhotoFailed: string
 		addPhoto: string
 		removePhoto: string
 		changePhoto: string

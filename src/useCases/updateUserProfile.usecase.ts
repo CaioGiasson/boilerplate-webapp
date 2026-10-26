@@ -1,4 +1,5 @@
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
+import FileRepository from '@/repositories/File.repository'
 import UserRepository, { isUniqueConstraintError, type PublicUser } from '@/repositories/User.repository'
 import { ConflictError, NotFoundError, ValidationError } from '@/errors'
 import { toPublicUserWithSignedPhoto } from '@/utils/publicUserAccess'
@@ -47,7 +48,12 @@ export default class UpdateUserProfile extends UseCaseMasterPort<Input, Output> 
 				name: input.name,
 				nickname,
 				photoUrl: input.photoUrl,
+				// Remover a foto zera também o thumbnail; os objetos viram orphan e saem no retention-purge.
+				...(input.photoUrl === null ? { photoThumbnailUrl: null } : {}),
 			})
+			if (input.photoUrl === null && current.photoUrl) {
+				await new FileRepository(injectables.prisma).markOrphanByUrl(current.photoUrl)
+			}
 			return { user: await toPublicUserWithSignedPhoto(user) }
 		} catch (error: unknown) {
 			if (isUniqueConstraintError(error)) {

@@ -1297,6 +1297,10 @@ components:
                 nickname: { type: string }
                 email: { type: string }
                 photoUrl: { type: string, nullable: true }
+                photoThumbnailUrl:
+                    type: string
+                    nullable: true
+                    description: Thumbnail WebP de 200 px (URL assinada). Nulo em avatares anteriores ao pipeline de imagem; use photoUrl nesse caso.
                 settings: { type: object }
                 emailVerifiedAt: { type: string, format: date-time, nullable: true }
                 pendingEmail: { type: string, nullable: true }

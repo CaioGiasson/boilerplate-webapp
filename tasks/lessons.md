@@ -133,3 +133,13 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 **Causa:** o MongoDB não tem migração de schema; documentos antigos simplesmente não têm o campo.
 
 **Prevenção:** campo novo em `User` entra como **opcional** (`role UserRole?`), o código normaliza ausência (`normalizeUserRole`) e um script `--dry-run`/`--confirm` faz o backfill (`npm run user-role:backfill`).
+
+---
+
+## SVG aceito por engano no pipeline de imagem (sharp)
+
+**Sintoma:** upload com `Content-Type: image/png` e conteúdo SVG é processado em vez de recusado.
+
+**Causa:** o mime vem do cliente e o `sharp` rasteriza SVG (via librsvg) mesmo quando o nome/mime diz outra coisa.
+
+**Prevenção:** `SharpImageProcessor` lê `metadata().format` e só aceita `jpeg`, `png`, `webp` e `gif`; também limita `limitInputPixels`. Teste de regressão em `tests/services/imageProcessor.test.ts`.

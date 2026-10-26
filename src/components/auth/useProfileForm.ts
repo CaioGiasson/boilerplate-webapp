@@ -27,10 +27,12 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { useRouter } from '@/i18n/navigation'
 import { EMAIL_CODE_LENGTH, normalizeEmailToken } from '@/utils/emailCode'
 import { storagePercentUsed } from '@/constants/storageQuota'
+import { cropToWebpBlob, type PixelCrop } from '@/lib/image/cropToWebp'
 import { formatMegabytes } from '@/utils/formatStorage'
 import type { AppLocale } from '@/constants/texts'
 
 const MAX_PHOTO_BYTES = 3 * 1024 * 1024
+const CROPPED_PHOTO_FILE_NAME = 'avatar.webp'
 
 function readFileAsDataUrl(file: File): Promise<string> {
 	return new Promise((resolve, reject) => {
@@ -89,6 +91,10 @@ export type ProfileFormModel = {
 	deleteConfirmWord: string
 	resolvePasswordError: (value: string) => string | null
 	onPhotoChange: (file: File | null) => void
+	/** Imagem escolhida aguardando recorte; `null` quando o modal está fechado. */
+	cropSourceUrl: string | null
+	confirmPhotoCrop: (area: PixelCrop) => Promise<void>
+	cancelPhotoCrop: () => void
 	openPhotoPicker: () => void
 	markPhotoRemoved: () => void
 	saveProfile: (event: React.FormEvent) => Promise<void>
@@ -127,6 +133,7 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 	const [pendingPhoto, setPendingPhoto] = React.useState<File | null>(null)
 	const [photoPreviewUrl, setPhotoPreviewUrl] = React.useState<string | null>(null)
 	const [photoRemoved, setPhotoRemoved] = React.useState(false)
+	const [cropSourceUrl, setCropSourceUrl] = React.useState<string | null>(null)
 	const [saving, setSaving] = React.useState(false)
 	const [exporting, setExporting] = React.useState(false)
 	const [deleteConfirm, setDeleteConfirm] = React.useState('')
@@ -270,9 +277,42 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 			return
 		}
 
-		setPhotoRemoved(false)
-		setPendingPhoto(file)
-		setPhotoPreviewUrl(URL.createObjectURL(file))
+		// A foto escolhida só vira pendente depois do recorte (confirmPhotoCrop).
+		closeCropper()
+		setCropSourceUrl(URL.createObjectURL(file))
+	}
+
+	const closeCropper = () => {
+		setCropSourceUrl((current) => {
+			if (current) {
+				URL.revokeObjectURL(current)
+			}
+			return null
+		})
+	}
+
+	const cancelPhotoCrop = () => {
+		closeCropper()
+		if (photoInputRef.current) {
+			photoInputRef.current.value = ''
+		}
+	}
+
+	const confirmPhotoCrop = async (area: PixelCrop) => {
+		if (!cropSourceUrl) {
+			return
+		}
+
+		try {
+			const blob = await cropToWebpBlob(cropSourceUrl, area)
+			const cropped = new File([blob], CROPPED_PHOTO_FILE_NAME, { type: blob.type })
+			setPhotoRemoved(false)
+			setPendingPhoto(cropped)
+			setPhotoPreviewUrl(URL.createObjectURL(cropped))
+			closeCropper()
+		} catch {
+			toast({ variant: 'error', title: t('cropPhotoFailed') })
+		}
 	}
 
 	const openPhotoPicker = () => {
@@ -576,6 +616,9 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 		deleteConfirmWord,
 		resolvePasswordError,
 		onPhotoChange,
+		cropSourceUrl,
+		confirmPhotoCrop,
+		cancelPhotoCrop,
 		openPhotoPicker,
 		markPhotoRemoved,
 		saveProfile,

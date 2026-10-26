@@ -15,6 +15,7 @@ type Output = {
 		id: string
 		key: string
 		url: string
+		thumbnailUrl: string | null
 		category: string
 		mimeType: string
 		sizeBytes: number
@@ -60,6 +61,7 @@ export default class ExportUserData extends UseCaseMasterPort<Input, Output> {
 				id: file.id,
 				key: file.key,
 				url: file.url,
+				thumbnailUrl: file.thumbnailUrl ?? null,
 				category: file.category,
 				mimeType: file.mimeType,
 				sizeBytes: file.sizeBytes,

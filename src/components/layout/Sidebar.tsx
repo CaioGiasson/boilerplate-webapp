@@ -145,7 +145,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
 						<NavIconButton label={t('account')} data-testid="nav-account" disabled={loading}>
 							{user?.photoUrl ? (
 								<Avatar
-									src={user.photoUrl}
+									src={user.photoThumbnailUrl ?? user.photoUrl}
 									alt={user.nickname}
 									className="h-6 w-6"
 									fallback={<Icon icon={User} />}

@@ -27,6 +27,8 @@ import StartGoogleOAuth from '@/useCases/startGoogleOAuth.usecase'
 import HandleGoogleOAuthCallback from '@/useCases/handleGoogleOAuthCallback.usecase'
 import CompleteGoogleRegistration from '@/useCases/completeGoogleRegistration.usecase'
 import LinkGoogleAccount from '@/useCases/linkGoogleAccount.usecase'
+import SummarizeText from '@/useCases/summarizeText.usecase'
+import AIService, { getAIService } from '@/services/AI/AI.service'
 
 export type AppDependencies = {
 	exampleService: ExampleService
@@ -58,6 +60,8 @@ export type AppDependencies = {
 	handleGoogleOAuthCallbackUseCase: HandleGoogleOAuthCallback
 	completeGoogleRegistrationUseCase: CompleteGoogleRegistration
 	linkGoogleAccountUseCase: LinkGoogleAccount
+	aiService: AIService
+	summarizeTextUseCase: SummarizeText
 }
 
 let cachedDependencies: AppDependencies | null = null
@@ -96,6 +100,8 @@ export function getDependencies(): AppDependencies {
 	const handleGoogleOAuthCallbackUseCase = new HandleGoogleOAuthCallback()
 	const completeGoogleRegistrationUseCase = new CompleteGoogleRegistration()
 	const linkGoogleAccountUseCase = new LinkGoogleAccount()
+	const aiService = getAIService()
+	const summarizeTextUseCase = new SummarizeText(aiService)
 
 	cachedDependencies = {
 		exampleService,
@@ -127,6 +133,8 @@ export function getDependencies(): AppDependencies {
 		handleGoogleOAuthCallbackUseCase,
 		completeGoogleRegistrationUseCase,
 		linkGoogleAccountUseCase,
+		aiService,
+		summarizeTextUseCase,
 	}
 
 	return cachedDependencies

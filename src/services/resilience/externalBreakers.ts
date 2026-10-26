@@ -11,7 +11,13 @@ export const spacesCircuitBreaker = new CircuitBreaker('spaces', {
 	resetTimeoutMs: 30_000,
 })
 
+export const openAiCircuitBreaker = new CircuitBreaker('openai', {
+	failureThreshold: 5,
+	resetTimeoutMs: 30_000,
+})
+
 export function resetExternalBreakersForTests(): void {
 	brevoCircuitBreaker.resetForTests()
 	spacesCircuitBreaker.resetForTests()
+	openAiCircuitBreaker.resetForTests()
 }

@@ -2,13 +2,16 @@ import {
 	EXAMPLE_JWT_SECRET,
 	EXAMPLE_MONGO_ROOT_PASSWORD,
 	assertDatabaseUrl,
+	assertAiConfig,
 	assertEmailConfig,
+	getAiConfig,
 	assertJwtSecret,
 	getEmailConfig,
 	getGoogleOAuthConfig,
 	getJwtAudience,
 	getJwtIssuer,
 	getJwtSecret,
+	isAIReady,
 	isGoogleOAuthReady,
 	validateEnv,
 } from '@/config/env'
@@ -217,5 +220,33 @@ describe('getGoogleOAuthConfig / isGoogleOAuthReady', () => {
 		expect(getGoogleOAuthConfig().timeoutMs).toBe(10_000)
 		process.env.GOOGLE_OAUTH_TIMEOUT_MS = '5000'
 		expect(getGoogleOAuthConfig().timeoutMs).toBe(5000)
+	})
+})
+
+describe('getAiConfig', () => {
+	it('sem variáveis: provider none, modelo padrão gpt-5.4-mini e app sobe', () => {
+		const config = getAiConfig({})
+		expect(config).toEqual({ provider: 'none', apiKey: '', textModel: 'gpt-5.4-mini', timeoutMs: 30_000 })
+		expect(isAIReady(config)).toBe(false)
+		expect(() => assertAiConfig(config)).not.toThrow()
+	})
+
+	it('lê provider, chave, modelo e timeout do env', () => {
+		const config = getAiConfig({
+			AI_PROVIDER: ' OpenAI ',
+			OPENAI_API_KEY: ' sk-test ',
+			OPENAI_TEXT_MODEL: 'outro-modelo',
+			AI_TIMEOUT_MS: '5000',
+		})
+		expect(config).toEqual({ provider: 'openai', apiKey: 'sk-test', textModel: 'outro-modelo', timeoutMs: 5000 })
+		expect(isAIReady(config)).toBe(true)
+	})
+
+	it('recusa provider desconhecido', () => {
+		expect(() => getAiConfig({ AI_PROVIDER: 'foo' })).toThrow('AI_PROVIDER must be openai or none')
+	})
+
+	it('exige OPENAI_API_KEY quando AI_PROVIDER=openai', () => {
+		expect(() => assertAiConfig(getAiConfig({ AI_PROVIDER: 'openai' }))).toThrow('OPENAI_API_KEY is required')
 	})
 })

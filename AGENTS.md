@@ -58,6 +58,7 @@ Script CLI (`scripts/healthcheck.mjs`) — **não** envia e-mail de produção; 
 | `database`    | Ping Mongo via Prisma (`$runCommandRaw({ ping: 1 })`)                                                                                 |
 | `spaces`      | `HeadBucket` no bucket DigitalOcean Spaces                                                                                            |
 | `jwt`         | Assina e verifica JWT de teste (segredo válido)                                                                                       |
+| `ai`          | Se `AI_PROVIDER=openai`: exige `OPENAI_API_KEY` (sem chamada remota). Se `none`: **skipped** (ok).                                    |
 | `brevo`       | Se `EMAIL_PROVIDER=brevo`: `GET /v3/account` na API Brevo (API key + `EMAIL_FROM` presentes). Se `none`/`disabled`: **skipped** (ok). |
 
 ### `npm run test-environment`

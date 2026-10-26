@@ -51,4 +51,5 @@ jobs:
                   SPACES_SECRET_ACCESS_KEY: ci-secret-key
                   ENVIRONMENT: dev
                   EMAIL_PROVIDER: none
+                  AI_PROVIDER: none
                   SWAGGER_ENABLED: 'false'

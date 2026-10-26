@@ -140,6 +140,7 @@ export function validateEnv(): void {
 	assertJwtSecret(process.env.JWT_SECRET ?? '')
 	assertDatabaseUrl(process.env.DATABASE_URL ?? '', process.env.ENVIRONMENT ?? '')
 	assertEmailConfig(getEmailConfig())
+	assertAiConfig(getAiConfig())
 }
 
 export function getJwtSecret(): Uint8Array {
@@ -245,6 +246,50 @@ export function assertEmailConfig(config: EmailConfig, environment: string = pro
 	if (!config.brevoApiKey) {
 		throw new Error('BREVO_API_KEY is required when EMAIL_PROVIDER=brevo')
 	}
+}
+
+export type AiProviderName = 'openai' | 'none'
+
+export type AiConfig = {
+	provider: AiProviderName
+	apiKey: string
+	textModel: string
+	timeoutMs: number
+}
+
+export const DEFAULT_OPENAI_TEXT_MODEL = 'gpt-5.4-mini'
+const DEFAULT_AI_TIMEOUT_MS = 30_000
+
+function parseAiProvider(raw: string | undefined): AiProviderName {
+	const value = raw?.trim().toLowerCase() || 'none'
+	if (value === 'openai' || value === 'none') {
+		return value
+	}
+	throw new Error('AI_PROVIDER must be openai or none')
+}
+
+/**
+ * Reads AI env. O default é `AI_PROVIDER=none`: o app sobe sem chave e o AI Service responde 503.
+ * Chave ausente com `openai` só é recusada em {@link assertAiConfig} (boot via validateEnv).
+ */
+export function getAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfig {
+	return {
+		provider: parseAiProvider(env.AI_PROVIDER),
+		apiKey: env.OPENAI_API_KEY?.trim() ?? '',
+		textModel: env.OPENAI_TEXT_MODEL?.trim() || DEFAULT_OPENAI_TEXT_MODEL,
+		timeoutMs: parsePositiveInt(env.AI_TIMEOUT_MS, DEFAULT_AI_TIMEOUT_MS, 'AI_TIMEOUT_MS'),
+	}
+}
+
+export function assertAiConfig(config: AiConfig): void {
+	if (config.provider === 'openai' && !config.apiKey) {
+		throw new Error('OPENAI_API_KEY is required when AI_PROVIDER=openai')
+	}
+}
+
+/** True quando há fornecedor configurado; a flag `ai_enabled` decide se ele é usado. */
+export function isAIReady(config: AiConfig = getAiConfig()): boolean {
+	return config.provider === 'openai' && Boolean(config.apiKey)
 }
 
 export function getAppBaseUrl(env: NodeJS.ProcessEnv = process.env): string {

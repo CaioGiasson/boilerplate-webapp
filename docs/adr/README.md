@@ -16,6 +16,7 @@ Decisões arquiteturais curtas do App. Formato: Contexto → Decisão → Conseq
 | [ADR-008](008-layer-boundaries-and-di.md)            | Fronteiras de camadas e DI incremental    |
 | [ADR-010](010-google-oauth.md)                       | Login Google OAuth (Authorization Code)   |
 | [ADR-011](011-feature-flags-append-only.md)          | Feature flags append-only no MongoDB      |
+| [ADR-012](012-ai-service-vendor-port.md)             | AI Service com porta de fornecedor        |
 
 ## Template
 

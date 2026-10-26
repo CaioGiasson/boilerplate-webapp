@@ -34,6 +34,14 @@ O TOS oficial declara que documentos adicionais, incluindo o DPA, “are incorpo
 
 Não afirmar adequação UE–EUA inexistente ou não verificada; a salvaguarda documentada aqui é **ToS + DPA incorporado** (LGPD art. 33 / GDPR art. 46 quando aplicável).
 
+## OpenAI (opcional)
+
+Quando `AI_PROVIDER=openai` e a flag `ai_enabled` estão ligadas, o texto enviado pelos use cases que usam o AI Service sai do app host para a API da OpenAI (EUA). É uma **transferência internacional** adicional, separada do Spaces.
+
+- Desligado por padrão (`AI_PROVIDER=none`); nenhum dado é enviado sem as duas travas.
+- Antes de habilitar em produção: aceitar o DPA da OpenAI, registrar aqui a salvaguarda (como feito para a DigitalOcean) e atualizar a política de privacidade. Revisão jurídica recomendada.
+- Não enviar dado pessoal que a tarefa não exija. Operação em `docs/operators/ai.md`.
+
 ## O que tipicamente não vai para os EUA via Spaces
 
 - JWT de sessão no cookie do browser (fica no cliente; o servidor valida localmente).

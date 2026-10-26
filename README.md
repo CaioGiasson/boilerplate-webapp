@@ -105,15 +105,16 @@ A app Next roda com build estático/server (`next start`). O MongoDB **não** de
 
 ### Variáveis obrigatórias
 
-| Variável            | Produção                                               |
-| ------------------- | ------------------------------------------------------ |
-| `ENVIRONMENT`       | `prod`                                                 |
-| `NODE_ENV`          | `production` (definido pelo `next start`)              |
-| `DATABASE_URL`      | URL com **user:password@** e `authSource=admin`        |
-| `JWT_SECRET`        | ≥32 bytes aleatórios; **não** o placeholder do example |
-| `MONGO_ROOT_*`      | Só se o host usar o Compose deste repo; senão omita    |
-| `SPACES_*`          | Credenciais e bucket do object storage                 |
-| `HEALTHCHECK_TOKEN` | Opcional: permite probe HTTP de fora do loopback       |
+| Variável            | Produção                                                                                                                          |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `ENVIRONMENT`       | `prod`                                                                                                                            |
+| `NODE_ENV`          | `production` (definido pelo `next start`)                                                                                         |
+| `DATABASE_URL`      | URL com **user:password@** e `authSource=admin`                                                                                   |
+| `JWT_SECRET`        | ≥32 bytes aleatórios; **não** o placeholder do example                                                                            |
+| `MONGO_ROOT_*`      | Só se o host usar o Compose deste repo; senão omita                                                                               |
+| `SPACES_*`          | Credenciais e bucket do object storage                                                                                            |
+| `HEALTHCHECK_TOKEN` | Opcional: permite probe HTTP de fora do loopback                                                                                  |
+| `AI_PROVIDER`       | Opcional (`none` por padrão): `openai` + `OPENAI_API_KEY` habilitam o AI Service — [`docs/operators/ai.md`](docs/operators/ai.md) |
 
 Com `ENVIRONMENT=prod`, o boot recusa `DATABASE_URL` sem credencial ou com senha de example.
 

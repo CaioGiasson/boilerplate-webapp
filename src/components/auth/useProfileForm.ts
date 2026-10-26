@@ -26,6 +26,7 @@ import { canonicalizeNickname } from '@/utils/nickname'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { useRouter } from '@/i18n/navigation'
 import { EMAIL_CODE_LENGTH, normalizeEmailToken } from '@/utils/emailCode'
+import { storagePercentUsed } from '@/constants/storageQuota'
 import { formatMegabytes } from '@/utils/formatStorage'
 import type { AppLocale } from '@/constants/texts'
 
@@ -104,6 +105,7 @@ export type ProfileFormModel = {
 	statisticsLoaded: boolean
 	statisticsFileCount: number
 	statisticsUsedMegabytes: string
+	statisticsUsedPercent: number
 }
 
 export function useProfileForm(): ProfileFormModel | { ready: false } {
@@ -146,6 +148,7 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 	const [statisticsLoaded, setStatisticsLoaded] = React.useState(false)
 	const [statisticsFileCount, setStatisticsFileCount] = React.useState<number | null>(null)
 	const [statisticsUsedMegabytes, setStatisticsUsedMegabytes] = React.useState<string | null>(null)
+	const [statisticsUsedPercent, setStatisticsUsedPercent] = React.useState(0)
 	const photoInputRef = React.useRef<HTMLInputElement>(null)
 	/** Evita race: setUser(null) dispara efeito → /login antes de chegar em /account-delete. */
 	const skipLoginRedirectRef = React.useRef(false)
@@ -224,6 +227,7 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 			const result = await getUserStorageStatsRequest()
 			setStatisticsFileCount(result.fileCount)
 			setStatisticsUsedMegabytes(formatMegabytes(result.usedBytes, locale))
+			setStatisticsUsedPercent(storagePercentUsed(result.usedBytes))
 			setStatisticsLoaded(true)
 		} catch {
 			toast({ variant: 'error', title: t('errorGeneric') })
@@ -588,5 +592,6 @@ export function useProfileForm(): ProfileFormModel | { ready: false } {
 		statisticsLoaded,
 		statisticsFileCount: statisticsFileCount ?? 0,
 		statisticsUsedMegabytes: statisticsUsedMegabytes ?? formatMegabytes(0, locale),
+		statisticsUsedPercent,
 	}
 }

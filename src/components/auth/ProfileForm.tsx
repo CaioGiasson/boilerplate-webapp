@@ -81,6 +81,7 @@ export function ProfileForm() {
 					statisticsLoaded={profile.statisticsLoaded}
 					statisticsFileCount={profile.statisticsFileCount}
 					statisticsUsedMegabytes={profile.statisticsUsedMegabytes}
+					statisticsUsedPercent={profile.statisticsUsedPercent}
 				/>
 
 				<ProfileSessionsSection

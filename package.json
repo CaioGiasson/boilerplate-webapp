@@ -11,6 +11,7 @@
 		"change-user-password": "node scripts/change-user-password.mjs",
 		"change-user-role": "node scripts/change-user-role.mjs",
 		"check": "prettier --write . && eslint .",
+		"check:lockfile-native": "node scripts/check-lockfile-native.mjs",
 		"cron": "node scripts/cron/run.mjs",
 		"cron:retention": "node scripts/cron/jobs/retention-purge.mjs",
 		"dev": "npm run prisma-merge && prisma generate && node scripts/next-port.mjs dev",

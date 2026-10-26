@@ -2,7 +2,7 @@
 
 Validates that two Node processes behind the same origin behave correctly for **JWT session**, **rate limits**, and a **basic upload** path.
 
-> Rate limits are **in-memory per process** until #127 (Redis). With 2 replicas, effective auth/image quotas are roughly **2×** the documented per-instance limits.
+> Rate limits are **in-memory per process** (ESC-01 em [`docs/known-issues/scalability.md`](../known-issues/scalability.md)); N réplicas não são previstas. With 2 replicas, effective auth/image quotas are roughly **2×** the documented per-instance limits.
 
 ## Prerequisites
 

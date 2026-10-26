@@ -63,7 +63,7 @@ Envelope: `ApiPresenter` (`success` + `message` + `data` / `success: false` + `c
 ## Borda HTTP de conta e segurança
 
 - **CSRF:** `assertSameOrigin` nas mutações de autenticação e nas rotas novas com cookie.
-- **Rate limit:** em memória por processo (`rateLimit.middleware.ts`, `assertAuthRateLimit`); em multi-instância o limite é por instância (`docs/operators/multi-instance-smoke.md`).
+- **Rate limit:** em memória por processo (`rateLimit.middleware.ts`, `assertAuthRateLimit`); N réplicas não são previstas; as limitações estão em [`docs/known-issues/scalability.md`](docs/known-issues/scalability.md) (ESC-01…ESC-10).
 - **Cookies:** `app-session` / `__Host-app-session`, `app-device`, `app-theme`, `app-locale`. Em produção o prefixo `__Host-` exige HTTPS.
 - **Headers:** `src/config/securityHeaders.ts` (HSTS, `X-Frame-Options: DENY`, `frame-ancestors 'none'`, CSP em report-only). `/error.html` é a exceção (`SAMEORIGIN`, `frame-ancestors 'self'`) porque o `error-guard.js` a embute em iframe.
 - **SSRF:** `RemoteFetch.service` (DNS + IP pinning + redirect manual) com `safeImageUrl` (`ipaddr.js`: só unicast público; `isBlockedHostname` recusa `localhost`, `*.local`, `*.internal`).

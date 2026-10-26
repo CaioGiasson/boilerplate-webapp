@@ -8,7 +8,7 @@ import { TooManyRequestsError } from '@/errors'
  *
  * If the architecture moves to multiple pods behind a load balancer, do **not**
  * rely on this alone — enforce rate limits at the **API gateway** (preferred) or
- * swap the store for Redis. Historical tracking: issue #127 (SCALE-02, N/A while single-node).
+ * swap the store for a shared one. Tracked as ESC-01 in `docs/known-issues/scalability.md`.
  *
  * Phase 2 (not implemented): CAPTCHA (Turnstile/hCaptcha) after repeated
  * lockouts — no provider or credentials in this change.

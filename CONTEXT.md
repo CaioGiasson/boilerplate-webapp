@@ -66,7 +66,7 @@ Tudo que fala com a API. Não há modo offline de dados. Sem rede o app mostra `
 
 ## O que está em aberto
 
-Itens avaliados e **não** implementados — não implementar por inferência: [`docs/issues/porte-tribal-backlog.md`](docs/issues/porte-tribal-backlog.md) (níveis/cotas de plano, `UserRequest`, offline-first, realtime, páginas de produto, scripts de deploy/restore). Pendências do `ROADMAP.md` são do projeto de origem.
+Itens avaliados e **não** implementados — não implementar por inferência: [`docs/issues/porte-tribal-backlog.md`](docs/issues/porte-tribal-backlog.md) (níveis/cotas de plano, `UserRequest`, offline-first, realtime, páginas de produto, scripts de deploy/restore). Pendências do `ROADMAP.md` são do projeto de origem. Limitações aceitas de escala (o boilerplate **não** prevê N réplicas): [`docs/known-issues/scalability.md`](docs/known-issues/scalability.md).
 
 ## Como manter estes arquivos
 

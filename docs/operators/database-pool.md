@@ -52,4 +52,4 @@ After horizontal scale-out, **divide** the budget by `N`. Re-run the smoke check
 
 - [multi-instance-smoke.md](./multi-instance-smoke.md) — SCALE-04 smoke with 2 processes
 - [prisma-indexes.md](./prisma-indexes.md) — index migrations (DATA-02)
-- Issue #127 (SCALE-02) — distributed rate limit (separate from pool sizing)
+- [`docs/known-issues/scalability.md`](../known-issues/scalability.md) — limitações conhecidas com N réplicas (rate limit, idempotência, etc.)

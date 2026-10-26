@@ -304,6 +304,20 @@ const pt: AppMessages = {
 			'Não foi possível iniciar o acesso. O link expirou, é inválido ou já há uma sessão ativa neste navegador.',
 		sessionActive: 'Sessão de impersonamento ativa',
 	},
+	pwa: {
+		installTitle: 'Instalar o app',
+		installDescription: 'Adicione o app à tela inicial para abrir mais rápido e em tela cheia.',
+		installCta: 'Instalar',
+		iosTitle: 'Instalar no iPhone ou iPad',
+		iosShare: 'Toque em Compartilhar na barra do Safari.',
+		iosAdd: 'Escolha “Adicionar à Tela de Início”.',
+		dismiss: 'Agora não',
+		updateTitle: 'Nova versão disponível',
+		updateBody: 'Atualizando o app…',
+		offlineTitle: 'Você está sem conexão',
+		offlineDescription: 'Verifique sua internet e tente novamente.',
+		offlineRetry: 'Tentar novamente',
+	},
 	dsCatalog: {
 		title: 'Catálogo do design system',
 		description:

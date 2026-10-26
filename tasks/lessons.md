@@ -143,3 +143,13 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 **Causa:** o mime vem do cliente e o `sharp` rasteriza SVG (via librsvg) mesmo quando o nome/mime diz outra coisa.
 
 **Prevenção:** `SharpImageProcessor` lê `metadata().format` e só aceita `jpeg`, `png`, `webp` e `gif`; também limita `limitInputPixels`. Teste de regressão em `tests/services/imageProcessor.test.ts`.
+
+---
+
+## Service worker cacheando HTML autenticado
+
+**Sintoma (risco):** em computador compartilhado, páginas de um usuário continuam abrindo offline depois do logout.
+
+**Causa:** estratégia network-first que grava documentos HTML no cache do service worker; o logout não limpa esse cache.
+
+**Prevenção:** `public/sw.js` **não** guarda HTML nem `/api` (ADR-014); só assets públicos e imutáveis. Teste em `tests/lib/pwa/serviceWorker.test.ts` garante que a navegação não entra em cache. Se um dia precisar cachear páginas, defina política por rota e limpe os caches no logout primeiro.

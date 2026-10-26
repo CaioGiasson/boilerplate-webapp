@@ -306,6 +306,20 @@ const es: AppMessages = {
 			'No se pudo iniciar la sesión. El enlace expiró, es inválido o este navegador ya tiene una sesión activa.',
 		sessionActive: 'Sesión de suplantación activa',
 	},
+	pwa: {
+		installTitle: 'Instalar la app',
+		installDescription: 'Añade la app a la pantalla de inicio para abrirla más rápido y en pantalla completa.',
+		installCta: 'Instalar',
+		iosTitle: 'Instalar en iPhone o iPad',
+		iosShare: 'Toca Compartir en la barra de Safari.',
+		iosAdd: 'Elige “Añadir a pantalla de inicio”.',
+		dismiss: 'Ahora no',
+		updateTitle: 'Nueva versión disponible',
+		updateBody: 'Actualizando la app…',
+		offlineTitle: 'Sin conexión',
+		offlineDescription: 'Revisa tu conexión a internet e inténtalo de nuevo.',
+		offlineRetry: 'Intentar de nuevo',
+	},
 	dsCatalog: {
 		title: 'Catálogo del design system',
 		description:

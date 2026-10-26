@@ -11,6 +11,9 @@ import { AuthProvider } from '@/components/auth/AuthProvider'
 import { ImpersonationConsumer } from '@/components/auth/ImpersonationConsumer'
 import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner'
 import { CookieNotice } from '@/components/legal/CookieNotice'
+import { ForceAppUpdate } from '@/components/pwa/ForceAppUpdate'
+import { PwaInstallBanner } from '@/components/pwa/PwaInstallBanner'
+import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar'
 
 type AppShellProps = {
 	children: React.ReactNode
@@ -24,6 +27,8 @@ export function AppShell({ children }: AppShellProps) {
 		<AuthProvider>
 			<ToastProvider>
 				<ImpersonationConsumer />
+				<ServiceWorkerRegistrar />
+				<ForceAppUpdate />
 				<ImpersonationBanner />
 				<div
 					className="flex h-[calc(100vh-var(--app-banner-h,0px))] overflow-hidden bg-background text-foreground"
@@ -49,6 +54,7 @@ export function AppShell({ children }: AppShellProps) {
 
 						<main className="app-scrollbar relative min-h-0 flex-1 overflow-y-auto">
 							<PageTransition>{children}</PageTransition>
+							<PwaInstallBanner />
 							<CookieNotice />
 						</main>
 					</div>

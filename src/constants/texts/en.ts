@@ -302,6 +302,20 @@ const en: AppMessages = {
 			'Could not start the session. The link expired, is invalid, or this browser already has an active session.',
 		sessionActive: 'Impersonation session active',
 	},
+	pwa: {
+		installTitle: 'Install the app',
+		installDescription: 'Add the app to your home screen to open it faster and in full screen.',
+		installCta: 'Install',
+		iosTitle: 'Install on iPhone or iPad',
+		iosShare: 'Tap Share in the Safari toolbar.',
+		iosAdd: 'Choose “Add to Home Screen”.',
+		dismiss: 'Not now',
+		updateTitle: 'New version available',
+		updateBody: 'Updating the app…',
+		offlineTitle: 'You are offline',
+		offlineDescription: 'Check your internet connection and try again.',
+		offlineRetry: 'Try again',
+	},
 	dsCatalog: {
 		title: 'Design system catalog',
 		description:

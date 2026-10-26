@@ -293,6 +293,20 @@ export type AppMessages = {
 		startFailed: string
 		sessionActive: string
 	}
+	pwa: {
+		installTitle: string
+		installDescription: string
+		installCta: string
+		iosTitle: string
+		iosShare: string
+		iosAdd: string
+		dismiss: string
+		updateTitle: string
+		updateBody: string
+		offlineTitle: string
+		offlineDescription: string
+		offlineRetry: string
+	}
 	dsCatalog: {
 		title: string
 		description: string

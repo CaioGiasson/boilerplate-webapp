@@ -10,6 +10,7 @@ Aplicação Next.js 15 reutilizável, extraída e sanitizada a partir do projeto
 - **Settings:** tema escuro e idioma (pt/en/es via next-intl)
 - **Storage:** DigitalOcean Spaces (S3), `FileManager`, presigned URLs, quota por usuário
 - **Email:** módulo port/adapter com Brevo
+- **PWA:** manifest, service worker (sem cache de páginas), páginas offline/erro estáticas e atualização forçada por versão — [`docs/operators/pwa.md`](docs/operators/pwa.md)
 - **Design system:** componentes em `src/design-system/` + primitivos Radix em `src/components/ui/`
 - **IA/contribuição:** `AGENTS.md`, `.cursor/rules/`, ADRs e docs de arquitetura
 

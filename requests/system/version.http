@@ -1,0 +1,4 @@
+@baseUrl = http://localhost:3000
+
+### App version (public, no cache) — used by ForceAppUpdate
+GET {{baseUrl}}/api/v1/version

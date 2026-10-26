@@ -27,6 +27,7 @@
 		"prisma-merge": "node prisma/merge.mjs",
 		"prisma:generate": "npm run prisma-merge && prisma generate",
 		"prisma:push": "npm run prisma-merge && prisma db push",
+		"pwa:icons": "node scripts/generate-pwa-icons.mjs",
 		"smoke:multi-instance": "node scripts/multi-instance-smoke.mjs",
 		"spaces:make-private": "node scripts/migrate-spaces-private.mjs",
 		"spaces:migrate-keys": "node scripts/migrate-spaces-keys.mjs",

@@ -24,6 +24,7 @@ tags:
     - name: auth
     - name: users
     - name: admin
+    - name: system
     - name: nickname
     - name: images
     - name: examples
@@ -208,6 +209,28 @@ paths:
                                                           expiresAt: { type: string, format: date-time }
                 '401':
                     $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/version:
+        get:
+            tags: [system]
+            summary: Versão do app em execução
+            description: |
+                Público, sem estado e sem cache (`Cache-Control: no-store`). O cliente compara com a versão do próprio
+                bundle (`package.json`) a cada 5 min e ao voltar para a aba; se diferir, recarrega o app (PWA).
+            responses:
+                '200':
+                    description: Versão atual
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  version: { type: string, example: 0.1.0 }
 
     /api/v1/auth/impersonate:
         post:

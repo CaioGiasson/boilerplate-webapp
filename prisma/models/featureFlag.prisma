@@ -1,0 +1,9 @@
+/// Feature flag append-only: o valor vigente é o registro mais recente da chave.
+model FeatureFlag {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String
+  value     Json
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}

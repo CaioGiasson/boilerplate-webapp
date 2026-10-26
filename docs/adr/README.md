@@ -15,6 +15,7 @@ Decisões arquiteturais curtas do App. Formato: Contexto → Decisão → Conseq
 | [ADR-007](007-storage-phases-outside-transaction.md) | Fases storage / Mongo (COUP-03)           |
 | [ADR-008](008-layer-boundaries-and-di.md)            | Fronteiras de camadas e DI incremental    |
 | [ADR-010](010-google-oauth.md)                       | Login Google OAuth (Authorization Code)   |
+| [ADR-011](011-feature-flags-append-only.md)          | Feature flags append-only no MongoDB      |
 
 ## Template
 

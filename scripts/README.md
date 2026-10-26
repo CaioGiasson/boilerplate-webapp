@@ -71,6 +71,12 @@ Scripts com `refuseIfProduction()` — **não rodar no host de `next start`**.
 | `npm run test-email`            | `test-email.mjs`            | Smoke send Brevo                              | `recipient@…` | 🟡 recusa prod |
 | `npm run unconfirm-account`     | `unconfirm-account.mjs`     | Reseta verificação de e-mail                  | `user@…`      | 🟡 recusa prod |
 
+## Operador (exige `--confirm` em produção)
+
+| Comando                       | Script                    | Efeito                                      | Args                  |
+| ----------------------------- | ------------------------- | ------------------------------------------- | --------------------- |
+| `npm run toggle-feature-flag` | `toggle-feature-flag.mjs` | Alterna feature flag (insere registro novo) | `<key>` · `--confirm` |
+
 ## Padrão dry-run / confirm
 
 Scripts mutantes exigem **`--confirm`** ou **`--dry-run`**:

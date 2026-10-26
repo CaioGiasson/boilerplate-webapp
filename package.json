@@ -31,6 +31,7 @@
 		"test": "jest",
 		"test-email": "node scripts/test-email.mjs",
 		"test-environment": "node scripts/test-environment.mjs",
+		"toggle-feature-flag": "node scripts/toggle-feature-flag.mjs",
 		"typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
 		"unconfirm-account": "node scripts/unconfirm-account.mjs"
 	},

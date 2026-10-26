@@ -3,7 +3,8 @@
  * 1. Spaces DeleteObject for File status=orphan older than 7 days
  * 2. Delete SessionEvent rows with exp in the past
  * 3. Delete ActiveSession rows with exp in the past
- * 4. Users with deletedAt older than 30 days → hard purge (Spaces + anonymize)
+ * 4. Users with deletedAt older than 30 days → hard purge (Spaces + anonymize + AiLog do titular)
+ * 5. AiLog older than AI_LOG_RETENTION_DAYS (default 90)
  *
  * Uso:
  *   npm run cron -- retention-purge --dry-run
@@ -19,6 +20,14 @@ import { loadRepoEnv, requiredEnv } from '../lib/env.mjs'
 
 const ORPHAN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 const ACCOUNT_QUARANTINE_MS = 30 * 24 * 60 * 60 * 1000
+const DAY_MS = 24 * 60 * 60 * 1000
+const DEFAULT_AI_LOG_RETENTION_DAYS = 90
+
+/** @param {NodeJS.ProcessEnv} [env] */
+export function resolveAiLogRetentionDays(env = process.env) {
+	const parsed = Number(env.AI_LOG_RETENTION_DAYS)
+	return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_AI_LOG_RETENTION_DAYS
+}
 
 /**
  * @param {{ dryRun?: boolean, confirm?: boolean }} [flags]
@@ -53,6 +62,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 		quarantinedAccountsFound: 0,
 		quarantinedAccountsPurged: 0,
 		quarantinedAccountsFailed: 0,
+		aiLogsDeleted: 0,
 		dryRun: flags.dryRun,
 	}
 
@@ -170,6 +180,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 					},
 				})
 				await prisma.activeSession.deleteMany({ where: { userId: user.id } })
+				await prisma.aiLog.deleteMany({ where: { userId: user.id } })
 
 				summary.quarantinedAccountsPurged += 1
 				console.log(`Hard-purged quarantined user=${user.id}`)
@@ -177,6 +188,19 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 				summary.quarantinedAccountsFailed += 1
 				console.error(`Failed hard-purge user=${user.id}`, error)
 			}
+		}
+
+		const aiLogRetentionDays = resolveAiLogRetentionDays()
+		const aiLogCutoff = new Date(Date.now() - aiLogRetentionDays * DAY_MS)
+		if (flags.dryRun) {
+			summary.aiLogsDeleted = await prisma.aiLog.count({ where: { createdAt: { lt: aiLogCutoff } } })
+			console.log(
+				`[dry-run] would delete AiLog createdAt<${aiLogCutoff.toISOString()} (${aiLogRetentionDays}d): ${summary.aiLogsDeleted}`
+			)
+		} else {
+			const aiLogs = await prisma.aiLog.deleteMany({ where: { createdAt: { lt: aiLogCutoff } } })
+			summary.aiLogsDeleted = aiLogs.count
+			console.log(`[retention-purge] deleted AiLog=${aiLogs.count} (older than ${aiLogRetentionDays}d)`)
 		}
 
 		console.log('[retention-purge] summary', JSON.stringify(summary))

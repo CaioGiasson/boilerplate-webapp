@@ -31,12 +31,27 @@ describe('ExportUserData', () => {
 			createdAt: new Date('2026-08-19T00:00:00.000Z'),
 		}
 
+		const aiLog = {
+			id: 'log-1',
+			userId: 'user-1',
+			contextId: null,
+			query: 'summarize',
+			model: 'gpt-5.4-mini',
+			prompt: 'texto',
+			response: 'resumo',
+			tokenCost: 42,
+			createdAt: new Date('2026-08-20T00:00:00.000Z'),
+		}
+
 		mockPrismaRuntime({
 			user: {
 				findFirst: jest.fn(async () => user),
 			},
 			file: {
 				findMany: jest.fn(async () => [file]),
+			},
+			aiLog: {
+				findMany: jest.fn(async () => [aiLog]),
 			},
 		})
 
@@ -66,12 +81,24 @@ describe('ExportUserData', () => {
 				createdAt: '2026-08-19T00:00:00.000Z',
 			},
 		])
+		expect(result.aiLogs).toEqual([
+			{
+				id: 'log-1',
+				query: 'summarize',
+				model: 'gpt-5.4-mini',
+				prompt: 'texto',
+				response: 'resumo',
+				tokenCost: 42,
+				createdAt: '2026-08-20T00:00:00.000Z',
+			},
+		])
 	})
 
 	it('falha se o usuário não existe', async () => {
 		mockPrismaRuntime({
 			user: { findFirst: jest.fn(async () => null) },
 			file: { findMany: jest.fn() },
+			aiLog: { findMany: jest.fn() },
 		})
 
 		await expect(new ExportUserData().run({ userId: 'missing' })).rejects.toThrow(NotFoundError)

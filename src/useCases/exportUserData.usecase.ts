@@ -1,6 +1,7 @@
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
 import UserRepository, { toPublicUser } from '@/repositories/User.repository'
 import FileRepository from '@/repositories/File.repository'
+import AiLogRepository from '@/repositories/AiLog.repository'
 import { NotFoundError, ValidationError } from '@/errors'
 
 type Input = {
@@ -17,6 +18,15 @@ type Output = {
 		category: string
 		mimeType: string
 		sizeBytes: number
+		createdAt: string
+	}>
+	aiLogs: Array<{
+		id: string
+		query: string
+		model: string
+		prompt: string
+		response: string
+		tokenCost: number
 		createdAt: string
 	}>
 }
@@ -41,6 +51,7 @@ export default class ExportUserData extends UseCaseMasterPort<Input, Output> {
 
 		const fileRepository = new FileRepository(injectables.prisma)
 		const files = await fileRepository.listPublishedByOwner(user.id)
+		const aiLogs = await new AiLogRepository(injectables.prisma).listByUser(user.id)
 
 		return {
 			exportedAt: new Date().toISOString(),
@@ -53,6 +64,15 @@ export default class ExportUserData extends UseCaseMasterPort<Input, Output> {
 				mimeType: file.mimeType,
 				sizeBytes: file.sizeBytes,
 				createdAt: file.createdAt.toISOString(),
+			})),
+			aiLogs: aiLogs.map((log) => ({
+				id: log.id,
+				query: log.query,
+				model: log.model,
+				prompt: log.prompt,
+				response: log.response,
+				tokenCost: log.tokenCost,
+				createdAt: log.createdAt.toISOString(),
 			})),
 		}
 	}

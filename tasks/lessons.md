@@ -103,3 +103,13 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 **Causa:** `src/instrumentation.ts` importava `Db.manager` (Prisma) de forma estática; o Next compila o arquivo também para o runtime Edge e o Prisma 6 resolve a build `wasm` nesse bundle. Um `return` antecipado em `register()` não elimina o import.
 
 **Prevenção:** `instrumentation.ts` só faz `import()` dinâmico de `instrumentation-node.ts` **dentro** de `if (process.env.NEXT_RUNTIME === 'nodejs')`. Código com Prisma, `process.on` e `validateEnv` mora em `instrumentation-node.ts`.
+
+---
+
+## Hostname com 4 rótulos tratado como IPv4 inválido
+
+**Sintoma:** URL de imagem legítima como `https://static.cdn.example.com/a.png` recusada com "Invalid image URL" em `parsePublicHttpUrl`.
+
+**Causa:** `isBlockedIp` recebia o hostname e `isBlockedIpv4` devolvia `true` para qualquer string com 4 rótulos separados por ponto cujo rótulo não fosse número.
+
+**Prevenção:** `isBlockedIp` só bloqueia IP literal (via `ipaddr.js`, `range() !== 'unicast'`) ou literal malformado que _parece_ IPv4 (só dígitos/hex e pontos). Nome de host passa para `isBlockedHostname` e para a checagem do DNS em `RemoteFetch.assertPublicHost`. Teste de regressão em `tests/utils/safeImageUrl.test.ts`.

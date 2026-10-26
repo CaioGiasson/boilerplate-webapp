@@ -1,5 +1,5 @@
 import { ValidationError } from '@/errors'
-import { isBlockedIp, parsePublicHttpUrl, sniffImageMime } from '@/utils/safeImageUrl'
+import { isBlockedHostname, isBlockedIp, parsePublicHttpUrl, sniffImageMime } from '@/utils/safeImageUrl'
 
 describe('safeImageUrl', () => {
 	it('aceita https público', () => {
@@ -46,6 +46,58 @@ describe('safeImageUrl', () => {
 		expect(isBlockedIp('[::ffff:7f00:1]')).toBe(true)
 		expect(isBlockedIp('::ffff:a00:1')).toBe(true)
 		expect(isBlockedIp('::ffff:8.8.8.8')).toBe(false)
+	})
+
+	it.each([
+		'10.0.0.1',
+		'172.16.0.1',
+		'192.168.1.1',
+		'169.254.169.254',
+		'100.64.0.1',
+		'192.0.2.1',
+		'198.51.100.1',
+		'203.0.113.1',
+		'198.18.0.1',
+		'224.0.0.1',
+		'240.0.0.1',
+		'255.255.255.255',
+		'0.0.0.0',
+		'2001::1',
+		'2001:db8::1',
+		'fe80::1',
+		'fd00::1',
+		'ff02::1',
+		'64:ff9b::7f00:1',
+		'2002:7f00:1::',
+	])('bloqueia o IP reservado %s', (ip) => {
+		expect(isBlockedIp(ip)).toBe(true)
+	})
+
+	it.each(['8.8.8.8', '1.1.1.1', '93.184.216.34', '2606:4700:4700::1111'])('libera o IP público %s', (ip) => {
+		expect(isBlockedIp(ip)).toBe(false)
+	})
+
+	it.each(['999.1.1.1', '0177.0.0.1', '127.1', '0x7f.0.0.1', '2130706433'])(
+		'bloqueia literal de IP malformado ou ofuscado %s',
+		(host) => {
+			expect(isBlockedIp(host)).toBe(true)
+		}
+	)
+
+	it('não trata nome de host com quatro ou mais rótulos como IP', () => {
+		expect(isBlockedIp('static.cdn.example.com')).toBe(false)
+		expect(parsePublicHttpUrl('https://static.cdn.example.com/a.png').hostname).toBe('static.cdn.example.com')
+	})
+
+	it.each(['localhost', 'app.localhost', 'printer.local', 'metadata.google.internal', 'host.internal', 'localhost.'])(
+		'bloqueia o nome de host %s',
+		(host) => {
+			expect(isBlockedHostname(host)).toBe(true)
+		}
+	)
+
+	it('libera nomes públicos', () => {
+		expect(isBlockedHostname('example.com')).toBe(false)
 	})
 
 	it('reconhece magic bytes de imagem', () => {

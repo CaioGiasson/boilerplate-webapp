@@ -73,9 +73,10 @@ Scripts com `refuseIfProduction()` — **não rodar no host de `next start`**.
 
 ## Operador (exige `--confirm` em produção)
 
-| Comando                       | Script                    | Efeito                                      | Args                  |
-| ----------------------------- | ------------------------- | ------------------------------------------- | --------------------- |
-| `npm run toggle-feature-flag` | `toggle-feature-flag.mjs` | Alterna feature flag (insere registro novo) | `<key>` · `--confirm` |
+| Comando                        | Script                     | Efeito                                          | Args                                     |
+| ------------------------------ | -------------------------- | ----------------------------------------------- | ---------------------------------------- |
+| `npm run change-user-password` | `change-user-password.mjs` | Define a senha de uma conta e revoga as sessões | `<email>` · `NEW_PASSWORD` · `--confirm` |
+| `npm run toggle-feature-flag`  | `toggle-feature-flag.mjs`  | Alterna feature flag (insere registro novo)     | `<key>` · `--confirm`                    |
 
 ## Padrão dry-run / confirm
 

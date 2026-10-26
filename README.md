@@ -13,6 +13,7 @@ Aplicação Next.js 15 reutilizável, extraída e sanitizada a partir do projeto
 - **Notificações:** sino in-app e Web Push opcional (VAPID) — [`docs/operators/web-push.md`](docs/operators/web-push.md)
 - **PWA:** manifest, service worker (sem cache de páginas), páginas offline/erro estáticas e atualização forçada por versão — [`docs/operators/pwa.md`](docs/operators/pwa.md)
 - **Design system:** componentes em `src/design-system/` + primitivos Radix em `src/components/ui/`
+- **Contexto para agentes:** [`CONTEXT.md`](CONTEXT.md) (+ `CONTEXT-ARCHITECTURE/CODE/ENTITIES/DS.md`) descrevem o produto e o código de hoje
 - **IA/contribuição:** `AGENTS.md`, `.cursor/rules/`, ADRs e docs de arquitetura
 
 ## O que foi removido / sanitizado

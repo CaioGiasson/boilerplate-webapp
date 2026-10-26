@@ -1,6 +1,6 @@
 # Porte tribalRPGBot → boilerplate-webapp — Etapa 1 (refinamento)
 
-Snapshot: **2026-10-26**. Status: **refinamento apenas** — nada foi implementado nem commitado.
+Snapshot: **2026-10-26**. Status: **implementado na PR da issue #5** (um commit por item). O texto abaixo é o refinamento original; o desvio de cada item em relação a ele está em [`porte-tribal-entrega.md`](porte-tribal-entrega.md).
 Escopo da etapa: itens **1, 2, 3, 5, 7, 8, 11, 12, 14, 15, 16, 18, 19, 20** da lista de candidatos.
 Itens fora da etapa: [`porte-tribal-backlog.md`](porte-tribal-backlog.md).
 

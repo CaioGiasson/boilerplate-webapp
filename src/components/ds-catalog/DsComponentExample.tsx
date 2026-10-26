@@ -21,6 +21,7 @@ import {
 	HelperBar,
 	Icon,
 	IconButton,
+	ImageCropModal,
 	InputPassword,
 	InputTextArea,
 	InputTitle,
@@ -149,6 +150,8 @@ export function DsComponentExample({ componentId }: DsComponentExampleProps) {
 			return <ColorPalettePickerDemo />
 		case 'AppMultiSelect':
 			return <MultiSelectDemo />
+		case 'ImageCropModal':
+			return <ImageCropModalDemo />
 		case 'StorageProgressBar':
 			return (
 				<div className="flex w-full max-w-xs flex-col gap-3">
@@ -270,5 +273,33 @@ function MultiSelectDemo() {
 			values={values}
 			onValuesChange={setValues}
 		/>
+	)
+}
+
+const DEMO_IMAGE_SRC =
+	'data:image/svg+xml;utf8,' +
+	encodeURIComponent(
+		'<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="#3b82f6"/><circle cx="300" cy="200" r="120" fill="#f59e0b"/></svg>'
+	)
+
+function ImageCropModalDemo() {
+	const [open, setOpen] = React.useState(false)
+	return (
+		<>
+			<Button type="button" variant="outline" onClick={() => setOpen(true)}>
+				Open crop modal
+			</Button>
+			<ImageCropModal
+				open={open}
+				imageSrc={DEMO_IMAGE_SRC}
+				aspect={1}
+				title="Adjust photo"
+				confirmLabel="Use photo"
+				cancelLabel="Cancel"
+				zoomLabel="Zoom"
+				onCancel={() => setOpen(false)}
+				onConfirm={() => setOpen(false)}
+			/>
+		</>
 	)
 }

@@ -8,6 +8,7 @@
 - [ ] `npm run check`
 - [ ] `npm run build` (se alterou tipos/rotas)
 - [ ] i18n: textos novos em pt/en/es (se UI)
+- [ ] `CONTEXT*.md` da área atualizado (se mudou comportamento, modelo, contrato ou arquitetura)
 - [ ] …
 
 ## Review

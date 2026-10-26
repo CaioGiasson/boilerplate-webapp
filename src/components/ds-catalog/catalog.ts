@@ -276,6 +276,14 @@ export const DS_CATALOG: DsCatalogEntry[] = [
 		keywords: ['multiple', 'dropdown', 'checkbox', 'options'],
 	},
 	{
+		id: 'ImageCropModal',
+		name: 'ImageCropModal',
+		category: 'feedback',
+		description: 'Modal to crop and zoom an image before upload; confirms with the area in pixels.',
+		importLine: "import { ImageCropModal } from '@/design-system'",
+		keywords: ['crop', 'avatar', 'photo', 'zoom', 'upload'],
+	},
+	{
 		id: 'StorageProgressBar',
 		name: 'StorageProgressBar',
 		category: 'feedback',

@@ -30,6 +30,7 @@ After login/register, the session cookie (`app-session`) is stored automatically
 | [users/users.http](./users/users.http)                                 | Profile, password, photo, settings, export, stats, sessions, nickname |
 | [notifications/notifications.http](./notifications/notifications.http) | Notifications list/read, Web Push config, subscribe/unsubscribe, test |
 | [system/version.http](./system/version.http)                           | `GET /api/v1/version`                                                 |
+| [system/ping.http](./system/ping.http)                                 | `GET`/`HEAD /api/ping`                                                |
 | [admin/admin.http](./admin/admin.http)                                 | Admin users list, impersonation token, `POST /auth/impersonate`       |
 | [images/images.http](./images/images.http)                             | List, create, CRUD, visibility, report, import, tags                  |
 | [examples/recoverOrGenerate.http](./examples/recoverOrGenerate.http)   | `GET /api/v1/examples` (dev only)                                     |
@@ -52,6 +53,7 @@ After login/register, the session cookie (`app-session`) is stored automatically
 | DELETE | `/api/v1/push/subscriptions`                   | Yes                    | `v1/push/subscriptions/route.ts`                   |
 | POST   | `/api/v1/push/test`                            | Yes                    | `v1/push/test/route.ts`                            |
 | GET    | `/api/v1/version`                              | No                     | `v1/version/route.ts`                              |
+| GET    | `/api/ping`                                    | No                     | `ping/route.ts`                                    |
 | POST   | `/api/v1/auth/impersonate`                     | No (token in body)     | `v1/auth/impersonate/route.ts`                     |
 | GET    | `/api/v1/admin/users`                          | Yes (ADMIN)            | `v1/admin/users/route.ts`                          |
 | POST   | `/api/v1/admin/users/[id]/impersonation-token` | Yes (ADMIN)            | `v1/admin/users/[id]/impersonation-token/route.ts` |

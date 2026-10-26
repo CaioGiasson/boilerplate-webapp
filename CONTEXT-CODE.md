@@ -95,11 +95,12 @@ Todos recebem `Prisma.TransactionClient` e lançam `RepositoryError` em falha de
 
 Índice completo e flags: [`scripts/README.md`](scripts/README.md).
 
-| Grupo       | Comandos                                                                                             |
-| ----------- | ---------------------------------------------------------------------------------------------------- |
-| Verificação | `healthcheck`, `test-environment`, `test-email`, `check:lockfile-native`, `smoke:multi-instance`     |
-| Operador    | `change-user-password`, `change-user-role`, `toggle-feature-flag`, `unconfirm-account`, `list-users` |
-| Dados       | `user-role:backfill`, `nickname:backfill`, `email:backfill-verified`, `files:backfill-thumbnails`    |
-| Spaces      | `spaces:make-private`, `spaces:migrate-keys`, `spaces:purge-orphans`                                 |
-| Cron        | `cron -- retention-purge`, `cron:retention`                                                          |
-| Geração     | `vapid:keys`, `pwa:icons`, `mongo:keyfile`, `mongo:migrate-to-auth`                                  |
+| Grupo        | Comandos                                                                                             |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
+| Verificação  | `healthcheck`, `test-environment`, `test-email`, `check:lockfile-native`, `smoke:multi-instance`     |
+| Operador     | `change-user-password`, `change-user-role`, `toggle-feature-flag`, `unconfirm-account`, `list-users` |
+| Dados        | `user-role:backfill`, `nickname:backfill`, `email:backfill-verified`, `files:backfill-thumbnails`    |
+| Spaces       | `spaces:make-private`, `spaces:migrate-keys`, `spaces:purge-orphans`                                 |
+| Cron         | `cron -- retention-purge`, `cron:retention`                                                          |
+| Geração      | `vapid:keys`, `pwa:icons`, `mongo:keyfile`, `mongo:migrate-to-auth`                                  |
+| Projeto novo | `init-project` (renomeia nome/slug/textos legais e gera `.env`), `seed:dev` (admin + usuário de dev) |

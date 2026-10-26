@@ -56,9 +56,11 @@ Inventário completo por arquivo em [`requests/README.md`](requests/README.md); 
 | Admin        | `admin/users`, `admin/users/[id]/impersonation-token`                                                                                                                                                         |
 | Notificações | `notifications`, `notifications/read-all`, `notifications/[id]/read`                                                                                                                                          |
 | Push         | `push/vapid-public-key`, `push/subscriptions` (POST/DELETE), `push/test`                                                                                                                                      |
-| Sistema      | `version`, `examples` (404 em produção), `health`, `health/database`, `docs`, `docs/openapi`                                                                                                                  |
+| Sistema      | `ping` (sonda pública do navegador, fora de `/v1`), `version`, `examples` (404 em produção), `health`, `health/database`, `docs`, `docs/openapi`                                                              |
 
 Envelope: `ApiPresenter` (`success` + `message` + `data` / `success: false` + `code`). Erros por `AppError` (`src/errors`), tratados em `handleRoute`.
+
+`robots.txt` e `sitemap.xml` saem de `src/app/robots.ts` e `src/app/sitemap.ts` (origem de `APP_BASE_URL`; páginas públicas em `src/constants/publicPages.ts`, com `alternates` por idioma). `metadataBase` e `openGraph` básicos ficam no layout de `[locale]`.
 
 ## Borda HTTP de conta e segurança
 
@@ -93,7 +95,7 @@ Ver `CONTEXT.md` (produto) e [`docs/operators/pwa.md`](docs/operators/pwa.md). `
 
 ## Testes e CI
 
-`tests/` espelha `src/`. Componentes e hooks com `@jest-environment jsdom` e `tests/helpers/renderInJsdom.tsx` (sem Testing Library). `tests/i18n/catalogParity.test.ts` exige as mesmas chaves em pt/en/es. CI (`.github/workflows/ci.yml`, só em `pull_request`): `check:lockfile-native`, `npm ci`, `prisma:generate`, lint, typecheck, test, build ([`docs/operators/ci.md`](docs/operators/ci.md)).
+`tests/` espelha `src/`. Componentes e hooks com `@jest-environment jsdom` e `tests/helpers/renderInJsdom.tsx` (sem Testing Library). `tests/i18n/catalogParity.test.ts` exige as mesmas chaves em pt/en/es. CI (`.github/workflows/ci.yml`, só em `pull_request`): `check:lockfile-native`, `npm ci`, `npm audit --omit=dev` (informativo, não bloqueia), `prisma:generate`, lint, typecheck, test, build ([`docs/operators/ci.md`](docs/operators/ci.md)).
 
 ## Como manter este arquivo
 

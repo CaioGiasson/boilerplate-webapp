@@ -100,21 +100,21 @@ Guidelines do time: [`docs/guidelines/`](docs/guidelines/).
 
 **Nunca** faça o seguinte sem instrução explícita do mantenedor:
 
-| Proibido                                                                                                                 | Motivo                                    |
-| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| `git push --force` em `main`/`master`                                                                                    | Histórico compartilhado                   |
-| Commitar `.env`, secrets, cookies Pinterest                                                                              | Vazamento de credenciais                  |
-| Rodar scripts de operador em produção (`list-users`, `export-from-pinterest`, migrações Spaces sem `--dry-run` primeiro) | Risco operacional / LGPD                  |
-| Scripts destrutivos sem `--confirm`                                                                                      | Exigem confirmação explícita              |
-| `prisma:push` em banco compartilhado/prod sem revisão                                                                    | Altera schema/dados no Mongo              |
-| Instanciar `PrismaClient` ou `getPrismaClient()` fora de repository/use case TX / fases ADR-007                          | Quebra unidade de trabalho                |
-| Acessar Mongo/Spaces direto de controller ou componente React                                                            | Viola camadas                             |
-| Strings de UI hardcoded em componentes                                                                                   | Use catálogos i18n (ver checklist abaixo) |
-| Endpoint novo/alterado sem `requests/*.http` + `docs/openapi.yaml`                                                       | Contrato HTTP obrigatório                 |
-| `--no-verify` / pular hooks sem pedido                                                                                   | Pre-commit formata e valida               |
-| Alterar `git config` do ambiente                                                                                         | Política do projeto                       |
-| Implementar sem issue no board (tarefa ad-hoc)                                                                           | Sempre issue → branch → PR                |
-| Review de PR só com Bugbot/ferramenta externa                                                                            | Usar `.cursor/rules/pr-review.mdc`        |
+| Proibido                                                                                        | Motivo                                    |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `git push --force` em `main`/`master`                                                           | Histórico compartilhado                   |
+| Commitar `.env` ou secrets                                                                      | Vazamento de credenciais                  |
+| Rodar scripts de operador em produção (`list-users`, migrações Spaces sem `--dry-run` primeiro) | Risco operacional / LGPD                  |
+| Scripts destrutivos sem `--confirm`                                                             | Exigem confirmação explícita              |
+| `prisma:push` em banco compartilhado/prod sem revisão                                           | Altera schema/dados no Mongo              |
+| Instanciar `PrismaClient` ou `getPrismaClient()` fora de repository/use case TX / fases ADR-007 | Quebra unidade de trabalho                |
+| Acessar Mongo/Spaces direto de controller ou componente React                                   | Viola camadas                             |
+| Strings de UI hardcoded em componentes                                                          | Use catálogos i18n (ver checklist abaixo) |
+| Endpoint novo/alterado sem `requests/*.http` + `docs/openapi.yaml`                              | Contrato HTTP obrigatório                 |
+| `--no-verify` / pular hooks sem pedido                                                          | Pre-commit formata e valida               |
+| Alterar `git config` do ambiente                                                                | Política do projeto                       |
+| Implementar sem issue no board (tarefa ad-hoc)                                                  | Sempre issue → branch → PR                |
+| Review de PR só com Bugbot/ferramenta externa                                                   | Usar `.cursor/rules/pr-review.mdc`        |
 
 Regras Cursor: [`.cursor/rules/issue-workflow.mdc`](.cursor/rules/issue-workflow.mdc), [`.cursor/rules/git-workflow.mdc`](.cursor/rules/git-workflow.mdc), [`.cursor/rules/api-contracts.mdc`](.cursor/rules/api-contracts.mdc), [`.cursor/rules/pr-review.mdc`](.cursor/rules/pr-review.mdc), [`.cursor/rules/task-approval.mdc`](.cursor/rules/task-approval.mdc), [`.cursor/rules/use-cases.mdc`](.cursor/rules/use-cases.mdc), [`.cursor/rules/repositories.mdc`](.cursor/rules/repositories.mdc).
 

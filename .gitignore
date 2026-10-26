@@ -38,10 +38,10 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Pinterest session cookies (export-from-pinterest)
+# Resíduo local do projeto de origem (cookies de sessão): nunca versionar
 .pinterest-cookies.json
 
-# Pinterest image exports
+# Exportações locais de operador
 /exports/
 
 # vercel

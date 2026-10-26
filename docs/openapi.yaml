@@ -417,6 +417,28 @@ paths:
                 '503':
                     description: Push não configurado
 
+    /api/ping:
+        get:
+            tags: [system]
+            summary: Sonda de conectividade do navegador
+            description: |
+                Público, sem estado, sem acesso ao banco e sem cache (`Cache-Control: no-store`). Serve de sonda para o cliente
+                saber se há rede. Diferente de `/api/health*`, que só responde a loopback ou token. `HEAD` devolve 200 sem corpo.
+            responses:
+                '200':
+                    description: Servidor alcançável
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  ok: { type: boolean, example: true }
+
     /api/v1/version:
         get:
             tags: [system]

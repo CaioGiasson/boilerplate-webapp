@@ -18,7 +18,7 @@ Aplicação Next.js 15 reutilizável, extraída e sanitizada a partir do projeto
 
 ## O que foi removido / sanitizado
 
-- Mosaico, imagens, painéis, Pinterest, visibilidade SECRET/PUBLIC, reports
+- Mosaico, imagens, painéis, visibilidade SECRET/PUBLIC, reports
 - Settings de zoom e mosaico global
 - Branding e cookies genéricos (`app-*`)
 - Campo `hideFromGlobalMosaic` no modelo User

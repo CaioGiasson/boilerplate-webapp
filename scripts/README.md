@@ -65,24 +65,25 @@ Exemplo cron: `npm run cron -- retention-purge --dry-run`
 
 Scripts com `refuseIfProduction()` — **não rodar no host de `next start`**.
 
-| Comando                         | Script                      | Efeito                                        | Args          | Prod?          |
-| ------------------------------- | --------------------------- | --------------------------------------------- | ------------- | -------------- |
-| `npm run list-users`            | `list-users.mjs`            | Lista 10 usuários recentes (e-mail mascarado) | —             | 🟡 recusa prod |
-| `npm run export-from-pinterest` | `export-from-pinterest.mjs` | Baixa boards Pinterest → `exports/`           | URL, `-test`  | 🟡 recusa prod |
-| `npm run test-email`            | `test-email.mjs`            | Smoke send Brevo                              | `recipient@…` | 🟡 recusa prod |
-| `npm run unconfirm-account`     | `unconfirm-account.mjs`     | Reseta verificação de e-mail                  | `user@…`      | 🟡 recusa prod |
+| Comando                     | Script                  | Efeito                                        | Args          | Prod?          |
+| --------------------------- | ----------------------- | --------------------------------------------- | ------------- | -------------- |
+| `npm run list-users`        | `list-users.mjs`        | Lista 10 usuários recentes (e-mail mascarado) | —             | 🟡 recusa prod |
+| `npm run test-email`        | `test-email.mjs`        | Smoke send Brevo                              | `recipient@…` | 🟡 recusa prod |
+| `npm run unconfirm-account` | `unconfirm-account.mjs` | Reseta verificação de e-mail                  | `user@…`      | 🟡 recusa prod |
 
 ## Operador (exige `--confirm` em produção)
 
-| Comando                         | Script                      | Efeito                                               | Args                                     |
-| ------------------------------- | --------------------------- | ---------------------------------------------------- | ---------------------------------------- | --- |
-| `npm run change-user-password`  | `change-user-password.mjs`  | Define a senha de uma conta e revoga as sessões      | `<email>` · `NEW_PASSWORD` · `--confirm` |
-| `npm run change-user-role`      | `change-user-role.mjs`      | Define o papel USER/ADMIN de uma conta               | `<email> <USER\|ADMIN>` · `--confirm`    |
-| `npm run user-role:backfill`    | `backfill-user-role.mjs`    | Grava role=USER onde o campo falta                   | `--dry-run` · `--confirm`                |
-| `npm run check:lockfile-native` | `check-lockfile-native.mjs` | Confere se o lockfile lista os binários de Linux x64 | —                                        | 🟢  |
-| `npm run pwa:icons`             | `generate-pwa-icons.mjs`    | Regera os ícones PWA de placeholder em `public/`     | —                                        | 🟢  |
-| `npm run vapid:keys`            | `generate-vapid-keys.mjs`   | Gera um par de chaves VAPID e imprime as variáveis   | —                                        | 🟢  |
-| `npm run toggle-feature-flag`   | `toggle-feature-flag.mjs`   | Alterna feature flag (insere registro novo)          | `<key>` · `--confirm`                    |
+| Comando                         | Script                      | Efeito                                                               | Args                                                                                  |
+| ------------------------------- | --------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------------- |
+| `npm run change-user-password`  | `change-user-password.mjs`  | Define a senha de uma conta e revoga as sessões                      | `<email>` · `NEW_PASSWORD` · `--confirm`                                              |
+| `npm run change-user-role`      | `change-user-role.mjs`      | Define o papel USER/ADMIN de uma conta                               | `<email> <USER\|ADMIN>` · `--confirm`                                                 |
+| `npm run user-role:backfill`    | `backfill-user-role.mjs`    | Grava role=USER onde o campo falta                                   | `--dry-run` · `--confirm`                                                             |
+| `npm run check:lockfile-native` | `check-lockfile-native.mjs` | Confere se o lockfile lista os binários de Linux x64                 | —                                                                                     | 🟢             |
+| `npm run pwa:icons`             | `generate-pwa-icons.mjs`    | Regera os ícones PWA de placeholder em `public/`                     | —                                                                                     | 🟢             |
+| `npm run init-project`          | `init-project.mjs`          | Renomeia o boilerplate para o sistema novo (dry-run sem `--confirm`) | `--name` · `--slug` · `--privacy-officer` · `--privacy-email` · `--env` · `--confirm` | 🟡 recusa prod |
+| `npm run seed:dev`              | `seed-dev.mjs`              | Cria admin e usuário de desenvolvimento (idempotente)                | `SEED_PASSWORD` (opcional)                                                            | 🟡 recusa prod |
+| `npm run vapid:keys`            | `generate-vapid-keys.mjs`   | Gera um par de chaves VAPID e imprime as variáveis                   | —                                                                                     | 🟢             |
+| `npm run toggle-feature-flag`   | `toggle-feature-flag.mjs`   | Alterna feature flag (insere registro novo)                          | `<key>` · `--confirm`                                                                 |
 
 ## Padrão dry-run / confirm
 

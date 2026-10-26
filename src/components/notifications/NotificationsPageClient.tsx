@@ -126,7 +126,7 @@ export function NotificationsPageClient() {
 										className="text-sm underline-offset-4 hover:underline"
 										onClick={() => void markRead(item)}
 									>
-										{t('title')}
+										{t('open')}
 									</NextLink>
 								) : null}
 								{!item.read ? (

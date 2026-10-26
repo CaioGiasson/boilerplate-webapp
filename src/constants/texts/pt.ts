@@ -326,6 +326,7 @@ const pt: AppMessages = {
 		loadMore: 'Carregar mais',
 		markAllRead: 'Marcar todas como lidas',
 		markRead: 'Marcar como lida',
+		open: 'Abrir',
 		unreadBadge: '{count} não lidas',
 		bellLabel: 'Notificações',
 		testTitle: 'Notificação de teste',

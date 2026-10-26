@@ -315,6 +315,7 @@ export type AppMessages = {
 		loadMore: string
 		markAllRead: string
 		markRead: string
+		open: string
 		unreadBadge: string
 		bellLabel: string
 		testTitle: string

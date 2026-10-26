@@ -324,6 +324,7 @@ const en: AppMessages = {
 		loadMore: 'Load more',
 		markAllRead: 'Mark all as read',
 		markRead: 'Mark as read',
+		open: 'Open',
 		unreadBadge: '{count} unread',
 		bellLabel: 'Notifications',
 		testTitle: 'Test notification',

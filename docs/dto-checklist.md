@@ -23,3 +23,8 @@ Use this checklist when adding or changing routes that return user or image data
 ## Tests
 
 See `tests/repositories/publicUser.dto.test.ts` for assertions that `toPublicUser` strips sensitive fields.
+
+## Campos de papel
+
+- `PublicUser.role` (`USER` | `ADMIN`) é exposto ao próprio titular em `GET /api/v1/auth/me`. Nunca exponha `role` de **outros** usuários fora das rotas `admin/*`, que já exigem `assertAdmin`.
+- A listagem admin devolve `emailMasked`, nunca o e-mail completo.

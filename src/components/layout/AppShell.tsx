@@ -8,6 +8,8 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { AuthProvider } from '@/components/auth/AuthProvider'
+import { ImpersonationConsumer } from '@/components/auth/ImpersonationConsumer'
+import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner'
 import { CookieNotice } from '@/components/legal/CookieNotice'
 
 type AppShellProps = {
@@ -21,7 +23,12 @@ export function AppShell({ children }: AppShellProps) {
 	return (
 		<AuthProvider>
 			<ToastProvider>
-				<div className="flex h-screen overflow-hidden bg-background text-foreground" data-testid="app-shell">
+				<ImpersonationConsumer />
+				<ImpersonationBanner />
+				<div
+					className="flex h-[calc(100vh-var(--app-banner-h,0px))] overflow-hidden bg-background text-foreground"
+					data-testid="app-shell"
+				>
 					<div className="hidden h-full shrink-0 md:flex">
 						<Sidebar />
 					</div>

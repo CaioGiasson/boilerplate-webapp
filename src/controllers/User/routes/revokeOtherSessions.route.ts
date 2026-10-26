@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import RevokeOtherUserSessions from '@/useCases/revokeOtherUserSessions.usecase'
 import ApiPresenter from '@/utils/Api.presenter'
 import { handleRoute } from '@/utils/routeHandler'
-import { requireAuth } from '@/middleware/auth.middleware'
+import { assertNotImpersonation, requireAuth } from '@/middleware/auth.middleware'
 
 type Dependencies = {
 	revokeOtherUserSessionsUseCase: RevokeOtherUserSessions
@@ -15,6 +15,7 @@ export default async function revokeOtherSessionsRoute(
 ): Promise<NextResponse> {
 	return handleRoute(async () => {
 		const session = await requireAuth(request, getPrismaClient())
+		assertNotImpersonation(session)
 		const result = await dependencies.revokeOtherUserSessionsUseCase.run({
 			userId: session.userId,
 			currentJti: session.jti,

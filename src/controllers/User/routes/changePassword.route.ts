@@ -5,7 +5,7 @@ import ChangeUserPassword from '@/useCases/changeUserPassword.usecase'
 import ApiPresenter from '@/utils/Api.presenter'
 import { ValidationError } from '@/errors'
 import { handleRoute } from '@/utils/routeHandler'
-import { requireAuth } from '@/middleware/auth.middleware'
+import { assertNotImpersonation, requireAuth } from '@/middleware/auth.middleware'
 import { assertAuthRateLimit } from '@/middleware/rateLimit.middleware'
 import { applySessionCookie } from '@/utils/session'
 import { PASSWORD_MAX_LENGTH } from '@/utils/passwordPolicy'
@@ -27,6 +27,7 @@ export default async function changePasswordRoute(
 ): Promise<NextResponse> {
 	return handleRoute(async () => {
 		const session = await requireAuth(request, getPrismaClient(), { userIdParam: userId })
+		assertNotImpersonation(session)
 		assertAuthRateLimit(request, session.userId)
 
 		const body = await request.json()

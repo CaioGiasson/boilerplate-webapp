@@ -11,6 +11,7 @@ import googleStartRoute from './routes/googleStart.route'
 import googleCallbackRoute from './routes/googleCallback.route'
 import completeGoogleRegistrationRoute from './routes/completeGoogleRegistration.route'
 import linkGoogleAccountRoute from './routes/linkGoogleAccount.route'
+import impersonateRoute from './routes/impersonate.route'
 import type RegisterUser from '@/useCases/registerUser.usecase'
 import type LoginUser from '@/useCases/loginUser.usecase'
 import type LogoutUser from '@/useCases/logoutUser.usecase'
@@ -23,6 +24,7 @@ import type StartGoogleOAuth from '@/useCases/startGoogleOAuth.usecase'
 import type HandleGoogleOAuthCallback from '@/useCases/handleGoogleOAuthCallback.usecase'
 import type CompleteGoogleRegistration from '@/useCases/completeGoogleRegistration.usecase'
 import type LinkGoogleAccount from '@/useCases/linkGoogleAccount.usecase'
+import type ConsumeImpersonationToken from '@/useCases/consumeImpersonationToken.usecase'
 
 type Dependencies = {
 	registerUserUseCase: RegisterUser
@@ -37,6 +39,7 @@ type Dependencies = {
 	handleGoogleOAuthCallbackUseCase: HandleGoogleOAuthCallback
 	completeGoogleRegistrationUseCase: CompleteGoogleRegistration
 	linkGoogleAccountUseCase: LinkGoogleAccount
+	consumeImpersonationTokenUseCase: ConsumeImpersonationToken
 }
 
 export default class AuthController {
@@ -54,6 +57,10 @@ export default class AuthController {
 
 	static me(request: NextRequest, dependencies: Dependencies): Promise<NextResponse> {
 		return meRoute(request, dependencies)
+	}
+
+	static impersonate(request: NextRequest, dependencies: Dependencies): Promise<NextResponse> {
+		return impersonateRoute(request, dependencies)
 	}
 
 	static sendEmailVerification(request: NextRequest, dependencies: Dependencies): Promise<NextResponse> {

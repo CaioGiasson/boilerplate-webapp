@@ -23,6 +23,7 @@ tags:
     - name: docs
     - name: auth
     - name: users
+    - name: admin
     - name: nickname
     - name: images
     - name: examples
@@ -182,6 +183,9 @@ paths:
         get:
             tags: [auth]
             summary: Sessão atual
+            description: |
+                Além do usuário, devolve `impersonation` — `{ expiresAt }` quando a sessão é de impersonamento
+                (admin atuando como o usuário) ou `null` na sessão comum.
             security:
                 - SessionCookie: []
             responses:
@@ -190,9 +194,148 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/SuccessUser'
+                                allOf:
+                                    - $ref: '#/components/schemas/SuccessUser'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  impersonation:
+                                                      type: object
+                                                      nullable: true
+                                                      properties:
+                                                          expiresAt: { type: string, format: date-time }
                 '401':
                     $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/auth/impersonate:
+        post:
+            tags: [auth]
+            summary: Iniciar sessão de impersonamento a partir do token emitido por um admin
+            description: |
+                Troca o token de `POST /api/v1/admin/users/{id}/impersonation-token` por um cookie de sessão
+                de **10 minutos, sem renovação**. Só funciona em navegador **sem sessão válida** (409 caso contrário).
+                A sessão não aparece em Dispositivos do alvo e não dispara aviso de novo login. Qualquer falha do token
+                responde 401 sem revelar o motivo. Rate limit de autenticação.
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [token]
+                            properties:
+                                token: { type: string }
+            responses:
+                '200':
+                    description: Sessão iniciada (cookie definido)
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  expiresAt: { type: string, format: date-time }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '409':
+                    description: O navegador já tem uma sessão ativa
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/admin/users:
+        get:
+            tags: [admin]
+            summary: Listar usuários ativos (somente ADMIN)
+            description: 20 por página, mais recentes primeiro. E-mail sempre mascarado. Recusado (403) durante impersonamento.
+            security:
+                - SessionCookie: []
+            parameters:
+                - name: page
+                  in: query
+                  required: false
+                  schema: { type: integer, minimum: 1, default: 1 }
+            responses:
+                '200':
+                    description: Página de usuários
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  items:
+                                                      type: array
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              nickname: { type: string }
+                                                              emailMasked: { type: string, example: 'a***@e***.com' }
+                                                              role: { type: string, enum: [USER, ADMIN] }
+                                                              emailVerified: { type: boolean }
+                                                              createdAt: { type: string, format: date-time }
+                                                  page: { type: integer }
+                                                  pageSize: { type: integer }
+                                                  total: { type: integer }
+                                                  hasMore: { type: boolean }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sem papel ADMIN ou sessão de impersonamento
+
+    /api/v1/admin/users/{id}/impersonation-token:
+        post:
+            tags: [admin]
+            summary: Emitir token de impersonamento de um usuário (somente ADMIN)
+            description: |
+                Token válido por 10 minutos, entregue por link `/?impersonate=<token>` e consumido por
+                `POST /api/v1/auth/impersonate`. Recusa o próprio admin e outros admins. O token é o próprio JWT
+                de sessão: quem tem o link vira o alvo até expirar; não há revogação antes disso além do logout,
+                da troca de senha do alvo ou do emissor deixar de ser ADMIN.
+            security:
+                - SessionCookie: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+                - $ref: '#/components/parameters/UserId'
+            responses:
+                '200':
+                    description: Token emitido
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  token: { type: string }
+                                                  expiresAt: { type: string, format: date-time }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sem papel ADMIN, sessão de impersonamento ou alvo é admin
+                '404':
+                    description: Usuário não encontrado
 
     /api/v1/auth/password/forgot:
         post:
@@ -1162,6 +1305,10 @@ components:
                     enum: [none, verify, change_old, change_new]
                 hasPassword: { type: boolean, description: Conta já definiu senha App }
                 googleLinked: { type: boolean, description: Conta vinculada ao Google OAuth }
+                role:
+                    type: string
+                    enum: [USER, ADMIN]
+                    description: Papel de acesso (conta sem o campo conta como USER)
         MosaicImage:
             type: object
             description: DTO de mosaico (URL já assinada quando aplicável)

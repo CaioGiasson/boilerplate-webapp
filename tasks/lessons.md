@@ -123,3 +123,13 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 **Causa:** `buildSecurityHeaders` aplica `X-Frame-Options: DENY` e `frame-ancestors 'none'` em todas as rotas, inclusive ao próprio `/error.html`.
 
 **Prevenção:** `next.config.ts` serve `/error.html` com `buildSameOriginFrameableHeaders` (`SAMEORIGIN` / `frame-ancestors 'self'`), declarado **depois** de `/:path*` (a última regra vence). Coberto por `tests/config/securityHeaders.test.ts`; conferir com `curl -I /error.html` após mudar headers.
+
+---
+
+## Campo obrigatório novo em `User` quebra contas antigas no MongoDB
+
+**Sintoma:** depois de adicionar um campo não opcional ao model `User`, a leitura de contas criadas antes dele falha (Prisma não encontra o valor obrigatório no documento).
+
+**Causa:** o MongoDB não tem migração de schema; documentos antigos simplesmente não têm o campo.
+
+**Prevenção:** campo novo em `User` entra como **opcional** (`role UserRole?`), o código normaliza ausência (`normalizeUserRole`) e um script `--dry-run`/`--confirm` faz o backfill (`npm run user-role:backfill`).

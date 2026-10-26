@@ -1,3 +1,8 @@
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id           String           @id @default(auto()) @map("_id") @db.ObjectId
   name         String?
@@ -31,4 +36,8 @@ model User {
   updatedAt    DateTime         @updatedAt
   deletedAt    DateTime?
   sessionsRevokedAt DateTime?
+  /// Papel de acesso. Ausente (conta anterior ao campo) conta como USER; `npm run user-role:backfill` grava USER.
+  role              UserRole?
+
+  @@index([role])
 }

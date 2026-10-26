@@ -31,6 +31,7 @@ export type AppMessages = {
 		profile: string
 		signOut: string
 		mainNavigation: string
+		admin: string
 	}
 	validation: {
 		required: string
@@ -254,6 +255,38 @@ export type AppMessages = {
 		dsComponents: string
 		privacy: string
 		terms: string
+		admin: string
+	}
+	admin: {
+		title: string
+		usersTitle: string
+		loading: string
+		loadError: string
+		empty: string
+		accessDenied: string
+		columnNickname: string
+		columnEmail: string
+		columnRole: string
+		columnVerified: string
+		columnCreated: string
+		roleUser: string
+		roleAdmin: string
+		verifiedYes: string
+		verifiedNo: string
+		impersonate: string
+		impersonateHint: string
+		linkCopied: string
+		linkCopyFailed: string
+		previous: string
+		next: string
+		pageSummary: string
+	}
+	impersonation: {
+		banner: string
+		remaining: string
+		exit: string
+		startFailed: string
+		sessionActive: string
 	}
 	dsCatalog: {
 		title: string

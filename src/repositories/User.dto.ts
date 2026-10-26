@@ -1,4 +1,5 @@
 import SettingsManager, { type SettingEntry } from '@/managers/Settings.manager'
+import { normalizeUserRole, type UserRoleName } from '@/constants/userRole'
 
 export type UserEntity = {
 	id: string
@@ -25,11 +26,12 @@ export type UserEntity = {
 	updatedAt: Date
 	deletedAt: Date | null
 	sessionsRevokedAt: Date | null
+	role: UserRoleName
 }
 
 export type PublicUser = Pick<
 	UserEntity,
-	'id' | 'name' | 'nickname' | 'email' | 'photoUrl' | 'settings' | 'emailVerifiedAt' | 'pendingEmail'
+	'id' | 'name' | 'nickname' | 'email' | 'photoUrl' | 'settings' | 'emailVerifiedAt' | 'pendingEmail' | 'role'
 > & {
 	emailChallenge: 'none' | 'verify' | 'change_old' | 'change_new'
 	hasPassword: boolean
@@ -61,6 +63,7 @@ export function mapUser(user: {
 	updatedAt: Date
 	deletedAt: Date | null
 	sessionsRevokedAt: Date | null
+	role?: string | null
 }): UserEntity {
 	const settings = SettingsManager.list({
 		settings: Array.isArray(user.settings) ? user.settings : [],
@@ -91,6 +94,7 @@ export function mapUser(user: {
 		updatedAt: user.updatedAt,
 		deletedAt: user.deletedAt,
 		sessionsRevokedAt: user.sessionsRevokedAt ?? null,
+		role: normalizeUserRole(user.role),
 	}
 }
 
@@ -107,6 +111,7 @@ export function toPublicUser(user: UserEntity): PublicUser {
 		settings: user.settings,
 		emailVerifiedAt: user.emailVerifiedAt,
 		pendingEmail: user.pendingEmail,
+		role: user.role,
 		emailChallenge: challenge,
 		hasPassword: Boolean(user.passwordHash),
 		googleLinked: Boolean(user.googleLinkedAt),

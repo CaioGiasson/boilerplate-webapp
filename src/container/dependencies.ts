@@ -28,6 +28,9 @@ import HandleGoogleOAuthCallback from '@/useCases/handleGoogleOAuthCallback.usec
 import CompleteGoogleRegistration from '@/useCases/completeGoogleRegistration.usecase'
 import LinkGoogleAccount from '@/useCases/linkGoogleAccount.usecase'
 import SummarizeText from '@/useCases/summarizeText.usecase'
+import CreateImpersonationToken from '@/useCases/createImpersonationToken.usecase'
+import ConsumeImpersonationToken from '@/useCases/consumeImpersonationToken.usecase'
+import ListAdminUsers from '@/useCases/listAdminUsers.usecase'
 import AIService, { getAIService } from '@/services/AI/AI.service'
 
 export type AppDependencies = {
@@ -62,6 +65,9 @@ export type AppDependencies = {
 	linkGoogleAccountUseCase: LinkGoogleAccount
 	aiService: AIService
 	summarizeTextUseCase: SummarizeText
+	createImpersonationTokenUseCase: CreateImpersonationToken
+	consumeImpersonationTokenUseCase: ConsumeImpersonationToken
+	listAdminUsersUseCase: ListAdminUsers
 }
 
 let cachedDependencies: AppDependencies | null = null
@@ -102,6 +108,9 @@ export function getDependencies(): AppDependencies {
 	const linkGoogleAccountUseCase = new LinkGoogleAccount()
 	const aiService = getAIService()
 	const summarizeTextUseCase = new SummarizeText(aiService)
+	const createImpersonationTokenUseCase = new CreateImpersonationToken()
+	const consumeImpersonationTokenUseCase = new ConsumeImpersonationToken()
+	const listAdminUsersUseCase = new ListAdminUsers()
 
 	cachedDependencies = {
 		exampleService,
@@ -135,6 +144,9 @@ export function getDependencies(): AppDependencies {
 		linkGoogleAccountUseCase,
 		aiService,
 		summarizeTextUseCase,
+		createImpersonationTokenUseCase,
+		consumeImpersonationTokenUseCase,
+		listAdminUsersUseCase,
 	}
 
 	return cachedDependencies

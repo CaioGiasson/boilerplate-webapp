@@ -61,6 +61,19 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
 		...legalItems,
 	]
 
+	// Admin só vê o atalho fora de impersonamento (a rota também recusa; isto é apenas UX).
+	const adminItems =
+		user?.role === 'ADMIN' && !user.impersonation
+			? [
+					{
+						id: 'admin',
+						label: t('admin'),
+						href: '/admin' as const,
+						onSelect: () => onNavigate?.(),
+					},
+				]
+			: []
+
 	const authItems = [
 		{
 			id: 'profile',
@@ -74,6 +87,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
 			href: '/config' as const,
 			onSelect: () => onNavigate?.(),
 		},
+		...adminItems,
 		...legalItems,
 		{
 			id: 'sign-out',

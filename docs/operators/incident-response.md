@@ -66,3 +66,7 @@ Ver DPIA em `docs/operators/dpia-images.md`. Controles atuais: bucket privado, U
 - Encarregado **nomeado como pessoa** ainda pendente — só e-mail placeholder.
 - Sem ferramenta formal de ticket de incidente no repo — usar este registro + issue privada se necessário.
 - Prazos legais exatos e gatilho de “risco relevante” exigem validação humana / jurídica.
+
+## Uso indevido de impersonamento
+
+Suspeita de acesso indevido por link de admin: veja [admin.md](admin.md#investigar-uso-indevido). Rebaixar o admin (`npm run change-user-role -- <email> USER --confirm`) invalida na hora os links que ele ainda tenha em aberto; trocar a senha do alvo também derruba a sessão.

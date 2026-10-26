@@ -5,6 +5,7 @@ import ApiPresenter from '@/utils/Api.presenter'
 import { UnauthorizedError } from '@/errors'
 import { handleRoute } from '@/utils/routeHandler'
 import { requireAuth, readSessionTokenFromRequest } from '@/middleware/auth.middleware'
+import { isImpersonationSession } from '@/utils/session'
 
 type Dependencies = {
 	getUserProfileUseCase: GetUserProfile
@@ -19,7 +20,11 @@ export default async function meRoute(request: NextRequest, dependencies: Depend
 		const session = await requireAuth(request, getPrismaClient())
 		const result = await dependencies.getUserProfileUseCase.run({ userId: session.userId })
 
-		return NextResponse.json(ApiPresenter.success('Session active', { user: result.user }), {
+		const impersonation = isImpersonationSession(session)
+			? { expiresAt: new Date(session.exp * 1000).toISOString() }
+			: null
+
+		return NextResponse.json(ApiPresenter.success('Session active', { user: result.user, impersonation }), {
 			status: 200,
 		})
 	})

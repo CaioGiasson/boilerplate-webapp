@@ -69,6 +69,7 @@ describe('ExportUserData', () => {
 			emailChallenge: 'none',
 			hasPassword: true,
 			googleLinked: false,
+			role: 'USER',
 		})
 		expect(result.files).toEqual([
 			{

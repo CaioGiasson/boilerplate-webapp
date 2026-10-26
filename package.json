@@ -9,6 +9,7 @@
 		"analyze": "ANALYZE=true next build",
 		"build": "npm run prisma-merge && prisma generate && next build",
 		"change-user-password": "node scripts/change-user-password.mjs",
+		"change-user-role": "node scripts/change-user-role.mjs",
 		"check": "prettier --write . && eslint .",
 		"cron": "node scripts/cron/run.mjs",
 		"cron:retention": "node scripts/cron/jobs/retention-purge.mjs",
@@ -34,7 +35,8 @@
 		"test-environment": "node scripts/test-environment.mjs",
 		"toggle-feature-flag": "node scripts/toggle-feature-flag.mjs",
 		"typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-		"unconfirm-account": "node scripts/unconfirm-account.mjs"
+		"unconfirm-account": "node scripts/unconfirm-account.mjs",
+		"user-role:backfill": "node scripts/backfill-user-role.mjs"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.1107.0",

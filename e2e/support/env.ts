@@ -5,7 +5,8 @@ import { resolve } from 'node:path'
 loadEnv({ path: resolve(__dirname, '../../.env') })
 
 export const E2E_PORT = Number(process.env.E2E_PORT ?? 3100)
-export const E2E_BASE_URL = `http://127.0.0.1:${E2E_PORT}`
+/** `localhost`, não `127.0.0.1`: o `next start` monta `request.nextUrl.origin` com `localhost`, e a checagem de CSRF compara com o `Origin`. */
+export const E2E_BASE_URL = `http://localhost:${E2E_PORT}`
 
 /**
  * Banco **separado** do de desenvolvimento: `E2E_DATABASE_URL`, ou o `DATABASE_URL` com o nome do banco trocado

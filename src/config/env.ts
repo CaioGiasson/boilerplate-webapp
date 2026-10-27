@@ -1,3 +1,5 @@
+import { TWO_FACTOR_KEY_ERROR, parseTwoFactorKey } from '@/utils/twoFactorCrypto'
+
 const REQUIRED_ENV_VARS = [
 	'DATABASE_URL',
 	'CACHE_LIFETIME_SECONDS',
@@ -142,6 +144,7 @@ export function validateEnv(): void {
 	assertEmailConfig(getEmailConfig())
 	assertAiConfig(getAiConfig())
 	assertVapidConfig(process.env)
+	assertTwoFactorConfig(process.env)
 }
 
 export function getJwtSecret(): Uint8Array {
@@ -318,6 +321,25 @@ export function getPushAllowedHostSuffixes(env: NodeJS.ProcessEnv = process.env)
 		.map((item) => item.trim().toLowerCase().replace(/^\./, ''))
 		.filter(Boolean)
 	return [...new Set([...DEFAULT_PUSH_HOST_SUFFIXES, ...extra])]
+}
+
+/**
+ * 2FA (TOTP) só liga com `TWO_FACTOR_ENCRYPTION_KEY` (32 bytes em base64): é a chave que cifra o segredo no banco.
+ * Sem ela o app funciona sem 2FA; contas que já ativaram não conseguem entrar até a chave voltar.
+ */
+export function getTwoFactorKey(env: NodeJS.ProcessEnv = process.env): Buffer | null {
+	return parseTwoFactorKey(env.TWO_FACTOR_ENCRYPTION_KEY)
+}
+
+export function isTwoFactorAvailable(env: NodeJS.ProcessEnv = process.env): boolean {
+	return getTwoFactorKey(env) !== null
+}
+
+/** Chave presente mas inválida é erro de deploy: recusa o boot em vez de ligar o 2FA com uma chave que não cifra. */
+export function assertTwoFactorConfig(env: NodeJS.ProcessEnv = process.env): void {
+	if (env.TWO_FACTOR_ENCRYPTION_KEY?.trim() && !getTwoFactorKey(env)) {
+		throw new Error(TWO_FACTOR_KEY_ERROR)
+	}
 }
 
 /** Web Push só liga com as três variáveis; sem elas devolve `null` e o app funciona só com o sino. */

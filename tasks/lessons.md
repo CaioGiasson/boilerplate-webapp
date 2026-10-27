@@ -50,7 +50,7 @@ Atualize este arquivo após correções que um agente poderia repetir. Processo:
 
 **Sintoma:** Vazamento de e-mails mascarados, mutação acidental de bucket, ou crash por env de prod.
 
-**Causa:** Rodar `list-users`, `export-from-pinterest`, backfills ou migrações Spaces no host de produção.
+**Causa:** Rodar `list-users`, backfills ou migrações Spaces no host de produção.
 
 **Prevenção:** Scripts usam `refuseIfProduction()` quando aplicável. Preferir `--dry-run`. Nunca operar no mesmo host que `next start` sem flag explícita do mantenedor.
 

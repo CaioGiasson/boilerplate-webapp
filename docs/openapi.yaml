@@ -167,10 +167,53 @@ paths:
                                               properties:
                                                   user: { $ref: '#/components/schemas/PublicUser' }
                                                   settings: { type: object }
+                                                  twoFactorRequired:
+                                                      type: boolean
+                                                      description: |
+                                                          `true` quando a senha está certa e a conta tem 2FA. Nesse caso **não** há cookie de sessão
+                                                          nem `user`: envie o código a `POST /auth/2fa/verify` com o `challengeToken`.
+                                                  challengeToken:
+                                                      type: string
+                                                      description: Vale 5 minutos e só serve para `/auth/2fa/verify`.
                 '401':
                     $ref: '#/components/responses/Unauthorized'
                 '429':
                     $ref: '#/components/responses/RateLimited'
+
+    /api/v1/auth/2fa/verify:
+        post:
+            tags: [auth]
+            summary: Segundo passo do login (2FA)
+            description: |
+                Confere o código TOTP **ou** um código de recuperação e abre a sessão (mesma resposta e cookies do login).
+                Mande exatamente um dos dois. Limite de 5 tentativas por minuto por conta e 30 por IP, com bloqueio progressivo.
+                O mesmo código TOTP não vale duas vezes e cada código de recuperação vale uma. Sem a chave de cifra no
+                servidor responde 503 (falha fechada).
+            security: []
+            parameters:
+                - $ref: '#/components/parameters/OriginHeader'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [challengeToken]
+                            properties:
+                                challengeToken: { type: string }
+                                code: { type: string, example: '123456', description: 6 dígitos do app autenticador }
+                                recoveryCode: { type: string, example: ABCDE-FGHIJ }
+            responses:
+                '200':
+                    description: OK + cookies (mesmo corpo do login)
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+                '503':
+                    description: 2FA indisponível (servidor sem TWO_FACTOR_ENCRYPTION_KEY)
 
     /api/v1/auth/logout:
         post:
@@ -417,6 +460,28 @@ paths:
                 '503':
                     description: Push não configurado
 
+    /api/ping:
+        get:
+            tags: [system]
+            summary: Sonda de conectividade do navegador
+            description: |
+                Público, sem estado, sem acesso ao banco e sem cache (`Cache-Control: no-store`). Serve de sonda para o cliente
+                saber se há rede. Diferente de `/api/health*`, que só responde a loopback ou token. `HEAD` devolve 200 sem corpo.
+            responses:
+                '200':
+                    description: Servidor alcançável
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  ok: { type: boolean, example: true }
+
     /api/v1/version:
         get:
             tags: [system]
@@ -482,18 +547,306 @@ paths:
                 '429':
                     $ref: '#/components/responses/RateLimited'
 
+    /api/v1/users/me/2fa:
+        get:
+            tags: [users]
+            summary: Estado do 2FA da conta
+            description: |
+                `available` é `false` quando o servidor não tem `TWO_FACTOR_ENCRYPTION_KEY` (a tela esconde o 2FA).
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Estado
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  available: { type: boolean }
+                                                  enabled: { type: boolean }
+                                                  recoveryCodesRemaining: { type: integer }
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+
+    /api/v1/users/me/2fa/setup:
+        post:
+            tags: [users]
+            summary: Inicia a ativação do 2FA
+            description: |
+                Gera o segredo (guardado cifrado como **pendente**) e devolve `secret` (base32) e `otpauthUri`. O 2FA só
+                vale depois de `/2fa/enable`. Exige conta com senha. 409 se já está ativo; 503 sem a chave de cifra.
+            security:
+                - SessionCookie: []
+            responses:
+                '200':
+                    description: Segredo para o app autenticador
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  secret: { type: string, example: JBSWY3DPEHPK3PXP }
+                                                  otpauthUri: { type: string }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+                '409':
+                    description: 2FA já ativo
+                '503':
+                    description: 2FA indisponível (servidor sem TWO_FACTOR_ENCRYPTION_KEY)
+
+    /api/v1/users/me/2fa/enable:
+        post:
+            tags: [users]
+            summary: Confirma o app e ativa o 2FA
+            description: Confere o código com o segredo pendente, ativa e devolve os códigos de recuperação **uma única vez**.
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [code]
+                            properties:
+                                code: { type: string, example: '123456' }
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  recoveryCodes:
+                                                      type: array
+                                                      items: { type: string, example: ABCDE-FGHIJ }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/users/me/2fa/disable:
+        post:
+            tags: [users]
+            summary: Desativa o 2FA
+            description: Exige a senha **e** um código do app ou de recuperação (um dos dois). Apaga o segredo e os códigos de recuperação.
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [password]
+                            properties:
+                                password: { type: string, maxLength: 128 }
+                                code: { type: string, example: '123456' }
+                                recoveryCode: { type: string, example: ABCDE-FGHIJ }
+            responses:
+                '200':
+                    description: OK
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/users/me/2fa/recovery-codes:
+        post:
+            tags: [users]
+            summary: Gera novos códigos de recuperação
+            description: Exige o código do app (um código de recuperação não serve). Os códigos anteriores deixam de valer; os novos aparecem **uma única vez**.
+            security:
+                - SessionCookie: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [code]
+                            properties:
+                                code: { type: string, example: '123456' }
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  recoveryCodes:
+                                                      type: array
+                                                      items: { type: string, example: ABCDE-FGHIJ }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sessão de impersonamento
+                '429':
+                    $ref: '#/components/responses/RateLimited'
+
+    /api/v1/admin/audit-events:
+        get:
+            tags: [admin]
+            summary: Listar a trilha de auditoria (somente ADMIN)
+            description: |
+                Paginação por cursor, mais recentes primeiro (20 por página, máx. 100). Somente leitura. O IP, o `requestId`
+                e o `metadata` dos eventos ficam no banco e **não** saem por aqui. Recusado (403) durante impersonamento.
+            security:
+                - SessionCookie: []
+            parameters:
+                - name: cursor
+                  in: query
+                  required: false
+                  description: 'Valor de `pageInfo.nextCursor` da página anterior (opaco).'
+                  schema: { type: string, maxLength: 200 }
+                - name: limit
+                  in: query
+                  required: false
+                  schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+                - name: order
+                  in: query
+                  required: false
+                  schema: { type: string, enum: [asc, desc], default: desc }
+                - name: action
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum:
+                          - admin.impersonation_token_created
+                          - auth.impersonation_started
+                          - user.password_changed
+                          - user.password_reset
+                          - user.email_changed
+                          - user.sessions_revoked_others
+                          - user.account_deletion_requested
+                          - user.account_deletion_cancelled
+                          - user.account_deletion_kept
+                          - user.two_factor_enabled
+                          - user.two_factor_disabled
+                          - user.two_factor_recovery_regenerated
+                          - user.two_factor_recovery_used
+                          - operator.role_changed
+                          - operator.two_factor_reset
+                          - operator.password_changed
+                          - operator.feature_flag_toggled
+            responses:
+                '200':
+                    description: Página de eventos
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  items:
+                                                      type: array
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              action: { type: string, example: user.password_changed }
+                                                              actorType:
+                                                                  {
+                                                                      type: string,
+                                                                      enum: [user, admin, operator, system],
+                                                                  }
+                                                              actor:
+                                                                  type: object
+                                                                  nullable: true
+                                                                  properties:
+                                                                      id: { type: string }
+                                                                      nickname: { type: string, nullable: true }
+                                                              target:
+                                                                  type: object
+                                                                  nullable: true
+                                                                  properties:
+                                                                      id: { type: string }
+                                                                      nickname: { type: string, nullable: true }
+                                                              createdAt: { type: string, format: date-time }
+                                                  pageInfo:
+                                                      type: object
+                                                      properties:
+                                                          nextCursor: { type: string, nullable: true }
+                                                          hasNext: { type: boolean }
+                                                          limit: { type: integer }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sem papel ADMIN ou sessão de impersonamento
+
     /api/v1/admin/users:
         get:
             tags: [admin]
             summary: Listar usuários ativos (somente ADMIN)
-            description: 20 por página, mais recentes primeiro. E-mail sempre mascarado. Recusado (403) durante impersonamento.
+            description: |
+                Paginação por cursor: mais recentes primeiro por padrão, 20 por página (máx. 100). E-mail sempre mascarado.
+                A busca `q` casa por trecho do **apelido** (sem diferenciar maiúsculas); e-mail não é pesquisável.
+                Recusado (403) durante impersonamento.
             security:
                 - SessionCookie: []
             parameters:
-                - name: page
+                - name: cursor
                   in: query
                   required: false
-                  schema: { type: integer, minimum: 1, default: 1 }
+                  description: 'Valor de `pageInfo.nextCursor` da página anterior (opaco).'
+                  schema: { type: string, maxLength: 200 }
+                - name: limit
+                  in: query
+                  required: false
+                  schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+                - name: q
+                  in: query
+                  required: false
+                  schema: { type: string, maxLength: 100 }
+                - name: order
+                  in: query
+                  required: false
+                  description: Ordem por data de criação.
+                  schema: { type: string, enum: [asc, desc], default: desc }
             responses:
                 '200':
                     description: Página de usuários
@@ -518,10 +871,12 @@ paths:
                                                               role: { type: string, enum: [USER, ADMIN] }
                                                               emailVerified: { type: boolean }
                                                               createdAt: { type: string, format: date-time }
-                                                  page: { type: integer }
-                                                  pageSize: { type: integer }
-                                                  total: { type: integer }
-                                                  hasMore: { type: boolean }
+                                                  pageInfo:
+                                                      type: object
+                                                      properties:
+                                                          nextCursor: { type: string, nullable: true }
+                                                          hasNext: { type: boolean }
+                                                          limit: { type: integer }
                 '400':
                     $ref: '#/components/responses/ValidationError'
                 '401':
@@ -1032,6 +1387,18 @@ paths:
                                                   files:
                                                       type: array
                                                       items: { type: object }
+                                                  auditEvents:
+                                                      type: array
+                                                      description: Ações da trilha de auditoria em que o titular agiu ou foi alvo (sem o id da outra parte)
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              action: { type: string }
+                                                              asActor: { type: boolean }
+                                                              asTarget: { type: boolean }
+                                                              ip: { type: string, nullable: true }
+                                                              createdAt: { type: string, format: date-time }
                                                   aiLogs:
                                                       type: array
                                                       description: Chamadas de IA do titular dentro da janela de retenção (prompt, resposta, tokens)
@@ -1519,6 +1886,12 @@ components:
                 code:
                     type: string
                     example: VALIDATION_ERROR
+                requestId:
+                    type: string
+                    description: |
+                        Id da requisição (o mesmo do header `x-request-id` da resposta). Presente nos erros das rotas com
+                        tratamento padrão; use-o para achar a linha no log.
+                    example: 7f0c2a9e-4b1d-4c55-9e0a-1f3f6f1a2b3c
         PublicUser:
             type: object
             properties:

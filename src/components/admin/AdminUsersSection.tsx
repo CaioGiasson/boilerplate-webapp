@@ -3,12 +3,23 @@
 import * as React from 'react'
 import { useFormatter, useTranslations } from 'next-intl'
 import { UsersRound } from 'lucide-react'
-import { Button } from '@/design-system/Button'
+import { Badge } from '@/design-system/Badge'
+import { DataTable, type DataTableColumn, type DataTableSort } from '@/design-system/DataTable'
+import { EmptyState } from '@/design-system/EmptyState'
 import { Icon } from '@/design-system/Icon'
 import { IconButton } from '@/design-system/IconButton'
+import { Pagination } from '@/design-system/Pagination'
+import { SearchBar } from '@/design-system/SearchBar'
 import { useToast } from '@/design-system/Toast'
-import { createImpersonationTokenRequest, listAdminUsersRequest, type AdminUsersPage } from '@/lib/auth-client'
+import {
+	createImpersonationTokenRequest,
+	listAdminUsersRequest,
+	type AdminUserRow,
+	type AdminUsersPage,
+} from '@/lib/auth-client'
 import { IMPERSONATE_QUERY_PARAM } from '@/components/auth/ImpersonationConsumer'
+
+const SEARCH_DEBOUNCE_MS = 300
 
 export function buildImpersonationLink(origin: string, token: string): string {
 	return `${origin}/?${IMPERSONATE_QUERY_PARAM}=${encodeURIComponent(token)}`
@@ -18,17 +29,35 @@ export function AdminUsersSection() {
 	const t = useTranslations('admin')
 	const format = useFormatter()
 	const { toast } = useToast()
-	const [page, setPage] = React.useState(1)
+	const [searchInput, setSearchInput] = React.useState('')
+	const [query, setQuery] = React.useState('')
+	const [order, setOrder] = React.useState<'asc' | 'desc'>('desc')
+	// Um cursor por página já visitada (a primeira é `undefined`): "Anterior" só desempilha.
+	const [cursors, setCursors] = React.useState<Array<string | undefined>>([undefined])
 	const [data, setData] = React.useState<AdminUsersPage | null>(null)
 	const [loading, setLoading] = React.useState(true)
 	const [failed, setFailed] = React.useState(false)
 	const [busyUserId, setBusyUserId] = React.useState<string | null>(null)
 
+	const appliedQuery = React.useRef('')
+	const cursor = cursors[cursors.length - 1]
+
+	React.useEffect(() => {
+		const timer = window.setTimeout(() => {
+			const next = searchInput.trim()
+			if (next === appliedQuery.current) return
+			appliedQuery.current = next
+			setQuery(next)
+			setCursors([undefined])
+		}, SEARCH_DEBOUNCE_MS)
+		return () => window.clearTimeout(timer)
+	}, [searchInput])
+
 	React.useEffect(() => {
 		let cancelled = false
 		setLoading(true)
 		setFailed(false)
-		listAdminUsersRequest(page)
+		listAdminUsersRequest({ cursor, q: query || undefined, order })
 			.then((result) => {
 				if (!cancelled) setData(result)
 			})
@@ -41,7 +70,7 @@ export function AdminUsersSection() {
 		return () => {
 			cancelled = true
 		}
-	}, [page])
+	}, [cursor, query, order])
 
 	const copyImpersonationLink = React.useCallback(
 		async (userId: string) => {
@@ -59,94 +88,105 @@ export function AdminUsersSection() {
 		[t, toast]
 	)
 
+	const columns = React.useMemo<DataTableColumn<AdminUserRow>[]>(
+		() => [
+			{
+				id: 'nickname',
+				header: t('columnNickname'),
+				cell: (item) => <span className="font-medium">{item.nickname}</span>,
+			},
+			{ id: 'email', header: t('columnEmail'), className: 'tabular-nums', cell: (item) => item.emailMasked },
+			{
+				id: 'role',
+				header: t('columnRole'),
+				cell: (item) => (
+					<Badge variant={item.role === 'ADMIN' ? 'info' : 'neutral'}>
+						{item.role === 'ADMIN' ? t('roleAdmin') : t('roleUser')}
+					</Badge>
+				),
+			},
+			{
+				id: 'verified',
+				header: t('columnVerified'),
+				cell: (item) => (
+					<Badge variant={item.emailVerified ? 'success' : 'warning'}>
+						{item.emailVerified ? t('verifiedYes') : t('verifiedNo')}
+					</Badge>
+				),
+			},
+			{
+				id: 'createdAt',
+				header: t('columnCreated'),
+				sortable: true,
+				cell: (item) => format.dateTime(new Date(item.createdAt), { dateStyle: 'medium' }),
+			},
+			{
+				id: 'actions',
+				header: <span className="sr-only">{t('impersonate')}</span>,
+				align: 'right',
+				cell: (item) =>
+					item.role === 'ADMIN' ? null : (
+						<IconButton
+							label={t('impersonate')}
+							disabled={busyUserId === item.id}
+							onClick={() => void copyImpersonationLink(item.id)}
+						>
+							<Icon icon={UsersRound} />
+						</IconButton>
+					),
+			},
+		],
+		[t, format, busyUserId, copyImpersonationLink]
+	)
+
+	const onSortChange = (sort: DataTableSort) => {
+		setOrder(sort.direction)
+		setCursors([undefined])
+	}
+
 	if (failed) {
 		return <p className="text-sm text-destructive">{t('loadError')}</p>
 	}
-	if (!data) {
-		return <p className="text-sm text-muted-foreground">{t('loading')}</p>
-	}
-
-	const pages = Math.max(1, Math.ceil(data.total / data.pageSize))
 
 	return (
 		<section className="flex flex-col gap-4" aria-busy={loading} data-testid="admin-users">
 			<h2 className="text-lg font-semibold">{t('usersTitle')}</h2>
 			<p className="text-sm text-muted-foreground">{t('impersonateHint')}</p>
 
-			{data.items.length === 0 ? (
-				<p className="text-sm text-muted-foreground">{t('empty')}</p>
-			) : (
-				<div className="overflow-x-auto rounded-md border border-border">
-					<table className="w-full text-left text-sm">
-						<thead className="bg-surface text-muted-foreground">
-							<tr>
-								<th className="px-3 py-2 font-medium">{t('columnNickname')}</th>
-								<th className="px-3 py-2 font-medium">{t('columnEmail')}</th>
-								<th className="px-3 py-2 font-medium">{t('columnRole')}</th>
-								<th className="px-3 py-2 font-medium">{t('columnVerified')}</th>
-								<th className="px-3 py-2 font-medium">{t('columnCreated')}</th>
-								<th className="px-3 py-2" />
-							</tr>
-						</thead>
-						<tbody>
-							{data.items.map((item) => (
-								<tr
-									key={item.id}
-									className="border-t border-border"
-									data-testid={`admin-user-${item.id}`}
-								>
-									<td className="px-3 py-2 font-medium">{item.nickname}</td>
-									<td className="px-3 py-2 tabular-nums">{item.emailMasked}</td>
-									<td className="px-3 py-2">
-										{item.role === 'ADMIN' ? t('roleAdmin') : t('roleUser')}
-									</td>
-									<td className="px-3 py-2">
-										{item.emailVerified ? t('verifiedYes') : t('verifiedNo')}
-									</td>
-									<td className="px-3 py-2">
-										{format.dateTime(new Date(item.createdAt), { dateStyle: 'medium' })}
-									</td>
-									<td className="px-3 py-2 text-right">
-										{item.role === 'ADMIN' ? null : (
-											<IconButton
-												label={t('impersonate')}
-												disabled={busyUserId === item.id}
-												onClick={() => void copyImpersonationLink(item.id)}
-											>
-												<Icon icon={UsersRound} />
-											</IconButton>
-										)}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-			)}
+			<SearchBar
+				value={searchInput}
+				onValueChange={setSearchInput}
+				label={t('searchLabel')}
+				placeholder={t('searchPlaceholder')}
+				data-testid="admin-users-search"
+			/>
 
-			<div className="flex items-center justify-between gap-3">
-				<span className="text-sm text-muted-foreground">
-					{t('pageSummary', { page: data.page, pages, total: data.total })}
-				</span>
-				<div className="flex gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						disabled={page <= 1 || loading}
-						onClick={() => setPage(page - 1)}
-					>
-						{t('previous')}
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						disabled={!data.hasMore || loading}
-						onClick={() => setPage(page + 1)}
-					>
-						{t('next')}
-					</Button>
-				</div>
-			</div>
+			<DataTable
+				caption={t('tableCaption')}
+				columns={columns}
+				rows={data?.items ?? []}
+				getRowId={(item) => item.id}
+				loading={loading && !data}
+				sort={{ columnId: 'createdAt', direction: order }}
+				onSortChange={onSortChange}
+				emptyState={<EmptyState title={query ? t('emptySearch') : t('empty')} />}
+				data-testid="admin-users-table"
+			/>
+
+			<Pagination
+				navLabel={t('paginationLabel')}
+				previousLabel={t('previous')}
+				nextLabel={t('next')}
+				hasPrevious={cursors.length > 1}
+				hasNext={Boolean(data?.pageInfo.hasNext)}
+				disabled={loading}
+				summary={t('pageNumber', { page: cursors.length })}
+				onPrevious={() => setCursors((stack) => stack.slice(0, -1))}
+				onNext={() => {
+					const next = data?.pageInfo.nextCursor
+					if (next) setCursors((stack) => [...stack, next])
+				}}
+			/>
 		</section>
 	)
 }

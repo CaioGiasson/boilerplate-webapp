@@ -12,6 +12,7 @@ import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PrismaClient } from '@prisma/client'
 import { isProductionEnv, maskEmail } from './lib/operator.mjs'
+import { recordOperatorAudit } from './lib/audit.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 loadEnv({ path: resolve(__dirname, '../.env') })
@@ -47,6 +48,11 @@ async function main() {
 
 		const previous = user.role ?? 'USER'
 		await prisma.user.update({ where: { id: user.id }, data: { role } })
+		await recordOperatorAudit(prisma, {
+			action: 'operator.role_changed',
+			targetUserId: user.id,
+			metadata: { from: previous, to: role },
+		})
 		console.log(`Role for ${user.nickname} (${maskEmail(user.email)}): ${previous} -> ${role}`)
 	} finally {
 		await prisma.$disconnect()

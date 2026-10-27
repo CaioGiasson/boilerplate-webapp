@@ -1,0 +1,11 @@
+# Normaliza finais de linha; scripts de shell precisam de LF (senão o shebang quebra no Linux com `\r`).
+* text=auto eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff2 binary

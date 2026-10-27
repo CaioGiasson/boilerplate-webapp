@@ -16,6 +16,7 @@ import { createRequire } from 'node:module'
 import { hash } from 'argon2'
 import { PrismaClient } from '@prisma/client'
 import { maskEmail } from './lib/operator.mjs'
+import { recordOperatorAudit } from './lib/audit.mjs'
 
 const require = createRequire(import.meta.url)
 const { passwordPolicyIssue } = require('./lib/passwordPolicy.cjs')
@@ -73,6 +74,7 @@ async function main() {
 			where: { id: user.id },
 			data: { passwordHash: await hash(password), sessionsRevokedAt: new Date() },
 		})
+		await recordOperatorAudit(prisma, { action: 'operator.password_changed', targetUserId: user.id })
 		console.log(`Password updated for ${user.nickname} (${maskEmail(user.email)}). Sessions revoked.`)
 	} finally {
 		await prisma.$disconnect()

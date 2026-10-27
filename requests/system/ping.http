@@ -1,0 +1,7 @@
+@baseUrl = http://localhost:3000
+
+### Sonda de conectividade (pública, sem estado, sem cache)
+GET {{baseUrl}}/api/ping
+
+### Mesma sonda, sem corpo
+HEAD {{baseUrl}}/api/ping

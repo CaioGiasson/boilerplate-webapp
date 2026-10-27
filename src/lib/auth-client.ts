@@ -36,13 +36,18 @@ export async function fetchCurrentUser(): Promise<AuthUser | null> {
 	return { ...data.user, impersonation: data.impersonation ?? null }
 }
 
+/** Login concluído: conta em quarentena de exclusão (decidir) ou sessão aberta. */
+export type LoginCompleted =
+	| { deletionDecisionRequired: true; twoFactorRequired?: false; deletedAt: string; deadlineAt: string }
+	| { deletionDecisionRequired?: false; twoFactorRequired?: false; user: AuthUser; settings: SettingEntry[] }
+
+/** Senha certa em conta com 2FA: ainda sem sessão; o código vai em `verifyTwoFactorLoginRequest`. */
+export type LoginTwoFactorRequired = { twoFactorRequired: true; challengeToken: string }
+
 export async function loginRequest(input: {
 	identifier: string
 	password: string
-}): Promise<
-	| { deletionDecisionRequired: true; deletedAt: string; deadlineAt: string }
-	| { deletionDecisionRequired?: false; user: AuthUser; settings: SettingEntry[] }
-> {
+}): Promise<LoginCompleted | LoginTwoFactorRequired> {
 	const response = await fetchApi('/api/v1/auth/login', {
 		method: 'POST',
 		credentials: 'include',
@@ -50,6 +55,57 @@ export async function loginRequest(input: {
 		body: JSON.stringify(input),
 	})
 	return parseApi(response)
+}
+
+export async function verifyTwoFactorLoginRequest(input: {
+	challengeToken: string
+	code?: string
+	recoveryCode?: string
+}): Promise<LoginCompleted> {
+	const response = await fetchApi('/api/v1/auth/2fa/verify', {
+		method: 'POST',
+		credentials: 'include',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(input),
+	})
+	return parseApi(response)
+}
+
+export type TwoFactorStatus = { available: boolean; enabled: boolean; recoveryCodesRemaining: number }
+
+export async function getTwoFactorStatusRequest(): Promise<TwoFactorStatus> {
+	const response = await fetchApi('/api/v1/users/me/2fa', { credentials: 'include' })
+	return parseApi(response)
+}
+
+async function postTwoFactor<T>(path: string, body?: unknown): Promise<T> {
+	const response = await fetchApi(`/api/v1/users/me/2fa/${path}`, {
+		method: 'POST',
+		credentials: 'include',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(body ?? {}),
+	})
+	return parseApi<T>(response)
+}
+
+export function beginTwoFactorSetupRequest(): Promise<{ secret: string; otpauthUri: string }> {
+	return postTwoFactor('setup')
+}
+
+export function enableTwoFactorRequest(code: string): Promise<{ recoveryCodes: string[] }> {
+	return postTwoFactor('enable', { code })
+}
+
+export function disableTwoFactorRequest(input: {
+	password: string
+	code?: string
+	recoveryCode?: string
+}): Promise<{ ok: true }> {
+	return postTwoFactor('disable', input)
+}
+
+export function regenerateRecoveryCodesRequest(code: string): Promise<{ recoveryCodes: string[] }> {
+	return postTwoFactor('recovery-codes', { code })
 }
 
 export async function registerRequest(input: {
@@ -399,15 +455,49 @@ export type AdminUserRow = {
 
 export type AdminUsersPage = {
 	items: AdminUserRow[]
-	page: number
-	pageSize: number
-	total: number
-	hasMore: boolean
+	pageInfo: { nextCursor: string | null; hasNext: boolean; limit: number }
 }
 
-export async function listAdminUsersRequest(page: number): Promise<AdminUsersPage> {
-	const response = await fetchApi(`/api/v1/admin/users?page=${page}`, { credentials: 'include' })
+export async function listAdminUsersRequest(
+	params: { cursor?: string; q?: string; order?: 'asc' | 'desc' } = {}
+): Promise<AdminUsersPage> {
+	const search = new URLSearchParams()
+	if (params.cursor) search.set('cursor', params.cursor)
+	if (params.q) search.set('q', params.q)
+	if (params.order) search.set('order', params.order)
+	const query = search.toString()
+	const response = await fetchApi(`/api/v1/admin/users${query ? `?${query}` : ''}`, { credentials: 'include' })
 	return parseApi<AdminUsersPage>(response)
+}
+
+export type AdminAuditParty = { id: string; nickname: string | null }
+
+export type AdminAuditEventRow = {
+	id: string
+	action: string
+	actorType: string
+	actor: AdminAuditParty | null
+	target: AdminAuditParty | null
+	createdAt: string
+}
+
+export type AdminAuditEventsPage = {
+	items: AdminAuditEventRow[]
+	pageInfo: { nextCursor: string | null; hasNext: boolean; limit: number }
+}
+
+export async function listAdminAuditEventsRequest(
+	params: { cursor?: string; action?: string; order?: 'asc' | 'desc' } = {}
+): Promise<AdminAuditEventsPage> {
+	const search = new URLSearchParams()
+	if (params.cursor) search.set('cursor', params.cursor)
+	if (params.action) search.set('action', params.action)
+	if (params.order) search.set('order', params.order)
+	const query = search.toString()
+	const response = await fetchApi(`/api/v1/admin/audit-events${query ? `?${query}` : ''}`, {
+		credentials: 'include',
+	})
+	return parseApi<AdminAuditEventsPage>(response)
 }
 
 export async function createImpersonationTokenRequest(userId: string): Promise<{ token: string; expiresAt: string }> {

@@ -1,0 +1,21 @@
+# App + Mongo no mesmo compose (sobe sobre o docker-compose.yaml, que define o `mongo1`):
+#
+#   docker compose -f docker-compose.yaml -f docker-compose.app.yaml up -d --build
+#
+# Exige `.env` com os segredos (gerado por `npm run init-project -- --name "..." --env --confirm`) e
+# `secrets/mongo-keyfile` (`npm run mongo:keyfile`). Guia: docs/operators/docker.md
+services:
+    app:
+        build: .
+        image: ${APP_IMAGE:-app:latest}
+        init: true
+        restart: unless-stopped
+        env_file: .env
+        environment:
+            # Dentro da rede do compose o Mongo é `mongo1:27017` (o .env aponta para o host: localhost:27717).
+            DATABASE_URL: mongodb://${MONGO_ROOT_USERNAME:-mongo}:${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD in .env}@mongo1:27017/mongo?replicaSet=rs0&directConnection=true&authSource=admin&connection_limit=10
+        depends_on:
+            mongo1:
+                condition: service_healthy
+        ports:
+            - '127.0.0.1:${SERVER_PORT:-3000}:3000'

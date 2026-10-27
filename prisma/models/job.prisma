@@ -1,0 +1,28 @@
+/// Fila de jobs em background (retry com backoff, trava e reaproveitamento de job travado). Ver docs/operators/jobs.md.
+/// Criado dentro da transação do use case (outbox): se a transação desfaz, o job nunca existe.
+/// `payload` pode conter dado pessoal (ex.: e-mail do destinatário): é zerado ao concluir e o job vence pela retenção.
+model Job {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  /// Chave de `JobPayloads` (src/jobs/types.ts), ex.: `email.send`.
+  type        String
+  payload     Json?
+  /// pending | running | succeeded | failed
+  status      String
+  /// Tentativas já iniciadas (incrementa ao pegar o job).
+  attempts    Int       @default(0)
+  maxAttempts Int
+  /// Quando o job fica elegível (agendamento e backoff).
+  runAt       DateTime
+  /// Enquanto no futuro, outro worker não pega o job. Vencida com `status = running` = worker morreu: o job é retomado.
+  lockedUntil DateTime?
+  lockedBy    String?
+  /// Último erro (truncado, sem payload).
+  lastError   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  finishedAt  DateTime?
+
+  @@index([status, runAt])
+  @@index([type, createdAt])
+  @@index([finishedAt])
+}

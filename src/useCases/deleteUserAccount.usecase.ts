@@ -3,6 +3,7 @@ import LogManager from '@/managers/Log.manager'
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
 import ActiveSessionRepository from '@/repositories/ActiveSession.repository'
 import SessionEventRepository from '@/repositories/SessionEvent.repository'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import UserRepository from '@/repositories/User.repository'
 import { NotFoundError, UnauthorizedError, ValidationError } from '@/errors'
 import { getAppBaseUrl } from '@/config/env'
@@ -74,6 +75,12 @@ export default class DeleteUserAccount extends UseCaseMasterPort<Input, Output> 
 		}
 
 		const quarantined = await userRepository.softDeleteQuarantine(user.id)
+		await new AuditEventRepository(injectables.prisma).record({
+			action: 'user.account_deletion_requested',
+			actorType: 'user',
+			actorId: user.id,
+			targetUserId: user.id,
+		})
 
 		const activeSessionRepository = new ActiveSessionRepository(injectables.prisma)
 		await activeSessionRepository.deleteAllForUser(user.id)

@@ -58,7 +58,7 @@ App usa **`ENVIRONMENT`** (`dev` / `prod`) para regras de boot e operadores, e *
 
 - **Auth** — middleware + helpers de sessão (`src/middleware/`, `src/utils/session.ts`); JWT HS256, cookie httpOnly.
 - **Autorização** — regras em use cases (`canViewImage`, ownership) e testes em `tests/security/`.
-- **Rate limit** — auth e rotas de imagem (`rateLimit.middleware.ts`); in-memory OK em máquina única (`docs/architecture.md`). Multi-pod → gateway/Redis (SCALE-02 N/A hoje).
+- **Rate limit** — auth e rotas de imagem (`rateLimit.middleware.ts`); in-memory OK em máquina única (`docs/architecture.md`). N réplicas não são previstas: ver ESC-01 em [`docs/known-issues/scalability.md`](../known-issues/scalability.md).
 - **CSRF** — origem validada em mutações sensíveis.
 - **Secrets** — `.env` gitignored; placeholders rejeitados no boot (`validateEnv`).
 - **Logs** — `LogManager` com redação; sem PII/tokens.

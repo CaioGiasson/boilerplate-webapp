@@ -13,6 +13,8 @@ erDiagram
   User ||--o{ ActiveSession : userId
   User ||--o{ File : ownerId
   User ||--o{ AiLog : userId
+  User ||--o{ AuditEvent : actorId_targetUserId
+  User ||--o{ TwoFactorRecoveryCode : userId
   User ||--o{ Notification : userId
   User ||--o{ PushSubscription : userId
 ```
@@ -21,17 +23,20 @@ Sem relações Prisma declaradas: o vínculo é por `ObjectId` guardado (`userId
 
 ## Coleções
 
-| Model              | Papel                                                                                            |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| `User`             | Conta. Soft delete por `deletedAt` (quarentena de 30 dias); depois anonimizada                   |
-| `ActiveSession`    | Sessões JWT listáveis (`jtiHash` único, `exp`)                                                   |
-| `SessionEvent`     | Revogações/logouts por `token` (hash do jti) com `exp`; consultado a cada requisição autenticada |
-| `File`             | Registro de objeto no Spaces (`key` único, `status`, `sizeBytes`, `thumbnailKey/Url`)            |
-| `FeatureFlag`      | Append-only por `key`; vigente = mais recente                                                    |
-| `AiLog`            | Auditoria de chamada de IA (prompt, resposta, tokens). Conteúdo do usuário                       |
-| `Notification`     | Sino in-app                                                                                      |
-| `PushSubscription` | Aparelho inscrito no Web Push (`endpoint` único)                                                 |
-| `Example`          | Exemplo de arquitetura (não é domínio)                                                           |
+| Model                   | Papel                                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `User`                  | Conta. Soft delete por `deletedAt` (quarentena de 30 dias); depois anonimizada                                     |
+| `ActiveSession`         | Sessões JWT listáveis (`jtiHash` único, `exp`)                                                                     |
+| `SessionEvent`          | Revogações/logouts por `token` (hash do jti) com `exp`; consultado a cada requisição autenticada                   |
+| `File`                  | Registro de objeto no Spaces (`key` único, `status`, `sizeBytes`, `thumbnailKey/Url`)                              |
+| `FeatureFlag`           | Append-only por `key`; vigente = mais recente                                                                      |
+| `TwoFactorRecoveryCode` | Código de recuperação do 2FA (só o hash SHA-256; `usedAt` no uso; `@@unique([userId, codeHash])`)                  |
+| `Job`                   | Fila de jobs (`type`, `payload`, `status`, `attempts`, `runAt`, `lockedUntil`). Sem relação com `User`. Ver abaixo |
+| `AuditEvent`            | Trilha de auditoria append-only (ação, ator, alvo, IP, `requestId`). Ver abaixo                                    |
+| `AiLog`                 | Auditoria de chamada de IA (prompt, resposta, tokens). Conteúdo do usuário                                         |
+| `Notification`          | Sino in-app                                                                                                        |
+| `PushSubscription`      | Aparelho inscrito no Web Push (`endpoint` único)                                                                   |
+| `Example`               | Exemplo de arquitetura (não é domínio)                                                                             |
 
 ## Invariantes
 
@@ -52,6 +57,22 @@ Sem relações Prisma declaradas: o vínculo é por `ObjectId` guardado (`userId
 - `key` único: `{ownerId}/{categoria}/{hash}.webp` (e `{hash}.thumb.webp` em `thumbnailKey`). Legados podem ter outras extensões e não ter thumbnail.
 - `sizeBytes` = principal + thumbnail; só `status = published` conta na cota (1 GiB).
 - Ciclo: `pending` → `published` | `failed`; `orphan` quando substituído/removido; o `retention-purge` apaga os objetos de órfãos com mais de 7 dias (as **duas** chaves).
+
+### `Job`
+
+- `status`: `pending` → `running` → `succeeded` | `failed` (ou volta a `pending` com `runAt` de backoff). `attempts` conta as tentativas já iniciadas; `lockedUntil` vencida com `running` = worker morto, o job é retomado. Criado dentro da transação do use case (outbox).
+- **`payload` pode ter dado pessoal** (ex.: e-mail do destinatário): é zerado ao concluir, mantido nos falhos para diagnóstico, e os jobs vencem em 7 d (concluídos) e 30 d (falhos) no `retention-purge`. `lastError` é truncado e nunca inclui o payload. Não entra na exportação LGPD (efêmero, sem histórico do titular).
+
+### 2FA (`User.twoFactor*` e `TwoFactorRecoveryCode`)
+
+- `User.twoFactorEnabledAt` (ativo), `twoFactorSecretEnc` (segredo TOTP cifrado `v1.iv.tag.dados`), `twoFactorPendingSecretEnc` (setup não confirmado) e `twoFactorLastStep` (último passo aceito: impede replay). **Nada disso sai pela API**, nem pela exportação; `UserEntity` só expõe `twoFactorEnabledAt`.
+- Consumo de passo e de código de recuperação é atômico (`updateMany` condicional). Desativar apaga segredo e códigos. O hard purge da conta zera os campos e apaga os códigos.
+
+### `AuditEvent`
+
+- Append-only: o repository só tem `record` e consultas; nunca `update`/`delete` por evento. `record` **não lança** (falha de auditoria só vira log). Guarda `action` (`AUDIT_ACTIONS` em `src/constants/audit.ts`), `actorType` (`user|admin|operator|system`), `actorId?`, `targetUserId?`, `metadata?` (curto, não sensível), `ip?` e `requestId?` (do contexto da requisição; ausentes em scripts).
+- Nunca guarda senha, token, e-mail nem corpo de requisição. A API de admin não devolve `ip`, `requestId` nem `metadata`.
+- Dado pessoal: entra na exportação LGPD (`auditEvents`, sem o id da outra parte), o **IP é zerado** na exclusão definitiva da conta (o evento fica) e os eventos vencem em **365 d** (`AUDIT_LOG_RETENTION_DAYS`, `retention-purge`). [`docs/operators/audit-log.md`](docs/operators/audit-log.md).
 
 ### `AiLog`, `Notification`, `PushSubscription`
 

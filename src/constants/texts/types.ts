@@ -106,6 +106,16 @@ export type AppMessages = {
 		googleLinkSuccess: string
 		emailChangeCancelledMessage: string
 		googleEmailUnverifiedMessage: string
+		twoFactorTitle: string
+		twoFactorHint: string
+		twoFactorCodeLabel: string
+		twoFactorRecoveryHint: string
+		twoFactorRecoveryLabel: string
+		twoFactorUseRecovery: string
+		twoFactorUseApp: string
+		twoFactorSubmit: string
+		twoFactorBack: string
+		twoFactorInvalid: string
 	}
 	legal: {
 		privacyTitle: string
@@ -215,6 +225,37 @@ export type AppMessages = {
 		statisticsStorageUsed: string
 		statisticsStorageUsedValue: string
 		statisticsLoading: string
+		twoFactorTitle: string
+		twoFactorLoadError: string
+		twoFactorStatusOn: string
+		twoFactorStatusOff: string
+		twoFactorIntro: string
+		twoFactorEnable: string
+		twoFactorSetupTitle: string
+		twoFactorSetupSteps: string
+		twoFactorSecretLabel: string
+		twoFactorOpenApp: string
+		twoFactorCodeLabel: string
+		twoFactorConfirm: string
+		twoFactorCancel: string
+		twoFactorInvalidCode: string
+		twoFactorPasswordRequired: string
+		twoFactorError: string
+		twoFactorRecoveryTitle: string
+		twoFactorRecoveryHint: string
+		twoFactorRecoveryCopy: string
+		twoFactorRecoveryCopied: string
+		twoFactorRecoveryDone: string
+		twoFactorRecoveryRemaining: string
+		twoFactorRegenerate: string
+		twoFactorRegenerateHint: string
+		twoFactorDisable: string
+		twoFactorDisableHint: string
+		twoFactorPasswordLabel: string
+		twoFactorRecoveryInputLabel: string
+		twoFactorDisableConfirm: string
+		twoFactorEnabledToast: string
+		twoFactorDisabledToast: string
 	}
 	settings: {
 		title: string
@@ -299,7 +340,48 @@ export type AppMessages = {
 		linkCopyFailed: string
 		previous: string
 		next: string
-		pageSummary: string
+		searchLabel: string
+		searchPlaceholder: string
+		tableCaption: string
+		paginationLabel: string
+		pageNumber: string
+		emptySearch: string
+		tabsLabel: string
+		tabUsers: string
+		tabAudit: string
+		auditTitle: string
+		auditHint: string
+		auditColumnWhen: string
+		auditColumnAction: string
+		auditColumnActor: string
+		auditColumnTarget: string
+		auditFilterLabel: string
+		auditFilterAll: string
+		auditEmpty: string
+		auditLoadError: string
+		auditPaginationLabel: string
+		auditActorOperator: string
+		auditActorSystem: string
+		auditDeletedAccount: string
+		auditActions: {
+			admin_impersonation_token_created: string
+			auth_impersonation_started: string
+			user_password_changed: string
+			user_password_reset: string
+			user_email_changed: string
+			user_sessions_revoked_others: string
+			user_account_deletion_requested: string
+			user_account_deletion_cancelled: string
+			user_account_deletion_kept: string
+			user_two_factor_enabled: string
+			user_two_factor_disabled: string
+			user_two_factor_recovery_regenerated: string
+			user_two_factor_recovery_used: string
+			operator_role_changed: string
+			operator_two_factor_reset: string
+			operator_password_changed: string
+			operator_feature_flag_toggled: string
+		}
 	}
 	impersonation: {
 		banner: string

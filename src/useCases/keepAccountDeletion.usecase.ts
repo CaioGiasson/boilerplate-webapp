@@ -2,6 +2,7 @@ import { SessionEventType } from '@prisma/client'
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
 import ActiveSessionRepository from '@/repositories/ActiveSession.repository'
 import SessionEventRepository from '@/repositories/SessionEvent.repository'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import UserRepository from '@/repositories/User.repository'
 import { NotFoundError, ValidationError } from '@/errors'
 
@@ -33,6 +34,13 @@ export default class KeepAccountDeletion extends UseCaseMasterPort<Input, Output
 		if (!user?.deletedAt) {
 			throw new NotFoundError('User not found')
 		}
+
+		await new AuditEventRepository(injectables.prisma).record({
+			action: 'user.account_deletion_kept',
+			actorType: 'user',
+			actorId: user.id,
+			targetUserId: user.id,
+		})
 
 		const activeSessionRepository = new ActiveSessionRepository(injectables.prisma)
 		await activeSessionRepository.deleteAllForUser(user.id)

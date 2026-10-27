@@ -1,6 +1,7 @@
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
 import { UnauthorizedError, ValidationError } from '@/errors'
 import SessionEventRepository from '@/repositories/SessionEvent.repository'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import UserRepository from '@/repositories/User.repository'
 import { isAdminRole } from '@/constants/userRole'
 import { isImpersonationSession, verifySessionToken, type VerifiedSession } from '@/utils/session'
@@ -47,6 +48,13 @@ export default class ConsumeImpersonationToken extends UseCaseMasterPort<Input, 
 
 		const admin = session.impersonatedBy ? await users.findById(session.impersonatedBy) : null
 		if (!admin || !isAdminRole(admin.role)) throw new UnauthorizedError(INVALID_TOKEN_MESSAGE)
+
+		await new AuditEventRepository(injectables.prisma).record({
+			action: 'auth.impersonation_started',
+			actorType: 'admin',
+			actorId: admin.id,
+			targetUserId: target.id,
+		})
 
 		return { token: session.token, exp: session.exp }
 	}

@@ -7,11 +7,18 @@ import revokeOtherSessionsRoute from '@/controllers/User/routes/revokeOtherSessi
 import revokeSessionRoute from '@/controllers/User/routes/revokeSession.route'
 import cancelAccountDeletionRoute from '@/controllers/User/routes/cancelAccountDeletion.route'
 import keepAccountDeletionRoute from '@/controllers/User/routes/keepAccountDeletion.route'
+import {
+	beginTwoFactorSetupRoute,
+	disableTwoFactorRoute,
+	enableTwoFactorRoute,
+	regenerateRecoveryCodesRoute,
+} from '@/controllers/User/routes/twoFactor.route'
 import sendEmailVerificationRoute from '@/controllers/Auth/routes/sendEmailVerification.route'
 import subscribeRoute from '@/controllers/Push/routes/subscribe.route'
 import unsubscribeRoute from '@/controllers/Push/routes/unsubscribe.route'
 import sendTestRoute from '@/controllers/Push/routes/sendTest.route'
 import listAdminUsersRoute from '@/controllers/Admin/routes/listUsers.route'
+import listAuditEventsRoute from '@/controllers/Admin/routes/listAuditEvents.route'
 import createImpersonationTokenRoute from '@/controllers/Admin/routes/createImpersonationToken.route'
 
 /**
@@ -71,7 +78,12 @@ const BLOCKED: Array<[string, string, RouteCall]> = [
 	['POST push/subscriptions', 'POST', (req) => subscribeRoute(req, dependencies as never)],
 	['DELETE push/subscriptions', 'DELETE', (req) => unsubscribeRoute(req, dependencies as never)],
 	['POST push/test', 'POST', (req) => sendTestRoute(req, dependencies as never)],
+	['POST users/me/2fa/setup', 'POST', (req) => beginTwoFactorSetupRoute(req, dependencies as never)],
+	['POST users/me/2fa/enable', 'POST', (req) => enableTwoFactorRoute(req, dependencies as never)],
+	['POST users/me/2fa/disable', 'POST', (req) => disableTwoFactorRoute(req, dependencies as never)],
+	['POST users/me/2fa/recovery-codes', 'POST', (req) => regenerateRecoveryCodesRoute(req, dependencies as never)],
 	['GET admin/users', 'GET', (req) => listAdminUsersRoute(req, dependencies as never)],
+	['GET admin/audit-events', 'GET', (req) => listAuditEventsRoute(req, dependencies as never)],
 	[
 		'POST admin/users/{id}/impersonation-token',
 		'POST',

@@ -4,6 +4,7 @@ import FileRepository from '@/repositories/File.repository'
 import AiLogRepository from '@/repositories/AiLog.repository'
 import NotificationRepository from '@/repositories/Notification.repository'
 import PushSubscriptionRepository from '@/repositories/PushSubscription.repository'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import { NotFoundError, ValidationError } from '@/errors'
 
 type Input = {
@@ -21,6 +22,15 @@ type Output = {
 		category: string
 		mimeType: string
 		sizeBytes: number
+		createdAt: string
+	}>
+	/** Ações em que o titular agiu ou foi alvo. Sem o id da outra parte (pode ser terceiro). */
+	auditEvents: Array<{
+		id: string
+		action: string
+		asActor: boolean
+		asTarget: boolean
+		ip: string | null
 		createdAt: string
 	}>
 	notifications: Array<{
@@ -68,6 +78,7 @@ export default class ExportUserData extends UseCaseMasterPort<Input, Output> {
 		const aiLogs = await new AiLogRepository(injectables.prisma).listByUser(user.id)
 		const notifications = await new NotificationRepository(injectables.prisma).listAllByUser(user.id)
 		const pushSubscriptions = await new PushSubscriptionRepository(injectables.prisma).listByUser(user.id)
+		const auditEvents = await new AuditEventRepository(injectables.prisma).listByUser(user.id)
 
 		return {
 			exportedAt: new Date().toISOString(),
@@ -81,6 +92,14 @@ export default class ExportUserData extends UseCaseMasterPort<Input, Output> {
 				mimeType: file.mimeType,
 				sizeBytes: file.sizeBytes,
 				createdAt: file.createdAt.toISOString(),
+			})),
+			auditEvents: auditEvents.map((event) => ({
+				id: event.id,
+				action: event.action,
+				asActor: event.actorId === user.id,
+				asTarget: event.targetUserId === user.id,
+				ip: event.ip,
+				createdAt: event.createdAt.toISOString(),
 			})),
 			notifications: notifications.map((item) => ({
 				id: item.id,

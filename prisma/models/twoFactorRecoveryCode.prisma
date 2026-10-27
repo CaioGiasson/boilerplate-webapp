@@ -1,0 +1,13 @@
+/// Código de recuperação do 2FA: uso único, guardado só como hash SHA-256 (o código é mostrado uma vez).
+/// Dado de autenticação: apagado ao desativar o 2FA e na exclusão definitiva da conta.
+model TwoFactorRecoveryCode {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  codeHash  String
+  /// Preenchido no uso; o consumo é atômico (`updateMany` condicional), então um código não vale duas vezes.
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, codeHash])
+  @@index([userId])
+}

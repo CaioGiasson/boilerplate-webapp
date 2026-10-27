@@ -1,6 +1,7 @@
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
 import { ForbiddenError, NotFoundError, ValidationError } from '@/errors'
 import LogManager from '@/managers/Log.manager'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import UserRepository from '@/repositories/User.repository'
 import { isAdminRole } from '@/constants/userRole'
 import { assertAdmin } from '@/utils/adminAccess'
@@ -36,6 +37,13 @@ export default class CreateImpersonationToken extends UseCaseMasterPort<Input, O
 		if (isAdminRole(target.role)) throw new ForbiddenError('Cannot impersonate an admin')
 
 		const { token, exp } = await signImpersonationToken({ userId: target.id, adminId: input.callerId })
+		await new AuditEventRepository(injectables.prisma).record({
+			action: 'admin.impersonation_token_created',
+			actorType: 'admin',
+			actorId: input.callerId,
+			targetUserId: target.id,
+			metadata: { ttlSeconds: IMPERSONATION_TTL_SECONDS },
+		})
 		LogManager.info('Impersonation token issued', {
 			adminId: input.callerId,
 			targetUserId: target.id,

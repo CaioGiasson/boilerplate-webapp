@@ -14,6 +14,13 @@ import listSessionsRoute from './routes/listSessions.route'
 import getStorageStatsRoute from './routes/getStorageStats.route'
 import revokeSessionRoute from './routes/revokeSession.route'
 import revokeOtherSessionsRoute from './routes/revokeOtherSessions.route'
+import {
+	beginTwoFactorSetupRoute,
+	disableTwoFactorRoute,
+	enableTwoFactorRoute,
+	getTwoFactorStatusRoute,
+	regenerateRecoveryCodesRoute,
+} from './routes/twoFactor.route'
 import type CheckNicknameAvailability from '@/useCases/checkNicknameAvailability.usecase'
 import type GetUserProfile from '@/useCases/getUserProfile.usecase'
 import type UpdateUserProfile from '@/useCases/updateUserProfile.usecase'
@@ -29,6 +36,11 @@ import type ListUserSessions from '@/useCases/listUserSessions.usecase'
 import type GetUserStorageStats from '@/useCases/getUserStorageStats.usecase'
 import type RevokeUserSession from '@/useCases/revokeUserSession.usecase'
 import type RevokeOtherUserSessions from '@/useCases/revokeOtherUserSessions.usecase'
+import type GetTwoFactorStatus from '@/useCases/getTwoFactorStatus.usecase'
+import type BeginTwoFactorSetup from '@/useCases/beginTwoFactorSetup.usecase'
+import type EnableTwoFactor from '@/useCases/enableTwoFactor.usecase'
+import type DisableTwoFactor from '@/useCases/disableTwoFactor.usecase'
+import type RegenerateRecoveryCodes from '@/useCases/regenerateRecoveryCodes.usecase'
 
 type Dependencies = {
 	checkNicknameAvailabilityUseCase: CheckNicknameAvailability
@@ -46,6 +58,11 @@ type Dependencies = {
 	getUserStorageStatsUseCase: GetUserStorageStats
 	revokeUserSessionUseCase: RevokeUserSession
 	revokeOtherUserSessionsUseCase: RevokeOtherUserSessions
+	getTwoFactorStatusUseCase: GetTwoFactorStatus
+	beginTwoFactorSetupUseCase: BeginTwoFactorSetup
+	enableTwoFactorUseCase: EnableTwoFactor
+	disableTwoFactorUseCase: DisableTwoFactor
+	regenerateRecoveryCodesUseCase: RegenerateRecoveryCodes
 }
 
 export default class UserController {
@@ -107,5 +124,25 @@ export default class UserController {
 
 	static revokeOtherSessions(request: NextRequest, dependencies: Dependencies): Promise<NextResponse> {
 		return revokeOtherSessionsRoute(request, dependencies)
+	}
+
+	static getTwoFactorStatus(request: NextRequest, dependencies: Dependencies): Promise<NextResponse> {
+		return getTwoFactorStatusRoute(request, dependencies)
+	}
+
+	static beginTwoFactorSetup(request: NextRequest, dependencies: Dependencies): Promise<NextResponse> {
+		return beginTwoFactorSetupRoute(request, dependencies)
+	}
+
+	static enableTwoFactor(request: NextRequest, dependencies: Dependencies): Promise<NextResponse> {
+		return enableTwoFactorRoute(request, dependencies)
+	}
+
+	static disableTwoFactor(request: NextRequest, dependencies: Dependencies): Promise<NextResponse> {
+		return disableTwoFactorRoute(request, dependencies)
+	}
+
+	static regenerateRecoveryCodes(request: NextRequest, dependencies: Dependencies): Promise<NextResponse> {
+		return regenerateRecoveryCodesRoute(request, dependencies)
 	}
 }

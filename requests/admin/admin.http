@@ -3,7 +3,16 @@
 @impersonationToken =
 
 ### List users (needs an ADMIN session; run the login request from auth.http first)
-GET {{baseUrl}}/api/v1/admin/users?page=1
+GET {{baseUrl}}/api/v1/admin/users?limit=20&order=desc
+
+### Next page: paste pageInfo.nextCursor from the previous response. `q` searches the nickname.
+# GET {{baseUrl}}/api/v1/admin/users?cursor=<nextCursor>&q=ada
+
+### Audit log (ADMIN only, read only). Filters: action, order, cursor, limit
+GET {{baseUrl}}/api/v1/admin/audit-events?limit=20&order=desc
+
+### Only one action
+# GET {{baseUrl}}/api/v1/admin/audit-events?action=user.password_changed
 
 ###
 ### Issue an impersonation token for a non-admin user (valid for 10 minutes)

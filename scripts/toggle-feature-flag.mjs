@@ -13,6 +13,7 @@ import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PrismaClient } from '@prisma/client'
 import { isProductionEnv } from './lib/operator.mjs'
+import { recordOperatorAudit } from './lib/audit.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 loadEnv({ path: resolve(__dirname, '../.env') })
@@ -59,6 +60,7 @@ async function main() {
 		const current = toBoolean(latest?.value)
 		const next = !current
 		await prisma.featureFlag.create({ data: { key, value: next } })
+		await recordOperatorAudit(prisma, { action: 'operator.feature_flag_toggled', metadata: { key, value: next } })
 		console.log(
 			`Feature flag "${key}": ${current ? 'ON' : 'OFF'} -> ${next ? 'ON' : 'OFF'}${latest ? '' : ' (new)'}`
 		)

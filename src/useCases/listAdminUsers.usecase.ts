@@ -3,13 +3,24 @@ import { ValidationError } from '@/errors'
 import UserRepository from '@/repositories/User.repository'
 import { assertAdmin } from '@/utils/adminAccess'
 import { maskEmail } from '@/utils/maskEmail'
+import {
+	PAGE_DEFAULT_LIMIT,
+	PAGE_MAX_LIMIT,
+	toPage,
+	type KeysetCursor,
+	type Page,
+	type PageOrder,
+} from '@/utils/pagination'
 import type { UserRoleName } from '@/constants/userRole'
-
-export const ADMIN_USERS_PAGE_SIZE = 20
 
 type Input = {
 	callerId: string
-	page?: number
+	/** Vem de `parsePageQuery` (já decodificado). */
+	cursor?: KeysetCursor
+	limit?: number
+	/** Trecho do nickname. */
+	q?: string
+	order?: PageOrder
 }
 
 export type AdminUserRow = {
@@ -22,13 +33,7 @@ export type AdminUserRow = {
 	createdAt: string
 }
 
-type Output = {
-	items: AdminUserRow[]
-	page: number
-	pageSize: number
-	total: number
-	hasMore: boolean
-}
+type Output = Page<AdminUserRow>
 
 export default class ListAdminUsers extends UseCaseMasterPort<Input, Output> {
 	protected override get transactional(): boolean {
@@ -37,8 +42,11 @@ export default class ListAdminUsers extends UseCaseMasterPort<Input, Output> {
 
 	async validate(input: Input): Promise<void> {
 		if (!input.callerId?.trim()) throw new ValidationError('User id is required')
-		if (input.page !== undefined && (!Number.isInteger(input.page) || input.page < 1)) {
-			throw new ValidationError('page must be a positive integer')
+		if (
+			input.limit !== undefined &&
+			(!Number.isInteger(input.limit) || input.limit < 1 || input.limit > PAGE_MAX_LIMIT)
+		) {
+			throw new ValidationError(`limit must be between 1 and ${PAGE_MAX_LIMIT}`)
 		}
 	}
 
@@ -46,11 +54,16 @@ export default class ListAdminUsers extends UseCaseMasterPort<Input, Output> {
 		const users = new UserRepository(injectables.prisma)
 		assertAdmin(await users.findById(input.callerId))
 
-		const page = input.page ?? 1
-		const { rows, total } = await users.listActivePage({
-			skip: (page - 1) * ADMIN_USERS_PAGE_SIZE,
-			take: ADMIN_USERS_PAGE_SIZE,
-		})
+		const limit = input.limit ?? PAGE_DEFAULT_LIMIT
+		const { rows, pageInfo } = toPage(
+			await users.listActiveKeyset({
+				cursor: input.cursor,
+				limit: limit + 1,
+				order: input.order ?? 'desc',
+				q: input.q,
+			}),
+			limit
+		)
 
 		return {
 			items: rows.map((row) => ({
@@ -61,10 +74,7 @@ export default class ListAdminUsers extends UseCaseMasterPort<Input, Output> {
 				emailVerified: Boolean(row.emailVerifiedAt),
 				createdAt: row.createdAt.toISOString(),
 			})),
-			page,
-			pageSize: ADMIN_USERS_PAGE_SIZE,
-			total,
-			hasMore: page * ADMIN_USERS_PAGE_SIZE < total,
+			pageInfo,
 		}
 	}
 }

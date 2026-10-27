@@ -1,0 +1,26 @@
+/// Trilha de auditoria (append-only): ações sensíveis de contas, admin e operador. Nunca guarda senha, token,
+/// e-mail nem corpo de requisição. Dado pessoal (ids, IP): entra na exportação, o IP é zerado na exclusão
+/// definitiva da conta e os eventos vencem pela retenção (`AUDIT_LOG_RETENTION_DAYS`, job retention-purge).
+model AuditEvent {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// Um valor de `AUDIT_ACTIONS` (src/constants/audit.ts).
+  action       String
+  /// user | admin | operator | system
+  actorType    String
+  /// Quem agiu; ausente para operador (CLI) e sistema.
+  actorId      String?  @db.ObjectId
+  /// Conta afetada, quando houver.
+  targetUserId String?  @db.ObjectId
+  /// Contexto curto e não sensível (ex.: { from: "USER", to: "ADMIN" }).
+  metadata     Json?
+  /// IP do cliente da requisição (ausente em scripts e jobs).
+  ip           String?
+  /// `x-request-id` da requisição: liga o evento às linhas de log.
+  requestId    String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action, createdAt])
+  @@index([actorId, createdAt])
+  @@index([targetUserId, createdAt])
+}

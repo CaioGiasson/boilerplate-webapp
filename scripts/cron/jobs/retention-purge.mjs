@@ -7,6 +7,9 @@
  * 5. AiLog older than AI_LOG_RETENTION_DAYS (default 90)
  * 6. Notification older than NOTIFICATION_RETENTION_DAYS (default 180); hard purge também apaga
  *    as notificações e as assinaturas push do titular
+ *    (e os dados de 2FA: segredo cifrado e códigos de recuperação)
+ * 8. Job concluído > JOBS_SUCCEEDED_RETENTION_DAYS (7) e falho > JOBS_FAILED_RETENTION_DAYS (30)
+ * 7. AuditEvent older than AUDIT_LOG_RETENTION_DAYS (default 365); hard purge zera o IP dos eventos do titular
  *
  * Uso:
  *   npm run cron -- retention-purge --dry-run
@@ -26,6 +29,9 @@ const DAY_MS = 24 * 60 * 60 * 1000
 const DEFAULT_AI_LOG_RETENTION_DAYS = 90
 
 const DEFAULT_NOTIFICATION_RETENTION_DAYS = 180
+const DEFAULT_AUDIT_LOG_RETENTION_DAYS = 365
+const DEFAULT_JOBS_SUCCEEDED_RETENTION_DAYS = 7
+const DEFAULT_JOBS_FAILED_RETENTION_DAYS = 30
 
 /**
  * @param {string | undefined} raw
@@ -39,6 +45,21 @@ function positiveIntegerOrDefault(raw, fallback) {
 /** @param {NodeJS.ProcessEnv} [env] */
 export function resolveAiLogRetentionDays(env = process.env) {
 	return positiveIntegerOrDefault(env.AI_LOG_RETENTION_DAYS, DEFAULT_AI_LOG_RETENTION_DAYS)
+}
+
+/** @param {NodeJS.ProcessEnv} [env] */
+export function resolveJobsSucceededRetentionDays(env = process.env) {
+	return positiveIntegerOrDefault(env.JOBS_SUCCEEDED_RETENTION_DAYS, DEFAULT_JOBS_SUCCEEDED_RETENTION_DAYS)
+}
+
+/** @param {NodeJS.ProcessEnv} [env] */
+export function resolveJobsFailedRetentionDays(env = process.env) {
+	return positiveIntegerOrDefault(env.JOBS_FAILED_RETENTION_DAYS, DEFAULT_JOBS_FAILED_RETENTION_DAYS)
+}
+
+/** @param {NodeJS.ProcessEnv} [env] */
+export function resolveAuditLogRetentionDays(env = process.env) {
+	return positiveIntegerOrDefault(env.AUDIT_LOG_RETENTION_DAYS, DEFAULT_AUDIT_LOG_RETENTION_DAYS)
 }
 
 /** @param {NodeJS.ProcessEnv} [env] */
@@ -94,6 +115,8 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 		quarantinedAccountsFailed: 0,
 		aiLogsDeleted: 0,
 		notificationsDeleted: 0,
+		auditEventsDeleted: 0,
+		jobsDeleted: 0,
 		dryRun: flags.dryRun,
 	}
 
@@ -189,6 +212,10 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 					data: {
 						email: `deleted_${user.id}@invalid.local`,
 						nickname: `deleted_${user.id}`,
+						twoFactorEnabledAt: null,
+						twoFactorSecretEnc: null,
+						twoFactorPendingSecretEnc: null,
+						twoFactorLastStep: null,
 						name: null,
 						photoUrl: null,
 						photoThumbnailUrl: null,
@@ -205,6 +232,12 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 				await prisma.aiLog.deleteMany({ where: { userId: user.id } })
 				await prisma.notification.deleteMany({ where: { userId: user.id } })
 				await prisma.pushSubscription.deleteMany({ where: { userId: user.id } })
+				await prisma.twoFactorRecoveryCode.deleteMany({ where: { userId: user.id } })
+				// A trilha de auditoria fica (segurança), mas sem o IP do titular.
+				await prisma.auditEvent.updateMany({
+					where: { OR: [{ actorId: user.id }, { targetUserId: user.id }] },
+					data: { ip: null },
+				})
 
 				summary.quarantinedAccountsPurged += 1
 				console.log(`Hard-purged quarantined user=${user.id}`)
@@ -244,6 +277,36 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 			console.log(
 				`[retention-purge] deleted Notification=${notifications.count} (older than ${notificationRetentionDays}d)`
 			)
+		}
+
+		const auditRetentionDays = resolveAuditLogRetentionDays()
+		const auditCutoff = new Date(Date.now() - auditRetentionDays * DAY_MS)
+		if (flags.dryRun) {
+			summary.auditEventsDeleted = await prisma.auditEvent.count({ where: { createdAt: { lt: auditCutoff } } })
+			console.log(
+				`[dry-run] would delete AuditEvent createdAt<${auditCutoff.toISOString()} (${auditRetentionDays}d): ${summary.auditEventsDeleted}`
+			)
+		} else {
+			const auditEvents = await prisma.auditEvent.deleteMany({ where: { createdAt: { lt: auditCutoff } } })
+			summary.auditEventsDeleted = auditEvents.count
+			console.log(`[retention-purge] deleted AuditEvent=${auditEvents.count} (older than ${auditRetentionDays}d)`)
+		}
+
+		const jobFilters = [
+			{ status: 'succeeded', cutoff: new Date(Date.now() - resolveJobsSucceededRetentionDays() * DAY_MS) },
+			{ status: 'failed', cutoff: new Date(Date.now() - resolveJobsFailedRetentionDays() * DAY_MS) },
+		]
+		for (const { status, cutoff } of jobFilters) {
+			const where = { status, finishedAt: { lt: cutoff } }
+			if (flags.dryRun) {
+				const count = await prisma.job.count({ where })
+				summary.jobsDeleted += count
+				console.log(`[dry-run] would delete Job status=${status} finishedAt<${cutoff.toISOString()}: ${count}`)
+			} else {
+				const jobs = await prisma.job.deleteMany({ where })
+				summary.jobsDeleted += jobs.count
+				console.log(`[retention-purge] deleted Job status=${status}=${jobs.count}`)
+			}
 		}
 
 		console.log('[retention-purge] summary', JSON.stringify(summary))

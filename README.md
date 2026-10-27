@@ -12,13 +12,16 @@ Aplicação Next.js 15 reutilizável, extraída e sanitizada a partir do projeto
 - **Email:** módulo port/adapter com Brevo
 - **Notificações:** sino in-app e Web Push opcional (VAPID) — [`docs/operators/web-push.md`](docs/operators/web-push.md)
 - **PWA:** manifest, service worker (sem cache de páginas), páginas offline/erro estáticas e atualização forçada por versão — [`docs/operators/pwa.md`](docs/operators/pwa.md)
+- **Segurança e operação:** 2FA opcional (TOTP), audit log, jobs em background, `requestId` + log JSON, Dockerfile — [`docs/operators/two-factor.md`](docs/operators/two-factor.md), [`audit-log.md`](docs/operators/audit-log.md), [`jobs.md`](docs/operators/jobs.md), [`observability.md`](docs/operators/observability.md), [`docker.md`](docs/operators/docker.md)
+- **Produtividade:** `npm run init-project` (renomeia o boilerplate), `npm run gen:module` (CRUD completo), paginação por cursor padrão, E2E com Playwright — [`gen-module.md`](docs/operators/gen-module.md), [`e2e.md`](docs/operators/e2e.md)
+- **Limitações conhecidas:** uma instância apenas — [`docs/known-issues/scalability.md`](docs/known-issues/scalability.md)
 - **Design system:** componentes em `src/design-system/` + primitivos Radix em `src/components/ui/`
 - **Contexto para agentes:** [`CONTEXT.md`](CONTEXT.md) (+ `CONTEXT-ARCHITECTURE/CODE/ENTITIES/DS.md`) descrevem o produto e o código de hoje
 - **IA/contribuição:** `AGENTS.md`, `.cursor/rules/`, ADRs e docs de arquitetura
 
 ## O que foi removido / sanitizado
 
-- Mosaico, imagens, painéis, Pinterest, visibilidade SECRET/PUBLIC, reports
+- Mosaico, imagens, painéis, visibilidade SECRET/PUBLIC, reports
 - Settings de zoom e mosaico global
 - Branding e cookies genéricos (`app-*`)
 - Campo `hideFromGlobalMosaic` no modelo User
@@ -138,6 +141,8 @@ Recomendações:
 - Probes de `/api/health*` via `127.0.0.1` ou header `x-healthcheck-token`
 - **Não** rode `npm run list-users` nem scripts de operador no host de produção
 - Sincronize schema após mudanças: `npm run prisma:push` (ou pipeline equivalente)
+
+Alternativa em container: [`docs/operators/docker.md`](docs/operators/docker.md) (`Dockerfile` multi-stage + `docker-compose.app.yaml`).
 
 O `docker-compose.yaml` deste repositório é para **desenvolvimento local**. Em produção, prefira Mongo gerenciado ou container na rede interna **sem** publicar porta no firewall.
 

@@ -40,6 +40,14 @@ model User {
   sessionsRevokedAt DateTime?
   /// Papel de acesso. Ausente (conta anterior ao campo) conta como USER; `npm run user-role:backfill` grava USER.
   role              UserRole?
+  /// 2FA (TOTP): preenchido quando o usuário confirmou o app autenticador. Só vale com `TWO_FACTOR_ENCRYPTION_KEY`.
+  twoFactorEnabledAt DateTime?
+  /// Segredo TOTP cifrado (AES-256-GCM, `v1.iv.tag.dados`). Nunca sai pela API.
+  twoFactorSecretEnc String?
+  /// Segredo gerado no setup e ainda não confirmado com um código; descartado ao confirmar ou refazer o setup.
+  twoFactorPendingSecretEnc String?
+  /// Último passo TOTP aceito: o mesmo código (ou anterior) não vale duas vezes.
+  twoFactorLastStep Int?
 
   @@index([role])
 }

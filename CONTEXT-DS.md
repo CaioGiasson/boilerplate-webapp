@@ -25,9 +25,9 @@ Snapshot: **2026-10-26**.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | actions    | `Button`, `ConfirmActionButton` (confirmação em dois cliques), `ComplexButton` (ícone + título + subtítulo), `IconButton`                                                                                               |
 | inputs     | `TextInput`, `TextArea`, `InputPassword`, `InputTitle`, `InputTextArea`, `CodeInput`, `SearchBar`, `TagsInput`, `FileInput`, `FileDropzone`, `AppSelect`, `AppMultiSelect`, `AppSlider`, `Toggle`, `ColorPalettePicker` |
-| navigation | `NavIconButton`, `NavIconLink` (com tooltip), `AppDropdownMenu`                                                                                                                                                         |
-| feedback   | `Toast`/`ToastProvider`/`useToast`, `HelperBar` (faixa contextual com dispensar), `StorageProgressBar`, `ImageCropModal`, `Tooltip`, `PasswordChecklist`                                                                |
-| layout     | `Title`, `SettingsSection`, `AccordionGroup`/`AccordionSection`, `Avatar`                                                                                                                                               |
+| navigation | `NavIconButton`, `NavIconLink` (com tooltip), `AppDropdownMenu`, `Tabs`, `Pagination`                                                                                                                                   |
+| feedback   | `Toast`/`ToastProvider`/`useToast`, `HelperBar` (faixa contextual com dispensar), `StorageProgressBar`, `ImageCropModal`, `Tooltip`, `PasswordChecklist`, `Modal`, `Badge`, `Skeleton`, `EmptyState`                    |
+| layout     | `Title`, `SettingsSection`, `AccordionGroup`/`AccordionSection`, `Avatar`, `DataTable`                                                                                                                                  |
 | icons      | `Icon` (Lucide com tamanho padrão), `MultiIcon` (composição de ícones), `GoogleIcon`                                                                                                                                    |
 
 ### Detalhes que costumam importar
@@ -37,6 +37,11 @@ Snapshot: **2026-10-26**.
 - **`HelperBar`** (`children`, `dismissLabel`, `onDismiss`, `testId`): altura fixa `HELPER_BAR_BLOCK_REM`.
 - **`AppMultiSelect`** (`options`, `values`, `onValuesChange`, `label`, `placeholder`): resume as escolhidas separadas por vírgula.
 - **`Toast`**: `useToast().toast({ variant: 'success' | 'error', title, description? })`; fecha ao clicar; some ao trocar de rota. Não fecha sozinho.
+- **`Modal`** (`open`, `onOpenChange`, `title`, `description?`, `closeLabel`, `footer?`, `size`: `sm`|`md`|`lg`): Radix Dialog; foco preso, Escape e clique fora fecham. Controlado. Sem `description`, o `aria-describedby` é omitido. `ImageCropModal` é anterior e tem implementação própria.
+- **`DataTable<T>`** (`caption`, `columns`, `rows`, `getRowId`, `loading?`, `skeletonRows?`, `emptyState?`, `sort?`, `onSortChange?`): `caption` é só para leitor de tela. Coluna `sortable` vira botão com `aria-sort`; o clique pede `asc`→`desc` por `onSortChange`, **a tabela não reordena** (quem tem os dados, ou a API, ordena). `loading` troca as linhas por `Skeleton`; `emptyState` (use `EmptyState`) só aparece sem linhas e sem `loading`. Rola na horizontal em tela estreita.
+- **`Pagination`** (`navLabel`, `previousLabel`, `nextLabel`, `hasPrevious`, `hasNext`, `onPrevious`, `onNext`, `summary?`, `disabled?`): anterior/próxima, sem total de páginas — feito para paginação por cursor.
+- **`Tabs`** (`items`, `value`, `onValueChange`, `label`, `children`): controlado, ativação automática (← → Home End pulam abas `disabled`); um painel só, com o conteúdo da aba ativa.
+- **`Badge`** (`variant`: `neutral`|`success`|`warning`|`danger`|`info`), **`Skeleton`** (tamanho por `className`, `aria-hidden`) e **`EmptyState`** (`title`, `description?`, `icon?`, `action?`).
 - **`NavIconLink`/`NavIconButton`**: ícone sem fundo, tooltip sem atraso à direita (`side`).
 
 ## Layout

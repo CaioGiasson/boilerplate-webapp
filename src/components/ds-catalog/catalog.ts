@@ -291,6 +291,63 @@ export const DS_CATALOG: DsCatalogEntry[] = [
 		importLine: "import { StorageProgressBar } from '@/design-system'",
 		keywords: ['quota', 'usage', 'progress', 'storage'],
 	},
+
+	{
+		id: 'Badge',
+		name: 'Badge',
+		category: 'feedback',
+		description: 'Short status label in five tones (neutral, success, warning, danger, info).',
+		importLine: "import { Badge } from '@/design-system'",
+		keywords: ['status', 'tag', 'label', 'role'],
+	},
+	{
+		id: 'Skeleton',
+		name: 'Skeleton',
+		category: 'feedback',
+		description: 'Pulsing placeholder block for content that is still loading.',
+		importLine: "import { Skeleton } from '@/design-system'",
+		keywords: ['loading', 'placeholder', 'shimmer'],
+	},
+	{
+		id: 'EmptyState',
+		name: 'EmptyState',
+		category: 'feedback',
+		description: 'Title, hint and optional action for an empty list, table or search.',
+		importLine: "import { EmptyState } from '@/design-system'",
+		keywords: ['empty', 'no results', 'zero state'],
+	},
+	{
+		id: 'Modal',
+		name: 'Modal',
+		category: 'feedback',
+		description: 'Accessible dialog (focus trap, Escape, overlay click) with title, body and footer actions.',
+		importLine: "import { Modal } from '@/design-system'",
+		keywords: ['dialog', 'overlay', 'confirm', 'popup'],
+	},
+	{
+		id: 'Tabs',
+		name: 'Tabs',
+		category: 'navigation',
+		description: 'Controlled tabs with arrow-key navigation and a single panel for the active tab.',
+		importLine: "import { Tabs } from '@/design-system'",
+		keywords: ['tab', 'panel', 'section'],
+	},
+	{
+		id: 'Pagination',
+		name: 'Pagination',
+		category: 'navigation',
+		description: 'Previous/next controls for cursor pagination, which does not know the page count.',
+		importLine: "import { Pagination } from '@/design-system'",
+		keywords: ['pager', 'cursor', 'next', 'previous'],
+	},
+	{
+		id: 'DataTable',
+		name: 'DataTable',
+		category: 'layout',
+		description: 'Table with sortable headers, loading skeleton rows and an empty state.',
+		importLine: "import { DataTable } from '@/design-system'",
+		keywords: ['table', 'grid', 'list', 'sort', 'rows'],
+	},
 ]
 
 export const DS_CATALOG_BY_ID = Object.fromEntries(DS_CATALOG.map((entry) => [entry.id, entry])) as Record<

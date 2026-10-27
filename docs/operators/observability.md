@@ -14,6 +14,7 @@ Suporte: o usuário informa o `requestId` do erro; `grep` no log acha a linha. R
 
 `LOG_FORMAT=json|text` (`.env.example`). Sem valor: **JSON em produção** (`ENVIRONMENT=prod` ou `NODE_ENV=production`) e **texto** no resto.
 
+<!-- prettier-ignore -->
 ```json
 {
 	"level": "error",

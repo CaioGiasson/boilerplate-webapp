@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Home, Star, Upload } from 'lucide-react'
+import { Home, Inbox, Star, Upload } from 'lucide-react'
 import {
 	AccordionGroup,
 	AccordionSection,
@@ -10,11 +10,14 @@ import {
 	AppSelect,
 	AppSlider,
 	Avatar,
+	Badge,
 	Button,
 	CodeInput,
 	ColorPalettePicker,
 	ComplexButton,
 	ConfirmActionButton,
+	DataTable,
+	EmptyState,
 	FileDropzone,
 	FileInput,
 	GoogleIcon,
@@ -25,13 +28,17 @@ import {
 	InputPassword,
 	InputTextArea,
 	InputTitle,
+	Modal,
 	MultiIcon,
 	NavIconButton,
 	NavIconLink,
+	Pagination,
 	PasswordChecklist,
 	SearchBar,
 	SettingsSection,
+	Skeleton,
 	StorageProgressBar,
+	Tabs,
 	TagsInput,
 	TextArea,
 	TextInput,
@@ -210,6 +217,40 @@ export function DsComponentExample({ componentId }: DsComponentExampleProps) {
 					]}
 				/>
 			)
+		case 'Badge':
+			return (
+				<div className="flex flex-wrap gap-2">
+					<Badge>Neutral</Badge>
+					<Badge variant="success">Active</Badge>
+					<Badge variant="warning">Pending</Badge>
+					<Badge variant="danger">Blocked</Badge>
+					<Badge variant="info">Admin</Badge>
+				</div>
+			)
+		case 'Skeleton':
+			return (
+				<div className="flex w-full max-w-xs flex-col gap-2">
+					<Skeleton className="h-4 w-3/4" />
+					<Skeleton className="h-4 w-1/2" />
+				</div>
+			)
+		case 'EmptyState':
+			return (
+				<EmptyState
+					icon={Inbox}
+					title="Nothing here yet"
+					description="Items you create will show up in this list."
+					action={<Button variant="outline">Create the first one</Button>}
+				/>
+			)
+		case 'Modal':
+			return <ModalDemo />
+		case 'Tabs':
+			return <TabsDemo />
+		case 'Pagination':
+			return <PaginationDemo />
+		case 'DataTable':
+			return <DataTableDemo />
 		default:
 			return null
 	}
@@ -301,5 +342,101 @@ function ImageCropModalDemo() {
 				onConfirm={() => setOpen(false)}
 			/>
 		</>
+	)
+}
+
+function ModalDemo() {
+	const [open, setOpen] = React.useState(false)
+	return (
+		<>
+			<Button type="button" variant="outline" onClick={() => setOpen(true)}>
+				Open modal
+			</Button>
+			<Modal
+				open={open}
+				onOpenChange={setOpen}
+				title="Delete item?"
+				description="This action cannot be undone."
+				closeLabel="Close"
+				footer={
+					<>
+						<Button type="button" variant="outline" onClick={() => setOpen(false)}>
+							Cancel
+						</Button>
+						<Button type="button" variant="destructive" onClick={() => setOpen(false)}>
+							Delete
+						</Button>
+					</>
+				}
+			>
+				<p className="text-sm">The item and its history will be removed.</p>
+			</Modal>
+		</>
+	)
+}
+
+const DEMO_TABS = [
+	{ id: 'general', label: 'General' },
+	{ id: 'security', label: 'Security' },
+	{ id: 'billing', label: 'Billing', disabled: true },
+]
+
+function TabsDemo() {
+	const [value, setValue] = React.useState('general')
+	return (
+		<Tabs items={DEMO_TABS} value={value} onValueChange={setValue} label="Example tabs">
+			<p className="text-sm text-muted-foreground">Panel for: {value}</p>
+		</Tabs>
+	)
+}
+
+function PaginationDemo() {
+	const [page, setPage] = React.useState(1)
+	return (
+		<Pagination
+			className="w-full max-w-sm"
+			navLabel="Example pagination"
+			previousLabel="Previous"
+			nextLabel="Next"
+			hasPrevious={page > 1}
+			hasNext={page < 3}
+			onPrevious={() => setPage((current) => current - 1)}
+			onNext={() => setPage((current) => current + 1)}
+			summary={`Page ${page}`}
+		/>
+	)
+}
+
+type DemoRow = { id: string; name: string; role: 'Admin' | 'User' }
+
+const DEMO_ROWS: DemoRow[] = [
+	{ id: '1', name: 'Ada', role: 'Admin' },
+	{ id: '2', name: 'Grace', role: 'User' },
+	{ id: '3', name: 'Linus', role: 'User' },
+]
+
+function DataTableDemo() {
+	const [sort, setSort] = React.useState<{ columnId: string; direction: 'asc' | 'desc' } | null>(null)
+	const rows = React.useMemo(() => {
+		if (!sort) return DEMO_ROWS
+		const factor = sort.direction === 'asc' ? 1 : -1
+		return [...DEMO_ROWS].sort((a, b) => a.name.localeCompare(b.name) * factor)
+	}, [sort])
+	return (
+		<DataTable
+			caption="Example users"
+			rows={rows}
+			getRowId={(row) => row.id}
+			sort={sort}
+			onSortChange={setSort}
+			columns={[
+				{ id: 'name', header: 'Name', sortable: true, cell: (row) => row.name },
+				{
+					id: 'role',
+					header: 'Role',
+					cell: (row) => <Badge variant={row.role === 'Admin' ? 'info' : 'neutral'}>{row.role}</Badge>,
+				},
+			]}
+		/>
 	)
 }

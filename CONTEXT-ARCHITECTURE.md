@@ -110,7 +110,7 @@ Ver `CONTEXT.md` (produto) e [`docs/operators/pwa.md`](docs/operators/pwa.md). `
 
 ## Testes e CI
 
-**E2E:** Playwright em `e2e/` (projetos `api` e `ui`), contra `npm run start` e um banco `e2e` separado (`npm run e2e:prepare`, depois `npm run e2e`); workflow `.github/workflows/e2e.yml` com Mongo em replica set, ainda em `continue-on-error` até a primeira execução verde. **Ainda não executado** (ambiente sem Mongo/navegadores). [`docs/operators/e2e.md`](docs/operators/e2e.md).
+**E2E:** Playwright em `e2e/` (projetos `api` e `ui`), contra `npm run start` e um banco `e2e` separado (`npm run e2e:prepare`, depois `npm run e2e`); workflow `.github/workflows/e2e.yml` com Mongo 7 em replica set (verde na PR #10; ainda não é check exigido para o merge). [`docs/operators/e2e.md`](docs/operators/e2e.md).
 
 `tests/` espelha `src/`. Componentes e hooks com `@jest-environment jsdom` e `tests/helpers/renderInJsdom.tsx` (sem Testing Library). `tests/i18n/catalogParity.test.ts` exige as mesmas chaves em pt/en/es. CI (`.github/workflows/ci.yml`, só em `pull_request`): `check:lockfile-native`, `npm ci`, `npm audit --omit=dev` (informativo, não bloqueia), `prisma:generate`, lint, typecheck, test, build ([`docs/operators/ci.md`](docs/operators/ci.md)).
 

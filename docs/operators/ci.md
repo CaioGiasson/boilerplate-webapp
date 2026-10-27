@@ -10,7 +10,7 @@ O workflow roda `npm run check:lockfile-native` **antes** do `npm ci`: ele falha
 
 ## E2E
 
-O workflow separado `E2E` (`.github/workflows/e2e.yml`) roda os testes Playwright com um Mongo em replica set. Não é o check exigido (`CI / verify`) até a primeira execução verde: ver [`e2e.md`](e2e.md).
+O workflow separado `E2E` (`.github/workflows/e2e.yml`) roda os testes Playwright com um Mongo em replica set. Não é o check exigido (`CI / verify`), mas falha vermelha na PR: ver [`e2e.md`](e2e.md).
 
 ## Estado atual
 

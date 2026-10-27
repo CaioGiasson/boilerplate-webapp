@@ -175,7 +175,7 @@ Para cada área: **estado** (o que já funciona), **liga/desliga** (como se conf
 
 ### 3.20 Testes, qualidade e processo
 
-- **Estado:** Jest (~980 testes: use cases, repositories, serviços, componentes em jsdom), **Playwright E2E** em `e2e/` (API + UI; escritos, ainda não executados: [`docs/operators/e2e.md`](docs/operators/e2e.md)), teste de paridade de i18n, ESLint, Prettier, Husky. Processo **issue → branch → PR → review → label `Reviewed`**. Contrato: OpenAPI + `requests/*.http`.
+- **Estado:** Jest (~980 testes: use cases, repositories, serviços, componentes em jsdom), **Playwright E2E** em `e2e/` (12 casos, API + UI, workflow `E2E` verde no CI: [`docs/operators/e2e.md`](docs/operators/e2e.md)), teste de paridade de i18n, ESLint, Prettier, Husky. Processo **issue → branch → PR → review → label `Reviewed`**. Contrato: OpenAPI + `requests/*.http`.
 - **Perguntas:** que cobertura e tipos de teste o projeto exige (E2E obrigatório no CI, carga, acessibilidade)? Quem revisa PRs? O fluxo de issues continua no GitHub Projects? Há branch `homolog`/staging?
 
 ---

@@ -13,9 +13,6 @@ jobs:
         name: e2e
         runs-on: ubuntu-latest
         timeout-minutes: 20
-        # Ainda não validado em um runner: não bloqueia o merge até a primeira execução verde.
-        # Depois disso, remova esta linha e inclua `E2E / e2e` nos checks exigidos (docs/operators/e2e.md).
-        continue-on-error: true
 
         env:
             DATABASE_URL: mongodb://127.0.0.1:27017/ci?replicaSet=rs0&directConnection=true

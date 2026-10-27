@@ -2,7 +2,7 @@
 
 Jornadas de ponta a ponta contra o app **construído** e um MongoDB **só dos testes**. Complementam o Jest (que mocka o banco): aqui sobe o servidor de verdade, com cookies, CSRF, rate limit e Mongo reais.
 
-> **Status:** os testes foram escritos e o Playwright lista os 12 casos (`npx playwright test --list`), o `tsc` e o ESLint passam, mas **nenhum E2E foi executado ainda**: o ambiente onde nasceram não tinha MongoDB, Docker nem os navegadores do Playwright. Na primeira execução espere acertar algum seletor ou detalhe de ambiente. O workflow `E2E` roda em `continue-on-error` até a primeira execução verde.
+> **Status:** os 12 casos passam no GitHub Actions (Mongo 7 em replica set + Chromium), executados pela primeira vez na PR #10. Rodar localmente ainda não foi exercitado por quem escreveu os testes.
 
 ## Rodar localmente
 
@@ -34,6 +34,7 @@ Os textos vêm dos catálogos (`messagesByLocale.pt`), não de strings soltas: m
 
 `playwright.config.ts` sobe `npm run start` com variáveis próprias:
 
+- **Origem:** a base URL é `http://localhost:3100`, não `127.0.0.1`: o `next start` monta a origem com `localhost` e a checagem de CSRF a compara com o `Origin` (com `127.0.0.1` toda mutação dá 403).
 - `NODE_ENV=production` (é o `next start`), que recusa `EMAIL_PROVIDER=none`; por isso o e-mail aponta para o Brevo com chave falsa e `BREVO_API_BASE_URL=http://127.0.0.1:9` (porta morta): o envio falha rápido, o app o trata como "melhor esforço" e **nada sai para a internet**.
 - **Verificação de e-mail:** o e-mail não chega, então o teste marca a conta como verificada direto no banco (`markEmailVerified`), o equivalente de abrir o link.
 - **2FA:** uma `TWO_FACTOR_ENCRYPTION_KEY` aleatória por execução; o TOTP é calculado no teste com o mesmo `src/utils/totp.ts`, a partir do segredo que o próprio endpoint de setup devolve.
@@ -44,7 +45,7 @@ Os textos vêm dos catálogos (`messagesByLocale.pt`), não de strings soltas: m
 
 `.github/workflows/e2e.yml` (em `pull_request` e manual): Mongo 7 como replica set (as transações do Prisma exigem), `prisma generate`, `e2e:prepare`, build, Chromium com `--with-deps`, `npm run e2e`. Em falha, envia `playwright-report/` e `test-results/` como artefato (traces incluídos).
 
-Depois da primeira execução verde: remova o `continue-on-error: true` do job e inclua `E2E / e2e` nos checks exigidos para o merge (hoje o único exigido é `CI / verify`, ver `AGENTS.md`).
+O job **não** é `continue-on-error`: falha vermelha na PR. Para bloquear o merge, inclua `E2E / e2e` nos checks exigidos (hoje o único exigido é `CI / verify`, ver `AGENTS.md`).
 
 ## Escrever um teste novo
 

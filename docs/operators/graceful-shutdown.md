@@ -6,8 +6,9 @@ App registers SIGTERM/SIGINT handlers in `src/instrumentation.ts` via `registerG
 
 1. Process receives SIGTERM (Kubernetes pod delete, `docker stop`, PM2 reload) or SIGINT (Ctrl+C local).
 2. Logs `Graceful shutdown: received …`
-3. Calls `prisma.$disconnect()` on the singleton client
-4. Exits with code 0
+3. Runs the registered shutdown hooks (the job worker stops taking new jobs and waits for the one in progress; `registerShutdownHook` in `src/lib/gracefulShutdown.ts`)
+4. Calls `prisma.$disconnect()` on the singleton client
+5. Exits with code 0
 
 Edge runtime (`NEXT_RUNTIME=edge`) skips registration.
 

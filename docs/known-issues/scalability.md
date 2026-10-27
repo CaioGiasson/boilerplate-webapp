@@ -22,6 +22,7 @@ O que **já** funciona com N réplicas: sessão JWT sem afinidade (sticky sessio
 | ESC-08 | Polling de notificações a cada 60 s         | Carga cresce linearmente com abas abertas           | Baixa     |
 | ESC-09 | Processamento de imagem no processo web     | CPU/memória do `sharp` compete com requests         | Média     |
 | ESC-10 | E-mail e push enviados dentro do request    | Latência e falha do provedor afetam a resposta      | Baixa     |
+| ESC-11 | Worker de jobs no processo web              | Disputa CPU/memória com as requisições              | Baixa     |
 
 ## Detalhes
 
@@ -87,14 +88,21 @@ A leitura do uso (`File.sizeBytes` publicados) e a gravação do novo arquivo n�
 `SharpImageProcessor` roda no mesmo processo que atende HTTP (limite de 40 milhões de pixels por imagem).
 
 - **Impacto:** vários uploads grandes simultâneos disputam CPU e memória com as demais rotas.
-- **Caminho:** limitar a concorrência do `sharp`, ou mover o processamento para um worker (jobs em background).
+- **Caminho:** limitar a concorrência do `sharp`, ou mover o processamento para um job (o worker de jobs roda no mesmo processo; mover o `sharp` de verdade exige um processo separado, ver ESC-11).
 
 ### ESC-10 — E-mail e push dentro do request
 
 Brevo e Web Push são chamados no ciclo da requisição (depois do commit). Falhas de push são engolidas; as de e-mail passam por retry com jitter.
 
 - **Impacto:** latência do provedor soma à resposta; sem reenvio se o processo cair no meio.
-- **Caminho:** fila de jobs com retry (jobs em background).
+- **Caminho:** o mecanismo já existe ([`docs/operators/jobs.md`](../operators/jobs.md): `JobRepository.enqueue` na transação do use case + worker com retry/backoff e o handler `email.send`). **Falta migrar** os fluxos que ainda enviam inline (cadastro, recuperação de senha, alerta de novo login, notificações/push); a migração é decisão de cada fluxo.
+
+### ESC-11 — Worker de jobs no processo web
+
+O worker de [jobs em background](../operators/jobs.md) roda dentro do mesmo processo Node que atende HTTP (um job por vez, consulta a cada 5 s com a fila vazia).
+
+- **Impacto:** um handler pesado ou lento disputa CPU e memória com as requisições; um handler que trava (sem terminar antes da trava de 5 min) ocupa o worker até a trava vencer.
+- **Caminho:** processo separado (exige compilar `src/` ou usar `tsx`, que o boilerplate não tem) com `JOBS_WORKER=off` nos processos HTTP. O consumo atômico já permite mais de um worker.
 
 ## Checklist antes de subir a segunda réplica
 

@@ -96,7 +96,9 @@ Ver `CONTEXT.md` (produto) e [`docs/operators/pwa.md`](docs/operators/pwa.md). `
 
 ## Jobs e operação
 
-`npm run cron -- retention-purge --dry-run|--confirm` (`scripts/cron/jobs/retention-purge.mjs`): órfãos de Spaces (7 d), `SessionEvent`/`ActiveSession` vencidos, contas em quarentena > 30 d (anonimiza + apaga objetos + `AiLog`, `Notification`, `PushSubscription`), `AiLog` > 90 d, `Notification` > 180 d, `AuditEvent` > 365 d (e zera o IP dos eventos de contas purgadas). Manifesto de CronJob em `deploy/cron/`. Scripts de operador: `scripts/README.md`.
+**Jobs em background:** fila no Mongo (`Job`; `JobRepository.enqueue` na transação do use case = outbox; `claimNext` atômico; retry com backoff de 30 s a 1 h, `maxAttempts` 5; job travado é retomado; at-least-once). Catálogo em `src/jobs/types.ts`, handlers em `src/jobs/registry.ts` (hoje: `email.send`), `processNextJob` e o worker (`src/jobs/worker.ts`) **no processo web**, ligado em `registerNodeInstrumentation` (`JOBS_WORKER=off` desliga) e parado no graceful shutdown. Payload zerado ao concluir. [`docs/operators/jobs.md`](docs/operators/jobs.md).
+
+`npm run cron -- retention-purge --dry-run|--confirm` (`scripts/cron/jobs/retention-purge.mjs`): órfãos de Spaces (7 d), `SessionEvent`/`ActiveSession` vencidos, contas em quarentena > 30 d (anonimiza + apaga objetos + `AiLog`, `Notification`, `PushSubscription`), `AiLog` > 90 d, `Notification` > 180 d, `AuditEvent` > 365 d (e zera o IP dos eventos de contas purgadas), `Job` concluído > 7 d e falho > 30 d. Manifesto de CronJob em `deploy/cron/`. Scripts de operador: `scripts/README.md`.
 
 ## Imagem Docker
 

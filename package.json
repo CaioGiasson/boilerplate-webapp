@@ -20,6 +20,7 @@
 		"files:backfill-thumbnails": "node scripts/backfill-file-thumbnails.mjs",
 		"healthcheck": "node scripts/healthcheck.mjs",
 		"init-project": "node scripts/init-project.mjs",
+		"jobs:status": "node scripts/jobs-status.mjs",
 		"lint": "eslint .",
 		"list-users": "node scripts/list-users.mjs",
 		"mongo:keyfile": "node scripts/generate-mongo-keyfile.mjs",

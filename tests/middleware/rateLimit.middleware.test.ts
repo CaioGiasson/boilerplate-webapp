@@ -196,7 +196,9 @@ describe('loginRoute rate limit envelope', () => {
 			success: false,
 			message: AUTH_RATE_LIMIT_MESSAGE,
 			code: 'RATE_LIMITED',
+			requestId: expect.any(String),
 		})
+		expect(limited.headers.get('x-request-id')).toEqual(expect.any(String))
 		expect(run).toHaveBeenCalledTimes(5)
 	})
 })

@@ -4,6 +4,8 @@ Manual API smoke tests for `src/app/api/**`. Use with the [REST Client](https://
 
 **Contrato formal:** [`docs/openapi.yaml`](../docs/openapi.yaml). UI Swagger (opt-in): `GET /api/docs` com `SWAGGER_ENABLED=true` + Basic auth (`SWAGGER_USER` / `SWAGGER_PASSWORD`); YAML em `GET /api/docs/openapi`.
 
+**Rastreio:** as rotas com tratamento padrão respondem com o header `x-request-id` (reaproveita o enviado, se válido) e repetem o id no corpo dos erros (`requestId`). Ver [`docs/operators/observability.md`](../docs/operators/observability.md).
+
 **Obrigatório:** todo endpoint criado ou alterado deve atualizar o `.http` correspondente, este inventário e `docs/openapi.yaml` na mesma PR ([`.cursor/rules/api-contracts.mdc`](../.cursor/rules/api-contracts.mdc)).
 
 ## Variables

@@ -1541,6 +1541,12 @@ components:
                 code:
                     type: string
                     example: VALIDATION_ERROR
+                requestId:
+                    type: string
+                    description: |
+                        Id da requisição (o mesmo do header `x-request-id` da resposta). Presente nos erros das rotas com
+                        tratamento padrão; use-o para achar a linha no log.
+                    example: 7f0c2a9e-4b1d-4c55-9e0a-1f3f6f1a2b3c
         PublicUser:
             type: object
             properties:

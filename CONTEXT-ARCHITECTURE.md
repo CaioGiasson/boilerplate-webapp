@@ -58,7 +58,7 @@ Inventário completo por arquivo em [`requests/README.md`](requests/README.md); 
 | Push         | `push/vapid-public-key`, `push/subscriptions` (POST/DELETE), `push/test`                                                                                                                                      |
 | Sistema      | `ping` (sonda pública do navegador, fora de `/v1`), `version`, `examples` (404 em produção), `health`, `health/database`, `docs`, `docs/openapi`                                                              |
 
-Envelope: `ApiPresenter` (`success` + `message` + `data` / `success: false` + `code`). Erros por `AppError` (`src/errors`), tratados em `handleRoute`.
+Envelope: `ApiPresenter` (`success` + `message` + `data` / `success: false` + `code` + `requestId`). Erros por `AppError` (`src/errors`), tratados em `handleRoute`.
 
 `robots.txt` e `sitemap.xml` saem de `src/app/robots.ts` e `src/app/sitemap.ts` (origem de `APP_BASE_URL`; páginas públicas em `src/constants/publicPages.ts`, com `alternates` por idioma). São `force-dynamic` (leem `APP_BASE_URL` por requisição, não do build). `openGraph` básico (título e nome do site) fica no layout de `[locale]`; sem `metadataBase`, que gravaria a origem do build nos ícones das páginas estáticas.
 
@@ -71,6 +71,7 @@ Envelope: `ApiPresenter` (`success` + `message` + `data` / `success: false` + `c
 - **SSRF:** `RemoteFetch.service` (DNS + IP pinning + redirect manual) com `safeImageUrl` (`ipaddr.js`: só unicast público; `isBlockedHostname` recusa `localhost`, `*.local`, `*.internal`).
 - **Health:** só loopback ou `HEALTHCHECK_TOKEN` (`healthAccess.ts`). Swagger só com flag + Basic.
 - **Link de retorno e links de notificação:** `safeReturnUrl` e `safeInAppLink` (só caminho interno).
+- **Observabilidade:** `handleRoute` atribui um `requestId` (`x-request-id` de entrada válido ou UUID) que vai no header da resposta, no corpo dos erros e em todo log da requisição (`AsyncLocalStorage`, `src/lib/requestContext.ts`). `LogManager` emite JSON em produção (`LOG_FORMAT`). Destino externo de erros por `registerErrorReporter` (sem SDK embutido). [`docs/operators/observability.md`](docs/operators/observability.md).
 - **Resiliência:** `circuitBreaker` + `retryWithJitter` (Brevo, Spaces, OpenAI); `idempotency.ts`.
 
 ## Upload e Spaces

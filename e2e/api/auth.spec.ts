@@ -40,7 +40,7 @@ test.describe('jornada de conta (API)', () => {
 		expect((await json<SessionBody>(await me(request, user))).data.user).toMatchObject({ name: 'Ada E2E' })
 
 		// Logout derruba a sessão; sem cookie, /me é 401.
-		expect((await logout(request, user)).status()).toBe(200)
+		expect((await logout(request, user)).status()).toBe(204)
 		expect((await me(request, user)).status()).toBe(401)
 
 		// Login com a senha certa volta a abrir a sessão.

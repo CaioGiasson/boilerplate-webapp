@@ -4,6 +4,8 @@ import { headersFor, json, login, logout, me, newUser, register, type E2eUser } 
 import { totpCode, totpStep } from '../../src/utils/totp'
 
 const currentCode = (secret: string) => totpCode(secret, totpStep()) as string
+/** O `enable` já consumiu o passo atual (anti-replay): o próximo login usa o código do passo seguinte, aceito pela janela de ±1. */
+const nextCode = (secret: string) => totpCode(secret, totpStep() + 1) as string
 
 async function post(request: APIRequestContext, user: E2eUser, path: string, data: unknown = {}) {
 	return request.post(path, { headers: headersFor(user), data })
@@ -68,7 +70,7 @@ test.describe('2FA (API)', () => {
 		expect(wrong.status()).toBe(401)
 		expect((await me(request, user)).status()).toBe(401)
 
-		const code = currentCode(secret)
+		const code = nextCode(secret)
 		const verified = await post(request, user, '/api/v1/auth/2fa/verify', {
 			challengeToken: data.challengeToken,
 			code,

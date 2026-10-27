@@ -4,6 +4,7 @@ import type { SettingEntry } from '@/managers/Settings.manager'
 import { canonicalizeNickname } from '@/utils/nickname'
 import { mapUser, type UserEntity } from '@/repositories/User.dto'
 import { activeWhere, isUniqueConstraintError } from '@/repositories/User.helpers'
+import { keysetOrderBy, keysetWhere, type KeysetCursor, type PageOrder } from '@/utils/pagination'
 
 export type { UserEntity, PublicUser } from '@/repositories/User.dto'
 export { toPublicUser } from '@/repositories/User.dto'
@@ -110,20 +111,26 @@ export default class UserRepository {
 		}
 	}
 
-	/** Página de contas ativas, das mais recentes para as mais antigas (painel admin). */
-	async listActivePage(input: { skip: number; take: number }): Promise<{ rows: UserEntity[]; total: number }> {
+	/**
+	 * Contas ativas por cursor (painel admin). `limit` já deve vir com a linha extra (`toPage`).
+	 * `q` filtra por trecho do nickname; o e-mail fica de fora de propósito (o admin só o vê mascarado).
+	 */
+	async listActiveKeyset(input: {
+		cursor?: KeysetCursor
+		limit: number
+		order: PageOrder
+		q?: string
+	}): Promise<UserEntity[]> {
 		try {
-			const where = activeWhere()
-			const [rows, total] = await Promise.all([
-				this.prisma.user.findMany({
-					where,
-					orderBy: { createdAt: 'desc' },
-					skip: input.skip,
-					take: input.take,
+			const rows = await this.prisma.user.findMany({
+				where: activeWhere({
+					...(input.q ? { nickname: { contains: input.q, mode: 'insensitive' } } : {}),
+					...keysetWhere(input.cursor, input.order),
 				}),
-				this.prisma.user.count({ where }),
-			])
-			return { rows: rows.map((row) => mapUser(row)), total }
+				orderBy: keysetOrderBy(input.order),
+				take: input.limit,
+			})
+			return rows.map((row) => mapUser(row))
 		} catch (error: unknown) {
 			throw new RepositoryError('Failed to list users', error)
 		}

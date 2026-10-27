@@ -280,7 +280,6 @@ export type AppMessages = {
 	admin: {
 		title: string
 		usersTitle: string
-		loading: string
 		loadError: string
 		empty: string
 		accessDenied: string
@@ -299,7 +298,12 @@ export type AppMessages = {
 		linkCopyFailed: string
 		previous: string
 		next: string
-		pageSummary: string
+		searchLabel: string
+		searchPlaceholder: string
+		tableCaption: string
+		paginationLabel: string
+		pageNumber: string
+		emptySearch: string
 	}
 	impersonation: {
 		banner: string

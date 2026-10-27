@@ -288,7 +288,6 @@ const en: AppMessages = {
 	admin: {
 		title: 'Administration',
 		usersTitle: 'Users',
-		loading: 'Loading users…',
 		loadError: 'Could not load users.',
 		empty: 'No users found.',
 		accessDenied: 'You do not have access to this area.',
@@ -307,7 +306,12 @@ const en: AppMessages = {
 		linkCopyFailed: 'Could not create or copy the link.',
 		previous: 'Previous',
 		next: 'Next',
-		pageSummary: 'Page {page} of {pages} · {total} users',
+		searchLabel: 'Search by nickname',
+		searchPlaceholder: 'Search by nickname…',
+		tableCaption: 'Registered users',
+		paginationLabel: 'Users pagination',
+		pageNumber: 'Page {page}',
+		emptySearch: 'No user with that nickname.',
 	},
 	impersonation: {
 		banner: 'You are acting as {nickname}',

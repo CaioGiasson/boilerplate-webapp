@@ -508,14 +508,31 @@ paths:
         get:
             tags: [admin]
             summary: Listar usuários ativos (somente ADMIN)
-            description: 20 por página, mais recentes primeiro. E-mail sempre mascarado. Recusado (403) durante impersonamento.
+            description: |
+                Paginação por cursor: mais recentes primeiro por padrão, 20 por página (máx. 100). E-mail sempre mascarado.
+                A busca `q` casa por trecho do **apelido** (sem diferenciar maiúsculas); e-mail não é pesquisável.
+                Recusado (403) durante impersonamento.
             security:
                 - SessionCookie: []
             parameters:
-                - name: page
+                - name: cursor
                   in: query
                   required: false
-                  schema: { type: integer, minimum: 1, default: 1 }
+                  description: 'Valor de `pageInfo.nextCursor` da página anterior (opaco).'
+                  schema: { type: string, maxLength: 200 }
+                - name: limit
+                  in: query
+                  required: false
+                  schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+                - name: q
+                  in: query
+                  required: false
+                  schema: { type: string, maxLength: 100 }
+                - name: order
+                  in: query
+                  required: false
+                  description: Ordem por data de criação.
+                  schema: { type: string, enum: [asc, desc], default: desc }
             responses:
                 '200':
                     description: Página de usuários
@@ -540,10 +557,12 @@ paths:
                                                               role: { type: string, enum: [USER, ADMIN] }
                                                               emailVerified: { type: boolean }
                                                               createdAt: { type: string, format: date-time }
-                                                  page: { type: integer }
-                                                  pageSize: { type: integer }
-                                                  total: { type: integer }
-                                                  hasMore: { type: boolean }
+                                                  pageInfo:
+                                                      type: object
+                                                      properties:
+                                                          nextCursor: { type: string, nullable: true }
+                                                          hasNext: { type: boolean }
+                                                          limit: { type: integer }
                 '400':
                     $ref: '#/components/responses/ValidationError'
                 '401':

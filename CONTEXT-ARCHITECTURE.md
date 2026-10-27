@@ -71,6 +71,7 @@ Envelope: `ApiPresenter` (`success` + `message` + `data` / `success: false` + `c
 - **SSRF:** `RemoteFetch.service` (DNS + IP pinning + redirect manual) com `safeImageUrl` (`ipaddr.js`: só unicast público; `isBlockedHostname` recusa `localhost`, `*.local`, `*.internal`).
 - **Health:** só loopback ou `HEALTHCHECK_TOKEN` (`healthAccess.ts`). Swagger só com flag + Basic.
 - **Link de retorno e links de notificação:** `safeReturnUrl` e `safeInAppLink` (só caminho interno).
+- **Paginação:** listas novas usam cursor (keyset `createdAt` + `id`) por `src/utils/pagination.ts`: `parsePageQuery` (`?cursor&limit&q&order`, limite 20 por padrão e 100 no máximo), `keysetWhere`/`keysetOrderBy` no repository (`take: limit + 1`) e `toPage` no use case. Resposta `{ items, pageInfo: { nextCursor, hasNext, limit } }`, sem total. Referência: `listAdminUsers` + `AdminUsersSection` (`DataTable` + `Pagination`). Notificações têm cursor próprio (`<ISO>_<id>`, contrato anterior, mantido).
 - **Observabilidade:** `handleRoute` atribui um `requestId` (`x-request-id` de entrada válido ou UUID) que vai no header da resposta, no corpo dos erros e em todo log da requisição (`AsyncLocalStorage`, `src/lib/requestContext.ts`). `LogManager` emite JSON em produção (`LOG_FORMAT`). Destino externo de erros por `registerErrorReporter` (sem SDK embutido). [`docs/operators/observability.md`](docs/operators/observability.md).
 - **Resiliência:** `circuitBreaker` + `retryWithJitter` (Brevo, Spaces, OpenAI); `idempotency.ts`.
 

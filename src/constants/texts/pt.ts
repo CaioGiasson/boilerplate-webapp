@@ -290,7 +290,6 @@ const pt: AppMessages = {
 	admin: {
 		title: 'Administração',
 		usersTitle: 'Usuários',
-		loading: 'Carregando usuários…',
 		loadError: 'Não foi possível carregar os usuários.',
 		empty: 'Nenhum usuário encontrado.',
 		accessDenied: 'Você não tem acesso a esta área.',
@@ -309,7 +308,12 @@ const pt: AppMessages = {
 		linkCopyFailed: 'Não foi possível gerar ou copiar o link.',
 		previous: 'Anterior',
 		next: 'Próxima',
-		pageSummary: 'Página {page} de {pages} · {total} usuários',
+		searchLabel: 'Buscar por apelido',
+		searchPlaceholder: 'Buscar por apelido…',
+		tableCaption: 'Usuários cadastrados',
+		paginationLabel: 'Paginação de usuários',
+		pageNumber: 'Página {page}',
+		emptySearch: 'Nenhum usuário com esse apelido.',
 	},
 	impersonation: {
 		banner: 'Você está atuando como {nickname}',

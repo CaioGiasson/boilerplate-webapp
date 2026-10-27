@@ -399,14 +399,18 @@ export type AdminUserRow = {
 
 export type AdminUsersPage = {
 	items: AdminUserRow[]
-	page: number
-	pageSize: number
-	total: number
-	hasMore: boolean
+	pageInfo: { nextCursor: string | null; hasNext: boolean; limit: number }
 }
 
-export async function listAdminUsersRequest(page: number): Promise<AdminUsersPage> {
-	const response = await fetchApi(`/api/v1/admin/users?page=${page}`, { credentials: 'include' })
+export async function listAdminUsersRequest(
+	params: { cursor?: string; q?: string; order?: 'asc' | 'desc' } = {}
+): Promise<AdminUsersPage> {
+	const search = new URLSearchParams()
+	if (params.cursor) search.set('cursor', params.cursor)
+	if (params.q) search.set('q', params.q)
+	if (params.order) search.set('order', params.order)
+	const query = search.toString()
+	const response = await fetchApi(`/api/v1/admin/users${query ? `?${query}` : ''}`, { credentials: 'include' })
 	return parseApi<AdminUsersPage>(response)
 }
 

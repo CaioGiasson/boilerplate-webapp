@@ -27,7 +27,7 @@ Detalhes que importam:
 - **Sem replay:** o último passo aceito (`twoFactorLastStep`) é gravado de forma atômica; o mesmo código (ou anterior) não vale duas vezes.
 - **Códigos de recuperação:** 10, formato `XXXXX-XXXXX` (50 bits), **só o hash SHA-256 fica no banco**, uso único (consumo atômico). O uso de um deles no login é auditado (`user.two_factor_recovery_used`, com quantos restam).
 - **Desafio do login:** JWT de 5 minutos com **audiência própria**: nunca vale como sessão, e sessão nunca vale como desafio.
-- **Força bruta:** `POST /auth/2fa/verify` limita a 5 tentativas/min por IP, com bloqueio progressivo (mesmo limitador do login; é por processo, ver [`known-issues/scalability.md`](../known-issues/scalability.md) ESC-01).
+- **Força bruta:** `POST /auth/2fa/verify` limita a 5 tentativas/min **por conta** (a do desafio) e 30/min por IP, com bloqueio progressivo (mesmo limitador do login; é por processo, ver [`known-issues/scalability.md`](../known-issues/scalability.md) ESC-01).
 - **Sessão de impersonamento** não configura nem desativa 2FA (403).
 - Tudo é **auditado** ([`audit-log.md`](audit-log.md)): ativar, desativar, gerar códigos, usar código de recuperação, e o reset do operador.
 

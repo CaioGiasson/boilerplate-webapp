@@ -36,6 +36,11 @@ export const IMAGE_UPLOAD_RATE_LIMIT_WINDOW_MS = 60_000
 export const IMAGE_IMPORT_RATE_LIMIT_MAX = 15
 export const IMAGE_IMPORT_RATE_LIMIT_WINDOW_MS = 60_000
 
+/** Segundo passo do 2FA: 5 tentativas/min **por conta** (independe do IP), com bloqueio progressivo. */
+export const TWO_FACTOR_USER_RATE_LIMIT_MAX = 5
+/** Por IP o teto é mais folgado (um escritório/NAT tem muitos usuários); quem segura a força bruta é o limite por conta. */
+export const TWO_FACTOR_IP_RATE_LIMIT_MAX = 30
+
 export type RateLimitRequest = {
 	headers: {
 		get(name: string): string | null
@@ -162,7 +167,15 @@ const imageImportRateLimiter = new InMemoryRateLimiter({
 	lockoutsMs: [IMAGE_IMPORT_RATE_LIMIT_WINDOW_MS],
 })
 
+const twoFactorUserRateLimiter = new InMemoryRateLimiter({ max: TWO_FACTOR_USER_RATE_LIMIT_MAX })
+const twoFactorIpRateLimiter = new InMemoryRateLimiter({
+	max: TWO_FACTOR_IP_RATE_LIMIT_MAX,
+	lockoutsMs: [AUTH_RATE_LIMIT_WINDOW_MS],
+})
+
 export function resetAuthRateLimitStoreForTests(): void {
+	twoFactorUserRateLimiter.clear()
+	twoFactorIpRateLimiter.clear()
 	defaultAuthRateLimiter.clear()
 	imageListRateLimiter.clear()
 	imageUploadRateLimiter.clear()
@@ -215,6 +228,18 @@ export function assertRateLimit(
 	const route = normalizeRateLimitKeyPart(routeKey)
 	const keySuffix = normalizeRateLimitKeyPart(suffix)
 	limiter.consume(`${ip}:${route}:${keySuffix}`)
+}
+
+/**
+ * O limite por IP do `/auth/2fa/verify` não segura quem já tem a senha e espalha as tentativas por muitos IPs: este
+ * conta por conta (`userId` do desafio), então os 6 dígitos não são adivinháveis mesmo com botnet.
+ */
+export function assertTwoFactorIpRateLimit(request: RateLimitRequest): void {
+	assertRateLimit(request, 'two-factor-verify', '', twoFactorIpRateLimiter)
+}
+
+export function assertTwoFactorUserRateLimit(userId: string): void {
+	twoFactorUserRateLimiter.consume(userId)
 }
 
 export function assertAuthRateLimit(

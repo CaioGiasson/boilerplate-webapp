@@ -186,7 +186,7 @@ paths:
             summary: Segundo passo do login (2FA)
             description: |
                 Confere o código TOTP **ou** um código de recuperação e abre a sessão (mesma resposta e cookies do login).
-                Mande exatamente um dos dois. Limite de 5 tentativas por minuto por IP, com bloqueio progressivo.
+                Mande exatamente um dos dois. Limite de 5 tentativas por minuto por conta e 30 por IP, com bloqueio progressivo.
                 O mesmo código TOTP não vale duas vezes e cada código de recuperação vale uma. Sem a chave de cifra no
                 servidor responde 503 (falha fechada).
             security: []

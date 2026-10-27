@@ -2,7 +2,7 @@
 
 Jornadas de ponta a ponta contra o app **construído** e um MongoDB **só dos testes**. Complementam o Jest (que mocka o banco): aqui sobe o servidor de verdade, com cookies, CSRF, rate limit e Mongo reais.
 
-> **Status:** os 12 casos passam no GitHub Actions (Mongo 7 em replica set + Chromium), executados pela primeira vez na PR #10. Rodar localmente ainda não foi exercitado por quem escreveu os testes.
+> **Status:** os 18 casos passam no GitHub Actions (Mongo 7 em replica set + Chromium), executados pela primeira vez na PR #10. Rodar localmente ainda não foi exercitado por quem escreveu os testes.
 
 ## Rodar localmente
 
@@ -22,11 +22,14 @@ npx playwright show-report          # relatório HTML da última execução
 
 ## O que cobre
 
-| Projeto | Arquivo                     | Jornada                                                                                                                             |
-| ------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `api`   | `e2e/api/auth.spec.ts`      | cadastro → verificação → perfil → logout → login; senha errada; e-mail repetido e senha fraca; CSRF (Origin alheia); `x-request-id` |
-| `api`   | `e2e/api/twoFactor.spec.ts` | ativar 2FA (segredo cifrado no banco), login em duas etapas, replay do código, código de recuperação de uso único, desativar        |
-| `ui`    | `e2e/ui/login.spec.ts`      | login pelo formulário → home → perfil com a conta; senha errada; rota protegida sem sessão                                          |
+| Projeto | Arquivo                     | Jornada                                                                                                                                                                                                                                                                     |
+| ------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api`   | `e2e/api/auth.spec.ts`      | cadastro → verificação → perfil → logout → login; senha errada; e-mail repetido e senha fraca; CSRF (Origin alheia); `x-request-id`                                                                                                                                         |
+| `api`   | `e2e/api/twoFactor.spec.ts` | ativar 2FA (segredo cifrado no banco), login em duas etapas, replay do código, código de recuperação de uso único, desativar                                                                                                                                                |
+| `api`   | `e2e/api/data.spec.ts`      | contra o Mongo real: paginação keyset (busca `q` sem diferenciar caixa, `asc`/`desc`, página final), `limit`/`cursor` inválidos, audit log com filtro por ação, fila de jobs (claim atômico com 5 workers concorrentes, retomada de trava vencida, backoff, payload zerado) |
+| `ui`    | `e2e/ui/login.spec.ts`      | login pelo formulário → home → perfil com a conta; senha errada; rota protegida sem sessão                                                                                                                                                                                  |
+
+O `data.spec.ts` importa o `JobRepository` de `src/` e o roda no banco `e2e`: é a verificação real das consultas que no Jest só são conferidas por mock.
 
 Os textos vêm dos catálogos (`messagesByLocale.pt`), não de strings soltas: mudar um rótulo não quebra o teste.
 

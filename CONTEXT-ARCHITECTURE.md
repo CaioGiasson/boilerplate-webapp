@@ -60,7 +60,7 @@ Inventário completo por arquivo em [`requests/README.md`](requests/README.md); 
 
 Envelope: `ApiPresenter` (`success` + `message` + `data` / `success: false` + `code`). Erros por `AppError` (`src/errors`), tratados em `handleRoute`.
 
-`robots.txt` e `sitemap.xml` saem de `src/app/robots.ts` e `src/app/sitemap.ts` (origem de `APP_BASE_URL`; páginas públicas em `src/constants/publicPages.ts`, com `alternates` por idioma). `metadataBase` e `openGraph` básicos ficam no layout de `[locale]`.
+`robots.txt` e `sitemap.xml` saem de `src/app/robots.ts` e `src/app/sitemap.ts` (origem de `APP_BASE_URL`; páginas públicas em `src/constants/publicPages.ts`, com `alternates` por idioma). São `force-dynamic` (leem `APP_BASE_URL` por requisição, não do build). `openGraph` básico (título e nome do site) fica no layout de `[locale]`; sem `metadataBase`, que gravaria a origem do build nos ícones das páginas estáticas.
 
 ## Borda HTTP de conta e segurança
 
@@ -92,6 +92,10 @@ Ver `CONTEXT.md` (produto) e [`docs/operators/pwa.md`](docs/operators/pwa.md). `
 ## Jobs e operação
 
 `npm run cron -- retention-purge --dry-run|--confirm` (`scripts/cron/jobs/retention-purge.mjs`): órfãos de Spaces (7 d), `SessionEvent`/`ActiveSession` vencidos, contas em quarentena > 30 d (anonimiza + apaga objetos + `AiLog`, `Notification`, `PushSubscription`), `AiLog` > 90 d, `Notification` > 180 d. Manifesto de CronJob em `deploy/cron/`. Scripts de operador: `scripts/README.md`.
+
+## Imagem Docker
+
+`Dockerfile` multi-stage (`node:22.19.0-bookworm-slim`), sem `output: standalone` (os scripts de operador e o cron rodam na mesma imagem), `CMD` com `node` direto (graceful shutdown), usuário `node`, healthcheck em `/api/ping`. `docker-compose.app.yaml` sobe app + Mongo sobre o `docker-compose.yaml`. [`docs/operators/docker.md`](docs/operators/docker.md).
 
 ## Testes e CI
 

@@ -1,0 +1,21 @@
+.git
+.github
+.husky
+.cursor
+.next
+node_modules
+coverage
+exports
+secrets
+
+# Segredos e resíduos locais: nunca entram na imagem
+.env
+.env.*
+!.env.example
+.pinterest-cookies.json
+
+*.tsbuildinfo
+npm-debug.log*
+Dockerfile
+.dockerignore
+docker-compose*.yaml

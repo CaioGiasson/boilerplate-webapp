@@ -139,6 +139,8 @@ Recomendações:
 - **Não** rode `npm run list-users` nem scripts de operador no host de produção
 - Sincronize schema após mudanças: `npm run prisma:push` (ou pipeline equivalente)
 
+Alternativa em container: [`docs/operators/docker.md`](docs/operators/docker.md) (`Dockerfile` multi-stage + `docker-compose.app.yaml`).
+
 O `docker-compose.yaml` deste repositório é para **desenvolvimento local**. Em produção, prefira Mongo gerenciado ou container na rede interna **sem** publicar porta no firewall.
 
 ## Credenciais do MongoDB local

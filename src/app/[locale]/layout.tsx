@@ -20,10 +20,8 @@ const geistSans = Geist({
 })
 
 import { APP_NAME } from '@/constants/app'
-import { getAppBaseUrl } from '@/config/env'
 
 export const metadata: Metadata = {
-	metadataBase: new URL(getAppBaseUrl()),
 	title: APP_NAME,
 	description: `${APP_NAME} — starter webapp Next.js`,
 	openGraph: { siteName: APP_NAME, title: APP_NAME, type: 'website' },

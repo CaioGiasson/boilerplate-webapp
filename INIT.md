@@ -56,10 +56,11 @@ Para cada área: **estado** (o que já funciona), **liga/desliga** (como se conf
 
 - **Estado:** cadastro (nickname, e-mail, senha, data de nascimento, aceite de termos e privacidade), login por e-mail ou nickname, logout, "esqueci a senha", troca de senha. Senha de 8–128 caracteres com ao menos 3 entre minúscula, maiúscula, dígito e símbolo; hash `argon2`. Rate limit nas rotas de autenticação. Sessão por JWT em cookie `HttpOnly` (TTL padrão 7 dias).
 - **Liga/desliga:** `JWT_TTL_SECONDS`, `JWT_ISSUER`, `JWT_AUDIENCE`. Política de senha em `src/utils/passwordPolicy.ts`.
+- **2FA (TOTP, opcional):** só liga com `TWO_FACTOR_ENCRYPTION_KEY` (`npm run two-factor:key`; **guarde backup**). Ativação no perfil, 10 códigos de recuperação de uso único, login em duas etapas; celular perdido: `npm run two-factor:reset`. **Não cobre** o login com Google nem gera QR code. [`docs/operators/two-factor.md`](docs/operators/two-factor.md).
 - **Perguntas:**
     - Quem se cadastra (público aberto, convite, só empregados)? Cadastro aberto é aceitável?
     - Login deve ser por e-mail, nickname ou ambos? O **nickname** faz sentido no domínio (identidade pública) ou deve virar "nome"?
-    - 7 dias de sessão serve? Precisa de "lembrar de mim", sessão curta, 2FA/MFA, SSO corporativo?
+    - 7 dias de sessão serve? Precisa de "lembrar de mim", sessão curta, SSO corporativo? (2FA por app autenticador **já existe**, opcional: precisa ser obrigatório para algum papel?)
     - A política de senha é adequada para o público e para compliance?
     - Há cadastro por convite, aprovação manual ou lista de e-mails permitidos?
 
@@ -93,11 +94,14 @@ Para cada área: **estado** (o que já funciona), **liga/desliga** (como se conf
 
 - **Estado:** dois papéis, `USER` e `ADMIN`. Admin acessa `/admin` (lista de usuários com e-mail mascarado) e gera **link de acesso** de 10 minutos para atuar como um usuário comum (suporte). Criar admin é só por script (`npm run change-user-role`). Impersonamento bloqueia troca de senha/e-mail, exclusão, exportação, sessões e push; **permite** editar perfil.
 - **Perguntas:**
+
     - Dois papéis bastam? Há perfis como gestor, operador, cliente, parceiro, somente leitura? Permissões **por recurso** (RBAC/ABAC) ou **por organização/tenant**?
     - O sistema é **multi-tenant** (várias empresas/equipes isoladas)? Um usuário pertence a mais de uma?
     - O admin precisa de mais que listar usuários (suspender, banir, editar, ver logs, relatórios)?
     - Impersonamento é desejável (privacidade, política da empresa)? 10 minutos serve? O que **não** pode ser feito como o usuário?
     - Quem pode ser admin e como é aprovado?
+
+- **Auditoria:** trilha append-only (`AuditEvent`) de ações sensíveis (impersonamento, senha, e-mail, exclusão de conta, 2FA, ações de operador), aba "Auditoria" em `/admin`, retenção de 365 dias (`AUDIT_LOG_RETENTION_DAYS`), entra na exportação LGPD. **Perguntas:** há requisito de auditoria além disso (outras ações, retenção maior, exportação para SIEM)? [`docs/operators/audit-log.md`](docs/operators/audit-log.md).
 
 ### 3.7.1 Planos, cotas e cobrança
 
@@ -151,6 +155,9 @@ Para cada área: **estado** (o que já funciona), **liga/desliga** (como se conf
 - **Estado:** `error-guard` (chunk quebrado → `/error.html`), `global-error`, tela de erro com "tentar de novo"; circuit breaker + retry nas integrações; log estruturado com redação de segredos (`LOG_LEVEL`); healthcheck por CLI (`npm run healthcheck`) e por HTTP (`/api/health`, só loopback ou token).
 - **Perguntas:** onde os logs vão (agregador, retenção de 90 dias)? Precisa de **monitoramento de erro** (Sentry), métricas, tracing, alertas, status page? Há SLA/SLO? Há canal para o usuário **reportar problema**? (Hoje não existe: backlog.)
 
+- **Observabilidade:** `requestId` em header, corpo de erro e logs; log JSON em produção (`LOG_FORMAT`); gancho `registerErrorReporter` para Sentry/OTel (sem SDK embutido). **Perguntas:** qual ferramenta de erros/métricas/tracing? Há SLA e alertas? [`docs/operators/observability.md`](docs/operators/observability.md).
+- **Jobs em background:** fila no Mongo com retry/backoff (hoje só `email.send`; os fluxos de e-mail/push ainda enviam inline). Worker no processo web. **Perguntas:** que tarefas pesadas ou agendadas o domínio tem (relatórios, importações, e-mails em lote)? Precisa de processo de worker separado? [`docs/operators/jobs.md`](docs/operators/jobs.md).
+
 ### 3.17 Segurança
 
 - **Estado:** CSRF por origem, cabeçalhos de segurança (HSTS, `X-Frame-Options: DENY`, CSP em report-only), proteção SSRF em downloads de imagem e endpoints de push, rate limit **em memória por instância**, cookies `__Host-` em HTTPS, redação de segredos em log.
@@ -158,18 +165,18 @@ Para cada área: **estado** (o que já funciona), **liga/desliga** (como se conf
 
 ### 3.18 Design system e telas
 
-- **Estado:** ~35 componentes em `src/design-system/` (catálogo vivo em `/ds-components`), Tailwind 4 + Radix, layout com **sidebar de ícones** (menu em `Sheet` no mobile), tema claro/escuro. Tela inicial é um "Hello World" sem conteúdo.
+- **Estado:** ~42 componentes em `src/design-system/` (inclui `Modal`, `DataTable`, `Tabs`, `Badge`, `Skeleton`, `EmptyState`, `Pagination`) (catálogo vivo em `/ds-components`), Tailwind 4 + Radix, layout com **sidebar de ícones** (menu em `Sheet` no mobile), tema claro/escuro. Tela inicial é um "Hello World" sem conteúdo.
 - **Perguntas:** há **identidade visual** (nome, logo, cores, tipografia, tom de voz)? Referências de layout? Que **telas** o sistema tem (liste as principais e quem acessa cada uma)? A navegação em sidebar de ícones serve ou precisa de menu/topbar? Precisa de landing page pública, onboarding, dashboard, tabelas, formulários longos, gráficos, mapas, editor de texto rico? → quase tudo isso é **CONSTRUIR**.
 
 ### 3.19 Infraestrutura, operação e deploy
 
-- **Estado:** Node `22.19.0`, MongoDB com **replica set** e autenticação (obrigatório: transações), `docker-compose.yaml` só para desenvolvimento, build `next build`/`next start`, job `retention-purge` (manifesto de CronJob em `deploy/cron/`), scripts de operador (`scripts/README.md`), CI no GitHub (lint, typecheck, test, build; só em PR). **Sem Dockerfile e sem script de deploy.**
-- **Perguntas:** onde roda (VPS, Kubernetes, Vercel, DigitalOcean App Platform)? **Uma ou várias instâncias** (afeta rate limit, cache de flags e realtime)? MongoDB gerenciado (Atlas) ou próprio? Backup e restauração (RPO/RTO)? Ambientes (dev/staging/prod) e domínios? Quem faz deploy e como (CI/CD, manual)? Orçamento? → Dockerfile, deploy e backup são **CONSTRUIR**.
+- **Estado:** Node `22.19.0`, MongoDB com **replica set** e autenticação (obrigatório: transações), `docker-compose.yaml` só para desenvolvimento, **`Dockerfile` de produção + `docker-compose.app.yaml`** ([`docs/operators/docker.md`](docs/operators/docker.md); imagem ainda não construída em um daemon real), build `next build`/`next start`, job `retention-purge` (manifesto de CronJob em `deploy/cron/`), scripts de operador (`scripts/README.md`), CI no GitHub (lint, typecheck, test, build; só em PR) e workflow `E2E`. **Pensado para uma instância** (limitações em [`docs/known-issues/scalability.md`](docs/known-issues/scalability.md)). **Sem script de deploy nem de backup.**
+- **Perguntas:** onde roda (VPS, Kubernetes, Vercel, DigitalOcean App Platform)? **Uma ou várias instâncias** (afeta rate limit, cache de flags e realtime)? MongoDB gerenciado (Atlas) ou próprio? Backup e restauração (RPO/RTO)? Ambientes (dev/staging/prod) e domínios? Quem faz deploy e como (CI/CD, manual)? Orçamento? → deploy automatizado e backup são **CONSTRUIR**; N réplicas exigem resolver as issues de escalabilidade antes.
 
 ### 3.20 Testes, qualidade e processo
 
-- **Estado:** Jest (~720 testes: use cases, repositories, serviços, componentes em jsdom), teste de paridade de i18n, ESLint, Prettier, Husky. Processo **issue → branch → PR → review → label `Reviewed`**. Contrato: OpenAPI + `requests/*.http`.
-- **Perguntas:** que cobertura e tipos de teste o projeto exige (E2E com Playwright, carga, acessibilidade)? Quem revisa PRs? O fluxo de issues continua no GitHub Projects? Há branch `homolog`/staging?
+- **Estado:** Jest (~980 testes: use cases, repositories, serviços, componentes em jsdom), **Playwright E2E** em `e2e/` (API + UI; escritos, ainda não executados: [`docs/operators/e2e.md`](docs/operators/e2e.md)), teste de paridade de i18n, ESLint, Prettier, Husky. Processo **issue → branch → PR → review → label `Reviewed`**. Contrato: OpenAPI + `requests/*.http`.
+- **Perguntas:** que cobertura e tipos de teste o projeto exige (E2E obrigatório no CI, carga, acessibilidade)? Quem revisa PRs? O fluxo de issues continua no GitHub Projects? Há branch `homolog`/staging?
 
 ---
 
@@ -194,23 +201,22 @@ Para cada área: **estado** (o que já funciona), **liga/desliga** (como se conf
 
 Avaliado no tribalRPGBot e deixado de fora ([`docs/issues/porte-tribal-backlog.md`](docs/issues/porte-tribal-backlog.md)); pergunte se o sistema precisa de cada um:
 
-| Capacidade                                   | Pergunta                                                          |
-| -------------------------------------------- | ----------------------------------------------------------------- |
-| Níveis/planos e cotas por plano              | Há planos? Quais limites?                                         |
-| Cobrança e checkout                          | Há pagamento? Qual provedor?                                      |
-| Reportar bug / pedir feature (`UserRequest`) | Precisa de canal de suporte dentro do app?                        |
-| Offline-first (dados, fila de escrita)       | O usuário precisa trabalhar sem internet?                         |
-| Tempo real (WebSocket/SSE)                   | Há chat, colaboração ao vivo, painel que atualiza sozinho?        |
-| Landing page, sobre, changelog público       | O produto tem site público e notas de versão?                     |
-| Dockerfile, deploy e restore de banco        | Como será o deploy e o backup?                                    |
-| Multi-tenant / organizações                  | Há empresas/equipes isoladas?                                     |
-| Permissões granulares                        | Além de `USER`/`ADMIN`, que perfis existem?                       |
-| Arquivos que não são imagem                  | PDF, vídeo, planilhas, anexos?                                    |
-| Busca, relatórios, gráficos                  | O que o usuário precisa consultar?                                |
-| Webhooks e API pública para terceiros        | Outros sistemas consomem este?                                    |
-| Auditoria persistida (quem fez o quê)        | Há requisito de trilha de auditoria? (Hoje: só log de aplicação.) |
-| 2FA/MFA, SSO corporativo                     | Há exigência de segurança além de senha?                          |
-| E-mail marketing, analytics, A/B             | Há medição de produto ou campanhas?                               |
+| Capacidade                                   | Pergunta                                                   |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| Níveis/planos e cotas por plano              | Há planos? Quais limites?                                  |
+| Cobrança e checkout                          | Há pagamento? Qual provedor?                               |
+| Reportar bug / pedir feature (`UserRequest`) | Precisa de canal de suporte dentro do app?                 |
+| Offline-first (dados, fila de escrita)       | O usuário precisa trabalhar sem internet?                  |
+| Tempo real (WebSocket/SSE)                   | Há chat, colaboração ao vivo, painel que atualiza sozinho? |
+| Landing page, sobre, changelog público       | O produto tem site público e notas de versão?              |
+| Deploy automatizado e restore de banco       | Como será o deploy e o backup?                             |
+| Multi-tenant / organizações                  | Há empresas/equipes isoladas?                              |
+| Permissões granulares                        | Além de `USER`/`ADMIN`, que perfis existem?                |
+| Arquivos que não são imagem                  | PDF, vídeo, planilhas, anexos?                             |
+| Busca, relatórios, gráficos                  | O que o usuário precisa consultar?                         |
+| Webhooks e API pública para terceiros        | Outros sistemas consomem este?                             |
+| SSO corporativo (SAML/OIDC)                  | Há exigência de login único corporativo?                   |
+| E-mail marketing, analytics, A/B             | Há medição de produto ou campanhas?                        |
 
 ---
 
@@ -224,6 +230,7 @@ Itens do projeto de origem ou de demonstração que o sistema novo normalmente *
 - **Catálogo de componentes:** rota `/ds-components` (útil em dev; decidir se vai a produção).
 - **Home:** `HomePageClient` ("Hello World").
 - **Documentos do projeto de origem:** `ROADMAP.md`, `AI-READINESS-*`, `SECURITY-*`, `PRIVACY-*`, `PERFORMANCE-*` (assessments), `docs/issues/*` (refinamentos antigos).
+- **Renomear tudo de uma vez:** `npm run init-project -- --name "..." [--privacy-officer ... --privacy-email ...] [--env] --confirm` troca nome, slug (JWT issuer/audience, `package.json`, cron), textos legais e gera o `.env`; faça o **dry-run** antes. O encarregado de privacidade padrão é pessoa real: troque. `npm run seed:dev` cria admin e usuário de desenvolvimento.
 - **Variáveis e nomes:** `ENVIRONMENT`, buckets, `JWT_ISSUER/AUDIENCE` padrão `boilerplate-webapp`, nome do pacote em `package.json`.
 
 ---
@@ -285,17 +292,20 @@ Uma por entrega, na ordem: título, escopo, aceite, dependências.
 
 ## 8. Como remover o que não será usado
 
-| Para remover…               | Faça                                                                                                                                                                                        |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Login com Google            | Não configure `GOOGLE_OAUTH_*` (o botão some). Para apagar o código: use cases/rotas `auth/google/*`, `GoogleOAuth`, componentes `Google*`.                                                 |
-| IA                          | Deixe `AI_PROVIDER=none` e a flag `ai_enabled` desligada. Para apagar: `src/services/AI`, `AiLog`, `summarizeText`, `docs/operators/ai.md`.                                                 |
-| Web Push                    | Não configure `VAPID_*`. O sino continua. Para apagar o push: `WebPush`, `PushSubscription`, rotas `push/*`, toggle em Configurações.                                                       |
-| Notificações (sino e push)  | Remova `Notification`/`PushSubscription`, rotas `notifications/*` e `push/*`, o sino na `Sidebar`, `/notifications`.                                                                        |
-| Banner de instalação do PWA | Remova `<PwaInstallBanner />` de `AppShell`.                                                                                                                                                |
-| PWA inteiro                 | Remova `ServiceWorkerRegistrar` do `AppShell`, `src/app/manifest.ts`, `public/sw.js`, ícones e metadados em `[locale]/layout.tsx`. Mantenha `ForceAppUpdate` se quiser atualização forçada. |
-| Admin e impersonamento      | Remova rotas `admin/*`, `auth/impersonate`, `/admin`, `ImpersonationConsumer`/`Banner` e as chamadas a `assertNotImpersonation`.                                                            |
-| Feature flags               | Só se IA e outros recursos também saírem (`FeatureFlag`, manager, script).                                                                                                                  |
-| Exemplos                    | Apague `Example*`, `/api/v1/examples` e os testes correspondentes.                                                                                                                          |
+| Para remover…               | Faça                                                                                                                                                                                                                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Login com Google            | Não configure `GOOGLE_OAUTH_*` (o botão some). Para apagar o código: use cases/rotas `auth/google/*`, `GoogleOAuth`, componentes `Google*`.                                                                                                                                          |
+| IA                          | Deixe `AI_PROVIDER=none` e a flag `ai_enabled` desligada. Para apagar: `src/services/AI`, `AiLog`, `summarizeText`, `docs/operators/ai.md`.                                                                                                                                          |
+| Web Push                    | Não configure `VAPID_*`. O sino continua. Para apagar o push: `WebPush`, `PushSubscription`, rotas `push/*`, toggle em Configurações.                                                                                                                                                |
+| Notificações (sino e push)  | Remova `Notification`/`PushSubscription`, rotas `notifications/*` e `push/*`, o sino na `Sidebar`, `/notifications`.                                                                                                                                                                 |
+| Banner de instalação do PWA | Remova `<PwaInstallBanner />` de `AppShell`.                                                                                                                                                                                                                                         |
+| PWA inteiro                 | Remova `ServiceWorkerRegistrar` do `AppShell`, `src/app/manifest.ts`, `public/sw.js`, ícones e metadados em `[locale]/layout.tsx`. Mantenha `ForceAppUpdate` se quiser atualização forçada.                                                                                          |
+| Admin e impersonamento      | Remova rotas `admin/*`, `auth/impersonate`, `/admin`, `ImpersonationConsumer`/`Banner` e as chamadas a `assertNotImpersonation`.                                                                                                                                                     |
+| Feature flags               | Só se IA e outros recursos também saírem (`FeatureFlag`, manager, script).                                                                                                                                                                                                           |
+| 2FA                         | Não configure `TWO_FACTOR_ENCRYPTION_KEY` (a seção some). Para apagar: `TwoFactor*`, use cases `*TwoFactor*`/`regenerateRecoveryCodes`, `utils/totp.ts`, `twoFactorCrypto.ts`, `twoFactorChallenge.ts`, `ProfileTwoFactorSection`, o passo 2 do `LoginForm` e o gate em `LoginUser`. |
+| Audit log                   | Remova `AuditEvent`, as chamadas a `AuditEventRepository.record`, `/admin/audit-events`, a aba em `AdminPageClient`.                                                                                                                                                                 |
+| Jobs em background          | `JOBS_WORKER=off`. Para apagar: `src/jobs`, `Job`, `JobRepository`, o start em `instrumentation-node.ts`.                                                                                                                                                                            |
+| Exemplos                    | Apague `Example*`, `/api/v1/examples` e os testes correspondentes.                                                                                                                                                                                                                   |
 
 Ao remover, atualize **na mesma PR**: `docs/openapi.yaml`, `requests/`, textos pt/en/es, testes, `CONTEXT*.md` e o `scripts/README.md`.
 

@@ -43,7 +43,11 @@ Validadas no boot por `validateEnv()` (`src/config/env.ts`, chamada em `instrume
 | Google       | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`                                                            |
 | IA           | `AI_PROVIDER` (`none`\|`openai`), `OPENAI_API_KEY`, `OPENAI_TEXT_MODEL` (default `gpt-5.4-mini`), `AI_TIMEOUT_MS`, `AI_LOG_RETENTION_DAYS`     |
 | Web Push     | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (as três ou nenhuma), `WEB_PUSH_ALLOWED_HOSTS` (extra), `NOTIFICATION_RETENTION_DAYS` |
-| Operação     | `HEALTHCHECK_TOKEN`, `SWAGGER_*`, `APP_BASE_URL`, `SERVER_PORT`, `LOG_LEVEL`                                                                   |
+| 2FA          | `TWO_FACTOR_ENCRYPTION_KEY` (32 bytes em base64; opcional, mas **inválida recusa o boot**)                                                     |
+| Jobs         | `JOBS_WORKER` (`off` desliga), `JOBS_POLL_INTERVAL_MS`, `JOBS_SUCCEEDED_RETENTION_DAYS`, `JOBS_FAILED_RETENTION_DAYS`                          |
+| Retenção     | `AUDIT_LOG_RETENTION_DAYS` (365), `AI_LOG_RETENTION_DAYS`, `NOTIFICATION_RETENTION_DAYS`                                                       |
+| E2E          | `E2E_DATABASE_URL`, `E2E_PORT`                                                                                                                 |
+| Operação     | `HEALTHCHECK_TOKEN`, `SWAGGER_*`, `APP_BASE_URL`, `SERVER_PORT`, `LOG_LEVEL`, `LOG_FORMAT`                                                     |
 
 ## Rotas HTTP
 

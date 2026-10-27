@@ -41,6 +41,8 @@
 		"test-environment": "node scripts/test-environment.mjs",
 		"toggle-feature-flag": "node scripts/toggle-feature-flag.mjs",
 		"typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+		"two-factor:reset": "node scripts/reset-user-two-factor.mjs",
+		"two-factor:key": "node scripts/generate-two-factor-key.mjs",
 		"unconfirm-account": "node scripts/unconfirm-account.mjs",
 		"user-role:backfill": "node scripts/backfill-user-role.mjs",
 		"vapid:keys": "node scripts/generate-vapid-keys.mjs"

@@ -12,7 +12,12 @@ export const AUDIT_ACTIONS = [
 	'user.account_deletion_requested',
 	'user.account_deletion_cancelled',
 	'user.account_deletion_kept',
+	'user.two_factor_enabled',
+	'user.two_factor_disabled',
+	'user.two_factor_recovery_regenerated',
+	'user.two_factor_recovery_used',
 	'operator.role_changed',
+	'operator.two_factor_reset',
 	'operator.password_changed',
 	'operator.feature_flag_toggled',
 ] as const

@@ -36,13 +36,18 @@ export async function fetchCurrentUser(): Promise<AuthUser | null> {
 	return { ...data.user, impersonation: data.impersonation ?? null }
 }
 
+/** Login concluído: conta em quarentena de exclusão (decidir) ou sessão aberta. */
+export type LoginCompleted =
+	| { deletionDecisionRequired: true; twoFactorRequired?: false; deletedAt: string; deadlineAt: string }
+	| { deletionDecisionRequired?: false; twoFactorRequired?: false; user: AuthUser; settings: SettingEntry[] }
+
+/** Senha certa em conta com 2FA: ainda sem sessão; o código vai em `verifyTwoFactorLoginRequest`. */
+export type LoginTwoFactorRequired = { twoFactorRequired: true; challengeToken: string }
+
 export async function loginRequest(input: {
 	identifier: string
 	password: string
-}): Promise<
-	| { deletionDecisionRequired: true; deletedAt: string; deadlineAt: string }
-	| { deletionDecisionRequired?: false; user: AuthUser; settings: SettingEntry[] }
-> {
+}): Promise<LoginCompleted | LoginTwoFactorRequired> {
 	const response = await fetchApi('/api/v1/auth/login', {
 		method: 'POST',
 		credentials: 'include',
@@ -50,6 +55,57 @@ export async function loginRequest(input: {
 		body: JSON.stringify(input),
 	})
 	return parseApi(response)
+}
+
+export async function verifyTwoFactorLoginRequest(input: {
+	challengeToken: string
+	code?: string
+	recoveryCode?: string
+}): Promise<LoginCompleted> {
+	const response = await fetchApi('/api/v1/auth/2fa/verify', {
+		method: 'POST',
+		credentials: 'include',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(input),
+	})
+	return parseApi(response)
+}
+
+export type TwoFactorStatus = { available: boolean; enabled: boolean; recoveryCodesRemaining: number }
+
+export async function getTwoFactorStatusRequest(): Promise<TwoFactorStatus> {
+	const response = await fetchApi('/api/v1/users/me/2fa', { credentials: 'include' })
+	return parseApi(response)
+}
+
+async function postTwoFactor<T>(path: string, body?: unknown): Promise<T> {
+	const response = await fetchApi(`/api/v1/users/me/2fa/${path}`, {
+		method: 'POST',
+		credentials: 'include',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(body ?? {}),
+	})
+	return parseApi<T>(response)
+}
+
+export function beginTwoFactorSetupRequest(): Promise<{ secret: string; otpauthUri: string }> {
+	return postTwoFactor('setup')
+}
+
+export function enableTwoFactorRequest(code: string): Promise<{ recoveryCodes: string[] }> {
+	return postTwoFactor('enable', { code })
+}
+
+export function disableTwoFactorRequest(input: {
+	password: string
+	code?: string
+	recoveryCode?: string
+}): Promise<{ ok: true }> {
+	return postTwoFactor('disable', input)
+}
+
+export function regenerateRecoveryCodesRequest(code: string): Promise<{ recoveryCodes: string[] }> {
+	return postTwoFactor('recovery-codes', { code })
 }
 
 export async function registerRequest(input: {

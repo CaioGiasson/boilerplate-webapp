@@ -7,6 +7,7 @@
  * 5. AiLog older than AI_LOG_RETENTION_DAYS (default 90)
  * 6. Notification older than NOTIFICATION_RETENTION_DAYS (default 180); hard purge também apaga
  *    as notificações e as assinaturas push do titular
+ *    (e os dados de 2FA: segredo cifrado e códigos de recuperação)
  * 7. AuditEvent older than AUDIT_LOG_RETENTION_DAYS (default 365); hard purge zera o IP dos eventos do titular
  *
  * Uso:
@@ -197,6 +198,10 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 					data: {
 						email: `deleted_${user.id}@invalid.local`,
 						nickname: `deleted_${user.id}`,
+						twoFactorEnabledAt: null,
+						twoFactorSecretEnc: null,
+						twoFactorPendingSecretEnc: null,
+						twoFactorLastStep: null,
 						name: null,
 						photoUrl: null,
 						photoThumbnailUrl: null,
@@ -213,6 +218,7 @@ export async function runRetentionPurge(flags = parseCronArgs()) {
 				await prisma.aiLog.deleteMany({ where: { userId: user.id } })
 				await prisma.notification.deleteMany({ where: { userId: user.id } })
 				await prisma.pushSubscription.deleteMany({ where: { userId: user.id } })
+				await prisma.twoFactorRecoveryCode.deleteMany({ where: { userId: user.id } })
 				// A trilha de auditoria fica (segurança), mas sem o IP do titular.
 				await prisma.auditEvent.updateMany({
 					where: { OR: [{ actorId: user.id }, { targetUserId: user.id }] },

@@ -28,6 +28,8 @@ export type UserEntity = {
 	deletedAt: Date | null
 	sessionsRevokedAt: Date | null
 	role: UserRoleName
+	/** 2FA ativo (app autenticador confirmado). O segredo nunca entra na entidade. */
+	twoFactorEnabledAt: Date | null
 }
 
 export type PublicUser = Pick<
@@ -75,6 +77,7 @@ export function mapUser(user: {
 	deletedAt: Date | null
 	sessionsRevokedAt: Date | null
 	role?: string | null
+	twoFactorEnabledAt?: Date | null
 }): UserEntity {
 	const settings = SettingsManager.list({
 		settings: Array.isArray(user.settings) ? user.settings : [],
@@ -107,6 +110,7 @@ export function mapUser(user: {
 		deletedAt: user.deletedAt,
 		sessionsRevokedAt: user.sessionsRevokedAt ?? null,
 		role: normalizeUserRole(user.role),
+		twoFactorEnabledAt: user.twoFactorEnabledAt ?? null,
 	}
 }
 

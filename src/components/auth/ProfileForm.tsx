@@ -7,6 +7,7 @@ import { ProfileVerificationSection } from '@/components/auth/ProfileVerificatio
 import { ProfileEmailSection } from '@/components/auth/ProfileEmailSection'
 import { ProfilePasswordSection } from '@/components/auth/ProfilePasswordSection'
 import { ProfileStatisticsSection } from '@/components/auth/ProfileStatisticsSection'
+import { ProfileTwoFactorSection } from '@/components/auth/ProfileTwoFactorSection'
 import { ProfileSessionsSection } from '@/components/auth/ProfileSessionsSection'
 import { ProfileDeleteAccountSection } from '@/components/auth/ProfileDeleteAccountSection'
 import { useProfileForm } from '@/components/auth/useProfileForm'
@@ -89,6 +90,8 @@ export function ProfileForm() {
 					resolvePasswordError={profile.resolvePasswordError}
 					savePassword={profile.savePassword}
 				/>
+
+				<ProfileTwoFactorSection />
 
 				<ProfileStatisticsSection
 					statisticsLoading={profile.statisticsLoading}

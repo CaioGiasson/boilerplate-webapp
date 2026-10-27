@@ -4,20 +4,25 @@ Trilha **append-only** das ações sensíveis: quem fez o quê, em qual conta, q
 
 ## O que é registrado
 
-| Ação (`AUDIT_ACTIONS`)              | Onde nasce                                           | `actorType` |
-| ----------------------------------- | ---------------------------------------------------- | ----------- |
-| `admin.impersonation_token_created` | `createImpersonationToken` (`metadata.ttlSeconds`)   | `admin`     |
-| `auth.impersonation_started`        | `consumeImpersonationToken`                          | `admin`     |
-| `user.password_changed`             | `changeUserPassword`                                 | `user`      |
-| `user.password_reset`               | `resetPassword`                                      | `user`      |
-| `user.email_changed`                | `confirmEmailChallenge` (troca concluída)            | `user`      |
-| `user.sessions_revoked_others`      | `revokeOtherUserSessions` (`metadata.revokedCount`)  | `user`      |
-| `user.account_deletion_requested`   | `deleteUserAccount`                                  | `user`      |
-| `user.account_deletion_cancelled`   | `cancelAccountDeletion`                              | `user`      |
-| `user.account_deletion_kept`        | `keepAccountDeletion`                                | `user`      |
-| `operator.role_changed`             | `npm run change-user-role` (`metadata.from/to`)      | `operator`  |
-| `operator.password_changed`         | `npm run change-user-password`                       | `operator`  |
-| `operator.feature_flag_toggled`     | `npm run toggle-feature-flag` (`metadata.key/value`) | `operator`  |
+| Ação (`AUDIT_ACTIONS`)                 | Onde nasce                                                                     | `actorType` |
+| -------------------------------------- | ------------------------------------------------------------------------------ | ----------- |
+| `admin.impersonation_token_created`    | `createImpersonationToken` (`metadata.ttlSeconds`)                             | `admin`     |
+| `auth.impersonation_started`           | `consumeImpersonationToken`                                                    | `admin`     |
+| `user.password_changed`                | `changeUserPassword`                                                           | `user`      |
+| `user.password_reset`                  | `resetPassword`                                                                | `user`      |
+| `user.email_changed`                   | `confirmEmailChallenge` (troca concluída)                                      | `user`      |
+| `user.sessions_revoked_others`         | `revokeOtherUserSessions` (`metadata.revokedCount`)                            | `user`      |
+| `user.account_deletion_requested`      | `deleteUserAccount`                                                            | `user`      |
+| `user.account_deletion_cancelled`      | `cancelAccountDeletion`                                                        | `user`      |
+| `user.account_deletion_kept`           | `keepAccountDeletion`                                                          | `user`      |
+| `user.two_factor_enabled`              | `enableTwoFactor`                                                              | `user`      |
+| `user.two_factor_disabled`             | `disableTwoFactor`                                                             | `user`      |
+| `user.two_factor_recovery_regenerated` | `regenerateRecoveryCodes`                                                      | `user`      |
+| `user.two_factor_recovery_used`        | `verifyTwoFactorLogin` (login com código de recuperação; `metadata.remaining`) | `user`      |
+| `operator.role_changed`                | `npm run change-user-role` (`metadata.from/to`)                                | `operator`  |
+| `operator.two_factor_reset`            | `npm run two-factor:reset`                                                     | `operator`  |
+| `operator.password_changed`            | `npm run change-user-password`                                                 | `operator`  |
+| `operator.feature_flag_toggled`        | `npm run toggle-feature-flag` (`metadata.key/value`)                           | `operator`  |
 
 Cada evento guarda `actorId?`, `targetUserId?`, `metadata?`, `ip?`, `requestId?` e `createdAt`. O `ip` e o `requestId` vêm do contexto da requisição (`handleRoute`; ver [observabilidade](observability.md)): com o `requestId` você acha as linhas de log da mesma requisição. Scripts e jobs não têm requisição, então gravam sem os dois.
 

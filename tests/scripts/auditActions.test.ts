@@ -12,6 +12,7 @@ describe('ações de auditoria usadas no código', () => {
 		'scripts/change-user-role.mjs',
 		'scripts/change-user-password.mjs',
 		'scripts/toggle-feature-flag.mjs',
+		'scripts/reset-user-two-factor.mjs',
 	]
 
 	it.each(scripts)('%s usa uma ação conhecida de operador', (file) => {
@@ -35,6 +36,10 @@ describe('ações de auditoria usadas no código', () => {
 			'revokeOtherUserSessions',
 			'createImpersonationToken',
 			'consumeImpersonationToken',
+			'enableTwoFactor',
+			'disableTwoFactor',
+			'regenerateRecoveryCodes',
+			'verifyTwoFactorLogin',
 		]
 		for (const name of useCases) {
 			const actions = [...read(`src/useCases/${name}.usecase.ts`).matchAll(/action: '([a-z_.]+)'/g)].map(
@@ -47,8 +52,8 @@ describe('ações de auditoria usadas no código', () => {
 
 	it('toda ação do catálogo é usada em algum lugar (sem ação órfã)', () => {
 		const sources = [
-			...['change-user-role', 'change-user-password', 'toggle-feature-flag'].map((name) =>
-				read(`scripts/${name}.mjs`)
+			...['change-user-role', 'change-user-password', 'toggle-feature-flag', 'reset-user-two-factor'].map(
+				(name) => read(`scripts/${name}.mjs`)
 			),
 			...[
 				'changeUserPassword',
@@ -60,6 +65,10 @@ describe('ações de auditoria usadas no código', () => {
 				'revokeOtherUserSessions',
 				'createImpersonationToken',
 				'consumeImpersonationToken',
+				'enableTwoFactor',
+				'disableTwoFactor',
+				'regenerateRecoveryCodes',
+				'verifyTwoFactorLogin',
 			].map((name) => read(`src/useCases/${name}.usecase.ts`)),
 		].join('\n')
 

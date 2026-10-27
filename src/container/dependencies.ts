@@ -32,6 +32,12 @@ import CreateImpersonationToken from '@/useCases/createImpersonationToken.usecas
 import ConsumeImpersonationToken from '@/useCases/consumeImpersonationToken.usecase'
 import ListAdminUsers from '@/useCases/listAdminUsers.usecase'
 import ListAuditEvents from '@/useCases/listAuditEvents.usecase'
+import GetTwoFactorStatus from '@/useCases/getTwoFactorStatus.usecase'
+import BeginTwoFactorSetup from '@/useCases/beginTwoFactorSetup.usecase'
+import EnableTwoFactor from '@/useCases/enableTwoFactor.usecase'
+import DisableTwoFactor from '@/useCases/disableTwoFactor.usecase'
+import RegenerateRecoveryCodes from '@/useCases/regenerateRecoveryCodes.usecase'
+import VerifyTwoFactorLogin from '@/useCases/verifyTwoFactorLogin.usecase'
 import CreateNotification from '@/useCases/createNotification.usecase'
 import ListNotifications from '@/useCases/listNotifications.usecase'
 import MarkNotificationRead from '@/useCases/markNotificationRead.usecase'
@@ -79,6 +85,12 @@ export type AppDependencies = {
 	consumeImpersonationTokenUseCase: ConsumeImpersonationToken
 	listAdminUsersUseCase: ListAdminUsers
 	listAuditEventsUseCase: ListAuditEvents
+	getTwoFactorStatusUseCase: GetTwoFactorStatus
+	beginTwoFactorSetupUseCase: BeginTwoFactorSetup
+	enableTwoFactorUseCase: EnableTwoFactor
+	disableTwoFactorUseCase: DisableTwoFactor
+	regenerateRecoveryCodesUseCase: RegenerateRecoveryCodes
+	verifyTwoFactorLoginUseCase: VerifyTwoFactorLogin
 	webPushService: WebPushPort
 	createNotificationUseCase: CreateNotification
 	listNotificationsUseCase: ListNotifications
@@ -131,6 +143,12 @@ export function getDependencies(): AppDependencies {
 	const consumeImpersonationTokenUseCase = new ConsumeImpersonationToken()
 	const listAdminUsersUseCase = new ListAdminUsers()
 	const listAuditEventsUseCase = new ListAuditEvents()
+	const getTwoFactorStatusUseCase = new GetTwoFactorStatus()
+	const beginTwoFactorSetupUseCase = new BeginTwoFactorSetup()
+	const enableTwoFactorUseCase = new EnableTwoFactor()
+	const disableTwoFactorUseCase = new DisableTwoFactor()
+	const regenerateRecoveryCodesUseCase = new RegenerateRecoveryCodes()
+	const verifyTwoFactorLoginUseCase = new VerifyTwoFactorLogin()
 	const webPushService = getWebPushService()
 	const createNotificationUseCase = new CreateNotification(webPushService)
 	const listNotificationsUseCase = new ListNotifications()
@@ -176,6 +194,12 @@ export function getDependencies(): AppDependencies {
 		consumeImpersonationTokenUseCase,
 		listAdminUsersUseCase,
 		listAuditEventsUseCase,
+		getTwoFactorStatusUseCase,
+		beginTwoFactorSetupUseCase,
+		enableTwoFactorUseCase,
+		disableTwoFactorUseCase,
+		regenerateRecoveryCodesUseCase,
+		verifyTwoFactorLoginUseCase,
 		webPushService,
 		createNotificationUseCase,
 		listNotificationsUseCase,

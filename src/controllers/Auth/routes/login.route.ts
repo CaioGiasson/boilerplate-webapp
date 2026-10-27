@@ -6,8 +6,9 @@ import { ValidationError } from '@/errors'
 import { handleRoute, parseJsonBodyUnknown } from '@/utils/routeHandler'
 import { assertAuthRateLimit, rateLimitKeyPartFromBody } from '@/middleware/rateLimit.middleware'
 import { assertSameOrigin } from '@/utils/csrfOrigin'
-import { applyDeviceCookie, applySessionCookie, readDeviceCookieValue } from '@/utils/session'
+import { readDeviceCookieValue } from '@/utils/session'
 import { PASSWORD_MAX_LENGTH } from '@/utils/passwordPolicy'
+import { respondWithCompletedLogin } from './loginResponse'
 
 type Dependencies = {
 	loginUserUseCase: LoginUser
@@ -35,29 +36,17 @@ export default async function loginRoute(request: NextRequest, dependencies: Dep
 			deviceCookie: readDeviceCookieValue(request.cookies),
 		})
 
-		if (result.kind === 'deletion_decision') {
-			const response = NextResponse.json(
-				ApiPresenter.success('Account deletion decision required', {
-					deletionDecisionRequired: true,
-					deletedAt: result.deletedAt.toISOString(),
-					deadlineAt: result.deadlineAt.toISOString(),
+		if (result.kind === 'two_factor_required') {
+			// Sem cookie de sessão: a sessão só nasce depois do segundo fator.
+			return NextResponse.json(
+				ApiPresenter.success('Two-factor code required', {
+					twoFactorRequired: true,
+					challengeToken: result.challengeToken,
 				}),
-				{ status: 200 }
+				{ status: 200, headers: { 'Cache-Control': 'no-store' } }
 			)
-			applySessionCookie(response.cookies, result.token, result.ttlSeconds, request)
-			applyDeviceCookie(response.cookies, result.device, request)
-			return response
 		}
 
-		const response = NextResponse.json(
-			ApiPresenter.success('Login successful', {
-				user: result.user,
-				settings: result.settings,
-			}),
-			{ status: 200 }
-		)
-		applySessionCookie(response.cookies, result.token, result.ttlSeconds, request)
-		applyDeviceCookie(response.cookies, result.device, request)
-		return response
+		return respondWithCompletedLogin(request, result)
 	})
 }

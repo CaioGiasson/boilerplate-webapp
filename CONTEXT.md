@@ -32,6 +32,7 @@ Um **starter** Next.js 15 (App Router) com autenticação completa, perfil, conf
 - **E-mail:** desafios `verify`, `change_old`, `change_new` e `password_reset` (código de 8 caracteres, TTL de 1 h, guardado como SHA-256). O DTO expõe `emailChallenge: none | verify | change_old | change_new`.
 - **Google OAuth (opcional):** Authorization Code; vínculo por e-mail; `pending_link` exige a senha (ADR-010). Só aparece com `GOOGLE_OAUTH_*` completos.
 - **Sessão:** JWT em cookie `HttpOnly` (`app-session`, `__Host-app-session` em HTTPS), TTL padrão 7 dias, `jti` registrado em `ActiveSession`; logout/revogação grava `SessionEvent`. Trocar senha ou "sair de todos" grava `User.sessionsRevokedAt` e derruba as sessões emitidas antes. Dispositivos listados no perfil; novo dispositivo dispara e-mail de aviso. ADR-001.
+- **2FA (TOTP, opcional):** só liga com `TWO_FACTOR_ENCRYPTION_KEY`. A conta com senha ativa no perfil (segredo cifrado, 10 códigos de recuperação mostrados uma vez); no login, a senha certa devolve um `challengeToken` (5 min, sem sessão) e `POST /auth/2fa/verify` abre a sessão. Não cobre o login com Google. Celular perdido: `npm run two-factor:reset`. [`docs/operators/two-factor.md`](docs/operators/two-factor.md).
 - **Sessão de impersonamento:** 10 minutos, sem renovação, nunca vira `ActiveSession`; rotas destrutivas/de conta respondem 403 (`assertNotImpersonation`). Faixa vermelha no topo com o alvo e o tempo restante.
 - **Exclusão de conta:** quarentena de **30 dias** (`ACCOUNT_DELETION_QUARANTINE_DAYS`), com cancelar/manter ao entrar; depois o `retention-purge` anonimiza e apaga os objetos. [`docs/operators/account-deletion.md`](docs/operators/account-deletion.md).
 - **Exportação LGPD:** `GET /api/v1/users/me/export` devolve perfil público, arquivos, notificações, **contagem/data** dos aparelhos de push (nunca endpoint ou chaves) e as chamadas de IA do titular.
@@ -52,6 +53,7 @@ Bucket DigitalOcean Spaces **privado**; leitura por URL assinada (ADR-002). Toda
 | Login com Google | `GOOGLE_OAUTH_CLIENT_ID/SECRET/REDIRECT_URI`                                      | O botão "Continuar com Google" não aparece |
 | IA (AI Service)  | `AI_PROVIDER=openai` + `OPENAI_API_KEY` **e** a feature flag `ai_enabled`         | `503`; não há rota HTTP de IA (use cases)  |
 | Web Push         | `VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` + `VAPID_SUBJECT` (as três)              | Só o sino in-app; toggle explica o motivo  |
+| 2FA (TOTP)       | `TWO_FACTOR_ENCRYPTION_KEY` (32 bytes em base64; `npm run two-factor:key`)        | Seção do perfil some; ninguém ativa        |
 | Swagger UI       | `SWAGGER_ENABLED=true` + `SWAGGER_USER`/`SWAGGER_PASSWORD`                        | `/api/docs` responde 404                   |
 
 Feature flags (`ai_enabled`): coleção append-only, valor vigente = registro mais recente, cache de 30 s por instância. `npm run toggle-feature-flag -- <key>`. ADR-011.

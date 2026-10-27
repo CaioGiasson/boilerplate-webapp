@@ -14,6 +14,7 @@ erDiagram
   User ||--o{ File : ownerId
   User ||--o{ AiLog : userId
   User ||--o{ AuditEvent : actorId_targetUserId
+  User ||--o{ TwoFactorRecoveryCode : userId
   User ||--o{ Notification : userId
   User ||--o{ PushSubscription : userId
 ```
@@ -22,18 +23,19 @@ Sem relações Prisma declaradas: o vínculo é por `ObjectId` guardado (`userId
 
 ## Coleções
 
-| Model              | Papel                                                                                            |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| `User`             | Conta. Soft delete por `deletedAt` (quarentena de 30 dias); depois anonimizada                   |
-| `ActiveSession`    | Sessões JWT listáveis (`jtiHash` único, `exp`)                                                   |
-| `SessionEvent`     | Revogações/logouts por `token` (hash do jti) com `exp`; consultado a cada requisição autenticada |
-| `File`             | Registro de objeto no Spaces (`key` único, `status`, `sizeBytes`, `thumbnailKey/Url`)            |
-| `FeatureFlag`      | Append-only por `key`; vigente = mais recente                                                    |
-| `AuditEvent`       | Trilha de auditoria append-only (ação, ator, alvo, IP, `requestId`). Ver abaixo                  |
-| `AiLog`            | Auditoria de chamada de IA (prompt, resposta, tokens). Conteúdo do usuário                       |
-| `Notification`     | Sino in-app                                                                                      |
-| `PushSubscription` | Aparelho inscrito no Web Push (`endpoint` único)                                                 |
-| `Example`          | Exemplo de arquitetura (não é domínio)                                                           |
+| Model                   | Papel                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `User`                  | Conta. Soft delete por `deletedAt` (quarentena de 30 dias); depois anonimizada                    |
+| `ActiveSession`         | Sessões JWT listáveis (`jtiHash` único, `exp`)                                                    |
+| `SessionEvent`          | Revogações/logouts por `token` (hash do jti) com `exp`; consultado a cada requisição autenticada  |
+| `File`                  | Registro de objeto no Spaces (`key` único, `status`, `sizeBytes`, `thumbnailKey/Url`)             |
+| `FeatureFlag`           | Append-only por `key`; vigente = mais recente                                                     |
+| `TwoFactorRecoveryCode` | Código de recuperação do 2FA (só o hash SHA-256; `usedAt` no uso; `@@unique([userId, codeHash])`) |
+| `AuditEvent`            | Trilha de auditoria append-only (ação, ator, alvo, IP, `requestId`). Ver abaixo                   |
+| `AiLog`                 | Auditoria de chamada de IA (prompt, resposta, tokens). Conteúdo do usuário                        |
+| `Notification`          | Sino in-app                                                                                       |
+| `PushSubscription`      | Aparelho inscrito no Web Push (`endpoint` único)                                                  |
+| `Example`               | Exemplo de arquitetura (não é domínio)                                                            |
 
 ## Invariantes
 
@@ -54,6 +56,11 @@ Sem relações Prisma declaradas: o vínculo é por `ObjectId` guardado (`userId
 - `key` único: `{ownerId}/{categoria}/{hash}.webp` (e `{hash}.thumb.webp` em `thumbnailKey`). Legados podem ter outras extensões e não ter thumbnail.
 - `sizeBytes` = principal + thumbnail; só `status = published` conta na cota (1 GiB).
 - Ciclo: `pending` → `published` | `failed`; `orphan` quando substituído/removido; o `retention-purge` apaga os objetos de órfãos com mais de 7 dias (as **duas** chaves).
+
+### 2FA (`User.twoFactor*` e `TwoFactorRecoveryCode`)
+
+- `User.twoFactorEnabledAt` (ativo), `twoFactorSecretEnc` (segredo TOTP cifrado `v1.iv.tag.dados`), `twoFactorPendingSecretEnc` (setup não confirmado) e `twoFactorLastStep` (último passo aceito: impede replay). **Nada disso sai pela API**, nem pela exportação; `UserEntity` só expõe `twoFactorEnabledAt`.
+- Consumo de passo e de código de recuperação é atômico (`updateMany` condicional). Desativar apaga segredo e códigos. O hard purge da conta zera os campos e apaga os códigos.
 
 ### `AuditEvent`
 

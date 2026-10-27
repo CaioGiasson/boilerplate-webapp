@@ -36,6 +36,7 @@ export function buildUser(overrides: UserFactoryOverrides = {}): UserEntity {
 		deletedAt: null,
 		sessionsRevokedAt: null,
 		role: 'USER',
+		twoFactorEnabledAt: null,
 		...overrides,
 	}
 }

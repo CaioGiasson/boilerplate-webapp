@@ -1,0 +1,44 @@
+@baseUrl = http://localhost:3000
+@challengeToken =
+
+### 2FA status (needs a session; run the login request from auth.http first)
+GET {{baseUrl}}/api/v1/users/me/2fa
+
+### 1. Start setup: returns the secret (base32) and the otpauth URI. Needs TWO_FACTOR_ENCRYPTION_KEY on the server
+POST {{baseUrl}}/api/v1/users/me/2fa/setup
+Origin: {{baseUrl}}
+
+### 2. Confirm with the 6-digit code from the authenticator app: returns the recovery codes (shown once)
+POST {{baseUrl}}/api/v1/users/me/2fa/enable
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{ "code": "123456" }
+
+### New recovery codes (needs the app code; the old ones stop working)
+POST {{baseUrl}}/api/v1/users/me/2fa/recovery-codes
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{ "code": "123456" }
+
+### Disable: password + (app code OR recovery code)
+POST {{baseUrl}}/api/v1/users/me/2fa/disable
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{ "password": "Senha#12345", "code": "123456" }
+
+### Login step 2 (after POST /auth/login answered twoFactorRequired): paste the challengeToken above
+POST {{baseUrl}}/api/v1/auth/2fa/verify
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{ "challengeToken": "{{challengeToken}}", "code": "123456" }
+
+### Login step 2 with a recovery code
+# POST {{baseUrl}}/api/v1/auth/2fa/verify
+# Content-Type: application/json
+# Origin: {{baseUrl}}
+#
+# { "challengeToken": "{{challengeToken}}", "recoveryCode": "ABCDE-FGHIJ" }

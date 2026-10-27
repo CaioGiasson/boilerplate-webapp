@@ -25,17 +25,18 @@ After login/register, the session cookie (`app-session`) is stored automatically
 
 ## Index
 
-| File                                                                   | Routes covered                                                             |
-| ---------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| [health/healthcheck.http](./health/healthcheck.http)                   | `GET /api/health`, `GET /api/health/database`                              |
-| [auth/auth.http](./auth/auth.http)                                     | Login, register, logout, me, password reset, email verification            |
-| [users/users.http](./users/users.http)                                 | Profile, password, photo, settings, export, stats, sessions, nickname      |
-| [notifications/notifications.http](./notifications/notifications.http) | Notifications list/read, Web Push config, subscribe/unsubscribe, test      |
-| [system/version.http](./system/version.http)                           | `GET /api/v1/version`                                                      |
-| [system/ping.http](./system/ping.http)                                 | `GET`/`HEAD /api/ping`                                                     |
-| [admin/admin.http](./admin/admin.http)                                 | Admin users list, audit log, impersonation token, `POST /auth/impersonate` |
-| [images/images.http](./images/images.http)                             | List, create, CRUD, visibility, report, import, tags                       |
-| [examples/recoverOrGenerate.http](./examples/recoverOrGenerate.http)   | `GET /api/v1/examples` (dev only)                                          |
+| File                                                                   | Routes covered                                                               |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| [health/healthcheck.http](./health/healthcheck.http)                   | `GET /api/health`, `GET /api/health/database`                                |
+| [auth/auth.http](./auth/auth.http)                                     | Login, register, logout, me, password reset, email verification              |
+| [users/users.http](./users/users.http)                                 | Profile, password, photo, settings, export, stats, sessions, nickname        |
+| [notifications/notifications.http](./notifications/notifications.http) | Notifications list/read, Web Push config, subscribe/unsubscribe, test        |
+| [users/twoFactor.http](./users/twoFactor.http)                         | 2FA: status, setup, enable, disable, recovery codes, `POST /auth/2fa/verify` |
+| [system/version.http](./system/version.http)                           | `GET /api/v1/version`                                                        |
+| [system/ping.http](./system/ping.http)                                 | `GET`/`HEAD /api/ping`                                                       |
+| [admin/admin.http](./admin/admin.http)                                 | Admin users list, audit log, impersonation token, `POST /auth/impersonate`   |
+| [images/images.http](./images/images.http)                             | List, create, CRUD, visibility, report, import, tags                         |
+| [examples/recoverOrGenerate.http](./examples/recoverOrGenerate.http)   | `GET /api/v1/examples` (dev only)                                            |
 
 ## Route inventory (`src/app/api`)
 
@@ -58,6 +59,12 @@ After login/register, the session cookie (`app-session`) is stored automatically
 | GET    | `/api/ping`                                    | No                     | `ping/route.ts`                                    |
 | POST   | `/api/v1/auth/impersonate`                     | No (token in body)     | `v1/auth/impersonate/route.ts`                     |
 | GET    | `/api/v1/admin/users`                          | Yes (ADMIN)            | `v1/admin/users/route.ts`                          |
+| GET    | `/api/v1/users/me/2fa`                         | Yes                    | `v1/users/me/2fa/route.ts`                         |
+| POST   | `/api/v1/users/me/2fa/setup`                   | Yes                    | `v1/users/me/2fa/setup/route.ts`                   |
+| POST   | `/api/v1/users/me/2fa/enable`                  | Yes                    | `v1/users/me/2fa/enable/route.ts`                  |
+| POST   | `/api/v1/users/me/2fa/disable`                 | Yes                    | `v1/users/me/2fa/disable/route.ts`                 |
+| POST   | `/api/v1/users/me/2fa/recovery-codes`          | Yes                    | `v1/users/me/2fa/recovery-codes/route.ts`          |
+| POST   | `/api/v1/auth/2fa/verify`                      | No (challenge token)   | `v1/auth/2fa/verify/route.ts`                      |
 | GET    | `/api/v1/admin/audit-events`                   | Yes (ADMIN)            | `v1/admin/audit-events/route.ts`                   |
 | POST   | `/api/v1/admin/users/[id]/impersonation-token` | Yes (ADMIN)            | `v1/admin/users/[id]/impersonation-token/route.ts` |
 | POST   | `/api/v1/auth/register`                        | No                     | `v1/auth/register/route.ts`                        |

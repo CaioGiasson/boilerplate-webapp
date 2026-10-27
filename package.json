@@ -15,6 +15,8 @@
 		"cron": "node scripts/cron/run.mjs",
 		"cron:retention": "node scripts/cron/jobs/retention-purge.mjs",
 		"dev": "npm run prisma-merge && prisma generate && node scripts/next-port.mjs dev",
+		"e2e": "playwright test",
+		"e2e:prepare": "node scripts/e2e-prepare.mjs",
 		"email:backfill-verified": "node scripts/backfill-email-verified.mjs",
 		"gen:module": "node scripts/gen-module.mjs",
 		"files:backfill-thumbnails": "node scripts/backfill-file-thumbnails.mjs",
@@ -84,6 +86,7 @@
 	"devDependencies": {
 		"@eslint/eslintrc": "3.3.1",
 		"@next/bundle-analyzer": "^15.5.23",
+		"@playwright/test": "1.64.1",
 		"@tailwindcss/postcss": "^4",
 		"@types/argon2": "^0.14.1",
 		"@types/jest": "29.5.14",

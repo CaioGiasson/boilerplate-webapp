@@ -8,6 +8,10 @@ O boilerplate usa pacotes com binários nativos (`sharp`, `@next/swc`, Tailwind 
 
 O workflow roda `npm run check:lockfile-native` **antes** do `npm ci`: ele falha cedo, com a lista do que falta. O teste `tests/scripts/lockfileNative.test.ts` faz a mesma checagem no `npm test`.
 
+## E2E
+
+O workflow separado `E2E` (`.github/workflows/e2e.yml`) roda os testes Playwright com um Mongo em replica set. Não é o check exigido (`CI / verify`) até a primeira execução verde: ver [`e2e.md`](e2e.md).
+
 ## Estado atual
 
 O lockfile do boilerplate **já lista** os binários necessários (verificado). Por isso o workaround do `tribalRPGBot` — `scripts/ci-install-linux-native.sh` instalando os pacotes à mão, `.npmrc` com `supportedArchitectures` e `optionalDependencies` fixas — **não foi portado**. Portar só se a checagem acima passar e o `npm ci` ainda assim não instalar o binário.

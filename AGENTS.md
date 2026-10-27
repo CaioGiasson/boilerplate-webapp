@@ -33,18 +33,19 @@ Husky roda **lint-staged** no commit: Prettier em `**/*` (`package.json` → `li
 
 ## Comandos
 
-| Comando                    | Efeito                                                                       |
-| -------------------------- | ---------------------------------------------------------------------------- |
-| `npm run dev`              | Dev server (Turbopack) + Prisma generate; porta `SERVER_PORT` (default 3000) |
-| `npm run build`            | Build de produção (inclui checagem de tipos via Next)                        |
-| `npm run start`            | Servidor após `build` (porta `SERVER_PORT`, default 3000)                    |
-| `npm test`                 | Jest (`tests/` espelha `src/`)                                               |
-| `npm run lint`             | ESLint                                                                       |
-| `npm run check`            | Prettier (write) + ESLint                                                    |
-| `npm run typecheck`        | `tsc --noEmit` (app; ver `tsconfig.typecheck.json`)                          |
-| `npm run healthcheck`      | Sondas locais de dependências (ver abaixo)                                   |
-| `npm run test-environment` | Valida deps + integração real Brevo e Google OAuth                           |
-| `npm run prisma:push`      | Sincroniza schema Prisma → MongoDB (**altera o DB**)                         |
+| Comando                    | Efeito                                                                                                    |
+| -------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `npm run dev`              | Dev server (Turbopack) + Prisma generate; porta `SERVER_PORT` (default 3000)                              |
+| `npm run build`            | Build de produção (inclui checagem de tipos via Next)                                                     |
+| `npm run start`            | Servidor após `build` (porta `SERVER_PORT`, default 3000)                                                 |
+| `npm test`                 | Jest (`tests/` espelha `src/`)                                                                            |
+| `npm run lint`             | ESLint                                                                                                    |
+| `npm run check`            | Prettier (write) + ESLint                                                                                 |
+| `npm run typecheck`        | `tsc --noEmit` (app; ver `tsconfig.typecheck.json`)                                                       |
+| `npm run e2e`              | Playwright E2E contra o build e um Mongo só dos testes ([`docs/operators/e2e.md`](docs/operators/e2e.md)) |
+| `npm run healthcheck`      | Sondas locais de dependências (ver abaixo)                                                                |
+| `npm run test-environment` | Valida deps + integração real Brevo e Google OAuth                                                        |
+| `npm run prisma:push`      | Sincroniza schema Prisma → MongoDB (**altera o DB**)                                                      |
 
 Índice completo de scripts operacionais: [`scripts/README.md`](scripts/README.md).
 

@@ -16,6 +16,7 @@
 		"cron:retention": "node scripts/cron/jobs/retention-purge.mjs",
 		"dev": "npm run prisma-merge && prisma generate && node scripts/next-port.mjs dev",
 		"email:backfill-verified": "node scripts/backfill-email-verified.mjs",
+		"gen:module": "node scripts/gen-module.mjs",
 		"files:backfill-thumbnails": "node scripts/backfill-file-thumbnails.mjs",
 		"healthcheck": "node scripts/healthcheck.mjs",
 		"init-project": "node scripts/init-project.mjs",

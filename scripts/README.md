@@ -73,17 +73,18 @@ Scripts com `refuseIfProduction()` — **não rodar no host de `next start`**.
 
 ## Operador (exige `--confirm` em produção)
 
-| Comando                         | Script                      | Efeito                                                               | Args                                                                                  |
-| ------------------------------- | --------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------------- |
-| `npm run change-user-password`  | `change-user-password.mjs`  | Define a senha de uma conta e revoga as sessões                      | `<email>` · `NEW_PASSWORD` · `--confirm`                                              |
-| `npm run change-user-role`      | `change-user-role.mjs`      | Define o papel USER/ADMIN de uma conta                               | `<email> <USER\|ADMIN>` · `--confirm`                                                 |
-| `npm run user-role:backfill`    | `backfill-user-role.mjs`    | Grava role=USER onde o campo falta                                   | `--dry-run` · `--confirm`                                                             |
-| `npm run check:lockfile-native` | `check-lockfile-native.mjs` | Confere se o lockfile lista os binários de Linux x64                 | —                                                                                     | 🟢             |
-| `npm run pwa:icons`             | `generate-pwa-icons.mjs`    | Regera os ícones PWA de placeholder em `public/`                     | —                                                                                     | 🟢             |
-| `npm run init-project`          | `init-project.mjs`          | Renomeia o boilerplate para o sistema novo (dry-run sem `--confirm`) | `--name` · `--slug` · `--privacy-officer` · `--privacy-email` · `--env` · `--confirm` | 🟡 recusa prod |
-| `npm run seed:dev`              | `seed-dev.mjs`              | Cria admin e usuário de desenvolvimento (idempotente)                | `SEED_PASSWORD` (opcional)                                                            | 🟡 recusa prod |
-| `npm run vapid:keys`            | `generate-vapid-keys.mjs`   | Gera um par de chaves VAPID e imprime as variáveis                   | —                                                                                     | 🟢             |
-| `npm run toggle-feature-flag`   | `toggle-feature-flag.mjs`   | Alterna feature flag (insere registro novo)                          | `<key>` · `--confirm`                                                                 |
+| Comando                         | Script                      | Efeito                                                                    | Args                                                                                  |
+| ------------------------------- | --------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------------- |
+| `npm run change-user-password`  | `change-user-password.mjs`  | Define a senha de uma conta e revoga as sessões                           | `<email>` · `NEW_PASSWORD` · `--confirm`                                              |
+| `npm run change-user-role`      | `change-user-role.mjs`      | Define o papel USER/ADMIN de uma conta                                    | `<email> <USER\|ADMIN>` · `--confirm`                                                 |
+| `npm run user-role:backfill`    | `backfill-user-role.mjs`    | Grava role=USER onde o campo falta                                        | `--dry-run` · `--confirm`                                                             |
+| `npm run check:lockfile-native` | `check-lockfile-native.mjs` | Confere se o lockfile lista os binários de Linux x64                      | —                                                                                     | 🟢             |
+| `npm run pwa:icons`             | `generate-pwa-icons.mjs`    | Regera os ícones PWA de placeholder em `public/`                          | —                                                                                     | 🟢             |
+| `npm run init-project`          | `init-project.mjs`          | Renomeia o boilerplate para o sistema novo (dry-run sem `--confirm`)      | `--name` · `--slug` · `--privacy-officer` · `--privacy-email` · `--env` · `--confirm` | 🟡 recusa prod |
+| `npm run gen:module`            | `gen-module.mjs`            | Gera o CRUD de uma entidade em todas as camadas (dry-run sem `--confirm`) | `<Nome>` · `--fields` · `--plural` · `--confirm`                                      | 🟡 recusa prod |
+| `npm run seed:dev`              | `seed-dev.mjs`              | Cria admin e usuário de desenvolvimento (idempotente)                     | `SEED_PASSWORD` (opcional)                                                            | 🟡 recusa prod |
+| `npm run vapid:keys`            | `generate-vapid-keys.mjs`   | Gera um par de chaves VAPID e imprime as variáveis                        | —                                                                                     | 🟢             |
+| `npm run toggle-feature-flag`   | `toggle-feature-flag.mjs`   | Alterna feature flag (insere registro novo)                               | `<key>` · `--confirm`                                                                 |
 
 ## Padrão dry-run / confirm
 

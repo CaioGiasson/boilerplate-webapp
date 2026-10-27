@@ -1,5 +1,6 @@
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
 import ActiveSessionRepository from '@/repositories/ActiveSession.repository'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import UserRepository from '@/repositories/User.repository'
 import { NotFoundError, UnauthorizedError, ValidationError } from '@/errors'
 import { getJwtTtlSeconds } from '@/config/env'
@@ -74,6 +75,12 @@ export default class ChangeUserPassword extends UseCaseMasterPort<Input, Output>
 
 		const passwordHash = await hashPassword(input.newPassword)
 		await userRepository.updatePassword(input.userId, passwordHash)
+		await new AuditEventRepository(injectables.prisma).record({
+			action: 'user.password_changed',
+			actorType: 'user',
+			actorId: input.userId,
+			targetUserId: input.userId,
+		})
 
 		const device = createSessionDeviceId()
 		const { token, jti, exp } = await signSessionToken({

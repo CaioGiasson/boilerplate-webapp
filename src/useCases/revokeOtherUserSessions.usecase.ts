@@ -1,5 +1,6 @@
 import { SessionEventType } from '@prisma/client'
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import ActiveSessionRepository from '@/repositories/ActiveSession.repository'
 import SessionEventRepository from '@/repositories/SessionEvent.repository'
 import { ValidationError } from '@/errors'
@@ -42,6 +43,13 @@ export default class RevokeOtherUserSessions extends UseCaseMasterPort<Input, Ou
 		}
 
 		await activeSessionRepository.deleteAllForUserExceptJti(input.userId, input.currentJti)
+		await new AuditEventRepository(injectables.prisma).record({
+			action: 'user.sessions_revoked_others',
+			actorType: 'user',
+			actorId: input.userId,
+			targetUserId: input.userId,
+			metadata: { revokedCount: others.length },
+		})
 
 		return { ok: true, revokedCount: others.length }
 	}

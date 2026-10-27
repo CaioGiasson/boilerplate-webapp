@@ -136,6 +136,20 @@ export default class UserRepository {
 		}
 	}
 
+	/** Apelidos por id para telas de admin (inclui contas em quarentena/anonimizadas). Ids sem conta ficam de fora. */
+	async findNicknamesByIds(ids: string[]): Promise<Map<string, string>> {
+		if (ids.length === 0) return new Map()
+		try {
+			const rows = await this.prisma.user.findMany({
+				where: { id: { in: ids } },
+				select: { id: true, nickname: true },
+			})
+			return new Map(rows.map((row) => [row.id, row.nickname]))
+		} catch (error: unknown) {
+			throw new RepositoryError('Failed to find nicknames', error)
+		}
+	}
+
 	/** Includes soft-deleted / quarantined users (login restore + decision auth). */
 	async findByIdIncludingDeleted(id: string): Promise<UserEntity | null> {
 		try {

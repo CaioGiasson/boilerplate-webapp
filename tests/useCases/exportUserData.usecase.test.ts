@@ -62,9 +62,25 @@ describe('ExportUserData', () => {
 			createdAt: new Date('2026-08-22T00:00:00.000Z'),
 		}
 
+		const auditEvent = {
+			id: 'a1',
+			action: 'user.password_changed',
+			actorType: 'user',
+			actorId: 'user-1',
+			targetUserId: 'user-1',
+			metadata: null,
+			ip: '203.0.113.7',
+			requestId: 'req-12345678',
+			createdAt: new Date('2026-08-23T00:00:00.000Z'),
+		}
+		const adminActed = { ...auditEvent, id: 'a2', actorType: 'admin', actorId: 'admin-9', ip: null }
+
 		mockPrismaRuntime({
 			user: {
 				findFirst: jest.fn(async () => user),
+			},
+			auditEvent: {
+				findMany: jest.fn(async () => [auditEvent, adminActed]),
 			},
 			file: {
 				findMany: jest.fn(async () => [file]),
@@ -109,6 +125,25 @@ describe('ExportUserData', () => {
 				createdAt: '2026-08-19T00:00:00.000Z',
 			},
 		])
+		expect(result.auditEvents).toEqual([
+			{
+				id: 'a1',
+				action: 'user.password_changed',
+				asActor: true,
+				asTarget: true,
+				ip: '203.0.113.7',
+				createdAt: '2026-08-23T00:00:00.000Z',
+			},
+			{
+				id: 'a2',
+				action: 'user.password_changed',
+				asActor: false,
+				asTarget: true,
+				ip: null,
+				createdAt: '2026-08-23T00:00:00.000Z',
+			},
+		])
+		expect(JSON.stringify(result.auditEvents)).not.toContain('admin-9')
 		expect(result.notifications).toEqual([
 			{
 				id: 'n1',

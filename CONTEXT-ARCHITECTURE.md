@@ -73,6 +73,7 @@ Envelope: `ApiPresenter` (`success` + `message` + `data` / `success: false` + `c
 - **Link de retorno e links de notificação:** `safeReturnUrl` e `safeInAppLink` (só caminho interno).
 - **Paginação:** listas novas usam cursor (keyset `createdAt` + `id`) por `src/utils/pagination.ts`: `parsePageQuery` (`?cursor&limit&q&order`, limite 20 por padrão e 100 no máximo), `keysetWhere`/`keysetOrderBy` no repository (`take: limit + 1`) e `toPage` no use case. Resposta `{ items, pageInfo: { nextCursor, hasNext, limit } }`, sem total. Referência: `listAdminUsers` + `AdminUsersSection` (`DataTable` + `Pagination`). Notificações têm cursor próprio (`<ISO>_<id>`, contrato anterior, mantido).
 - **Observabilidade:** `handleRoute` atribui um `requestId` (`x-request-id` de entrada válido ou UUID) que vai no header da resposta, no corpo dos erros e em todo log da requisição (`AsyncLocalStorage`, `src/lib/requestContext.ts`). `LogManager` emite JSON em produção (`LOG_FORMAT`). Destino externo de erros por `registerErrorReporter` (sem SDK embutido). [`docs/operators/observability.md`](docs/operators/observability.md).
+- **Auditoria:** `AuditEventRepository.record` (append-only, nunca lança) é chamado nos use cases de ações sensíveis e nos scripts de operador (`scripts/lib/audit.mjs`); `ip` e `requestId` vêm do `AsyncLocalStorage` da requisição. Lista só para ADMIN em `GET /api/v1/admin/audit-events`. [`docs/operators/audit-log.md`](docs/operators/audit-log.md).
 - **Resiliência:** `circuitBreaker` + `retryWithJitter` (Brevo, Spaces, OpenAI); `idempotency.ts`.
 
 ## Upload e Spaces
@@ -93,7 +94,7 @@ Ver `CONTEXT.md` (produto) e [`docs/operators/pwa.md`](docs/operators/pwa.md). `
 
 ## Jobs e operação
 
-`npm run cron -- retention-purge --dry-run|--confirm` (`scripts/cron/jobs/retention-purge.mjs`): órfãos de Spaces (7 d), `SessionEvent`/`ActiveSession` vencidos, contas em quarentena > 30 d (anonimiza + apaga objetos + `AiLog`, `Notification`, `PushSubscription`), `AiLog` > 90 d, `Notification` > 180 d. Manifesto de CronJob em `deploy/cron/`. Scripts de operador: `scripts/README.md`.
+`npm run cron -- retention-purge --dry-run|--confirm` (`scripts/cron/jobs/retention-purge.mjs`): órfãos de Spaces (7 d), `SessionEvent`/`ActiveSession` vencidos, contas em quarentena > 30 d (anonimiza + apaga objetos + `AiLog`, `Notification`, `PushSubscription`), `AiLog` > 90 d, `Notification` > 180 d, `AuditEvent` > 365 d (e zera o IP dos eventos de contas purgadas). Manifesto de CronJob em `deploy/cron/`. Scripts de operador: `scripts/README.md`.
 
 ## Imagem Docker
 

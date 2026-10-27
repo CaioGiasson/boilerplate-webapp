@@ -414,6 +414,36 @@ export async function listAdminUsersRequest(
 	return parseApi<AdminUsersPage>(response)
 }
 
+export type AdminAuditParty = { id: string; nickname: string | null }
+
+export type AdminAuditEventRow = {
+	id: string
+	action: string
+	actorType: string
+	actor: AdminAuditParty | null
+	target: AdminAuditParty | null
+	createdAt: string
+}
+
+export type AdminAuditEventsPage = {
+	items: AdminAuditEventRow[]
+	pageInfo: { nextCursor: string | null; hasNext: boolean; limit: number }
+}
+
+export async function listAdminAuditEventsRequest(
+	params: { cursor?: string; action?: string; order?: 'asc' | 'desc' } = {}
+): Promise<AdminAuditEventsPage> {
+	const search = new URLSearchParams()
+	if (params.cursor) search.set('cursor', params.cursor)
+	if (params.action) search.set('action', params.action)
+	if (params.order) search.set('order', params.order)
+	const query = search.toString()
+	const response = await fetchApi(`/api/v1/admin/audit-events${query ? `?${query}` : ''}`, {
+		credentials: 'include',
+	})
+	return parseApi<AdminAuditEventsPage>(response)
+}
+
 export async function createImpersonationTokenRequest(userId: string): Promise<{ token: string; expiresAt: string }> {
 	const response = await fetchApi(`/api/v1/admin/users/${encodeURIComponent(userId)}/impersonation-token`, {
 		method: 'POST',

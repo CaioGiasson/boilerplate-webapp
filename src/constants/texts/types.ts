@@ -280,6 +280,7 @@ export type AppMessages = {
 	admin: {
 		title: string
 		usersTitle: string
+		loading: string
 		loadError: string
 		empty: string
 		accessDenied: string
@@ -304,6 +305,37 @@ export type AppMessages = {
 		paginationLabel: string
 		pageNumber: string
 		emptySearch: string
+		tabsLabel: string
+		tabUsers: string
+		tabAudit: string
+		auditTitle: string
+		auditHint: string
+		auditColumnWhen: string
+		auditColumnAction: string
+		auditColumnActor: string
+		auditColumnTarget: string
+		auditFilterLabel: string
+		auditFilterAll: string
+		auditEmpty: string
+		auditLoadError: string
+		auditPaginationLabel: string
+		auditActorOperator: string
+		auditActorSystem: string
+		auditDeletedAccount: string
+		auditActions: {
+			admin_impersonation_token_created: string
+			auth_impersonation_started: string
+			user_password_changed: string
+			user_password_reset: string
+			user_email_changed: string
+			user_sessions_revoked_others: string
+			user_account_deletion_requested: string
+			user_account_deletion_cancelled: string
+			user_account_deletion_kept: string
+			operator_role_changed: string
+			operator_password_changed: string
+			operator_feature_flag_toggled: string
+		}
 	}
 	impersonation: {
 		banner: string

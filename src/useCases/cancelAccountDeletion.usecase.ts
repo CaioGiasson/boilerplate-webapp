@@ -1,5 +1,6 @@
 import LogManager from '@/managers/Log.manager'
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import UserRepository, { toPublicUser, type PublicUser } from '@/repositories/User.repository'
 import { NotFoundError, UnauthorizedError, ValidationError } from '@/errors'
 import { getAppBaseUrl } from '@/config/env'
@@ -46,6 +47,12 @@ export default class CancelAccountDeletion extends UseCaseMasterPort<Input, Outp
 		}
 
 		const restored = await userRepository.clearDeletedAt(user.id)
+		await new AuditEventRepository(injectables.prisma).record({
+			action: 'user.account_deletion_cancelled',
+			actorType: 'user',
+			actorId: user.id,
+			targetUserId: user.id,
+		})
 		const cancelledAt = new Date()
 		const locale = input.locale ?? 'en'
 

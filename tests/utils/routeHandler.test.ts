@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { NotFoundError } from '@/errors'
-import { REQUEST_ID_HEADER, getRequestId } from '@/lib/requestContext'
+import { REQUEST_ID_HEADER, getClientIp, getRequestId } from '@/lib/requestContext'
 import { registerErrorReporter } from '@/lib/errorReporter'
 import { handleRoute } from '@/utils/routeHandler'
 
@@ -31,6 +31,23 @@ describe('handleRoute', () => {
 
 		expect(response.headers.get(REQUEST_ID_HEADER)).toBe('gateway-req-0001')
 		expect(seen).toBe('gateway-req-0001')
+	})
+
+	it('expõe ao handler o IP do cliente (cabeçalho do proxy) e ignora quando não há IP confiável', async () => {
+		mockedHeaders.mockResolvedValue(new Headers({ 'cf-connecting-ip': '203.0.113.7' }))
+		let seen: string | undefined
+		await handleRoute(async () => {
+			seen = getClientIp()
+			return NextResponse.json({ ok: true })
+		})
+		expect(seen).toBe('203.0.113.7')
+
+		incoming()
+		await handleRoute(async () => {
+			seen = getClientIp()
+			return NextResponse.json({ ok: true })
+		})
+		expect(seen).toBeUndefined()
 	})
 
 	it('gera um id quando o de entrada é inválido', async () => {

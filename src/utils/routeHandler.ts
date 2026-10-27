@@ -4,14 +4,17 @@ import type { AppError } from '@/errors'
 import { AppError as AppErrorClass, TooManyRequestsError } from '@/errors'
 import ApiPresenter from '@/utils/Api.presenter'
 import ErrorManager from '@/managers/Error.manager'
+import { extractClientIp } from '@/middleware/rateLimit.middleware'
 import { REQUEST_ID_HEADER, resolveRequestId, runWithRequestContext } from '@/lib/requestContext'
 
-async function incomingRequestId(): Promise<string> {
+async function incomingContext(): Promise<{ requestId: string; ip?: string }> {
 	try {
-		return resolveRequestId((await headers()).get(REQUEST_ID_HEADER))
+		const incoming = await headers()
+		const ip = extractClientIp({ headers: incoming })
+		return { requestId: resolveRequestId(incoming.get(REQUEST_ID_HEADER)), ip: ip === 'unknown' ? undefined : ip }
 	} catch {
 		// Fora do escopo de uma requisição do Next (testes, scripts): gera um id novo.
-		return resolveRequestId(null)
+		return { requestId: resolveRequestId(null) }
 	}
 }
 
@@ -30,34 +33,38 @@ function withRequestId(response: NextResponse, requestId: string): NextResponse 
  * header da resposta e para o corpo dos erros.
  */
 export async function handleRoute(handler: () => Promise<NextResponse>): Promise<NextResponse> {
-	const requestId = await incomingRequestId()
+	const { requestId, ip } = await incomingContext()
 
-	return runWithRequestContext(requestId, async () => {
-		try {
-			return withRequestId(await handler(), requestId)
-		} catch (error: unknown) {
-			if (error instanceof AppErrorClass) {
-				ErrorManager.log(error)
-				const retryAfter =
-					error instanceof TooManyRequestsError && error.retryAfterSeconds != null
-						? { 'Retry-After': String(error.retryAfterSeconds) }
-						: undefined
+	return runWithRequestContext(
+		requestId,
+		async () => {
+			try {
+				return withRequestId(await handler(), requestId)
+			} catch (error: unknown) {
+				if (error instanceof AppErrorClass) {
+					ErrorManager.log(error)
+					const retryAfter =
+						error instanceof TooManyRequestsError && error.retryAfterSeconds != null
+							? { 'Retry-After': String(error.retryAfterSeconds) }
+							: undefined
+					return withRequestId(
+						NextResponse.json(ApiPresenter.error(error as AppError, requestId), {
+							status: error.statusCode,
+							headers: retryAfter,
+						}),
+						requestId
+					)
+				}
+
+				ErrorManager.log(error as Error)
 				return withRequestId(
-					NextResponse.json(ApiPresenter.error(error as AppError, requestId), {
-						status: error.statusCode,
-						headers: retryAfter,
-					}),
+					NextResponse.json(ApiPresenter.unknownError('Internal server error', requestId), { status: 500 }),
 					requestId
 				)
 			}
-
-			ErrorManager.log(error as Error)
-			return withRequestId(
-				NextResponse.json(ApiPresenter.unknownError('Internal server error', requestId), { status: 500 }),
-				requestId
-			)
-		}
-	})
+		},
+		{ ip }
+	)
 }
 
 export function parseJsonBody<T>(request: NextRequest): Promise<T> {

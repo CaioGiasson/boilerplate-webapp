@@ -22,7 +22,7 @@ Um **starter** Next.js 15 (App Router) com autenticação completa, perfil, conf
 
 - **Visitante** — sem sessão: landing, cadastro, login, recuperação de senha, termos/privacidade.
 - **Usuário (`User.role = USER`)** — conta ativa. Conta anterior ao campo `role` (ausente) conta como `USER`.
-- **Admin (`User.role = ADMIN`)** — acessa `/admin` (lista de usuários com e-mail mascarado) e gera link de acesso (impersonamento) para um usuário comum. **Única forma de criar admin:** `npm run change-user-role -- <email> ADMIN` (`--confirm` em produção). Não pode impersonar a si mesmo nem outro admin. Detalhes: [ADR-013](docs/adr/013-admin-role-and-impersonation.md), [`docs/operators/admin.md`](docs/operators/admin.md).
+- **Admin (`User.role = ADMIN`)** — acessa `/admin` (abas **Usuários**, com e-mail mascarado e busca por apelido, e **Auditoria**, somente leitura) e gera link de acesso (impersonamento) para um usuário comum. Ações sensíveis de conta, admin e operador ficam na trilha `AuditEvent` ([`docs/operators/audit-log.md`](docs/operators/audit-log.md)). **Única forma de criar admin:** `npm run change-user-role -- <email> ADMIN` (`--confirm` em produção). Não pode impersonar a si mesmo nem outro admin. Detalhes: [ADR-013](docs/adr/013-admin-role-and-impersonation.md), [`docs/operators/admin.md`](docs/operators/admin.md).
 
 ## Conta
 

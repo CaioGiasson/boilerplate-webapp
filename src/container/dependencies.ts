@@ -31,6 +31,7 @@ import SummarizeText from '@/useCases/summarizeText.usecase'
 import CreateImpersonationToken from '@/useCases/createImpersonationToken.usecase'
 import ConsumeImpersonationToken from '@/useCases/consumeImpersonationToken.usecase'
 import ListAdminUsers from '@/useCases/listAdminUsers.usecase'
+import ListAuditEvents from '@/useCases/listAuditEvents.usecase'
 import CreateNotification from '@/useCases/createNotification.usecase'
 import ListNotifications from '@/useCases/listNotifications.usecase'
 import MarkNotificationRead from '@/useCases/markNotificationRead.usecase'
@@ -77,6 +78,7 @@ export type AppDependencies = {
 	createImpersonationTokenUseCase: CreateImpersonationToken
 	consumeImpersonationTokenUseCase: ConsumeImpersonationToken
 	listAdminUsersUseCase: ListAdminUsers
+	listAuditEventsUseCase: ListAuditEvents
 	webPushService: WebPushPort
 	createNotificationUseCase: CreateNotification
 	listNotificationsUseCase: ListNotifications
@@ -128,6 +130,7 @@ export function getDependencies(): AppDependencies {
 	const createImpersonationTokenUseCase = new CreateImpersonationToken()
 	const consumeImpersonationTokenUseCase = new ConsumeImpersonationToken()
 	const listAdminUsersUseCase = new ListAdminUsers()
+	const listAuditEventsUseCase = new ListAuditEvents()
 	const webPushService = getWebPushService()
 	const createNotificationUseCase = new CreateNotification(webPushService)
 	const listNotificationsUseCase = new ListNotifications()
@@ -172,6 +175,7 @@ export function getDependencies(): AppDependencies {
 		createImpersonationTokenUseCase,
 		consumeImpersonationTokenUseCase,
 		listAdminUsersUseCase,
+		listAuditEventsUseCase,
 		webPushService,
 		createNotificationUseCase,
 		listNotificationsUseCase,

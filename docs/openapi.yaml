@@ -504,6 +504,98 @@ paths:
                 '429':
                     $ref: '#/components/responses/RateLimited'
 
+    /api/v1/admin/audit-events:
+        get:
+            tags: [admin]
+            summary: Listar a trilha de auditoria (somente ADMIN)
+            description: |
+                Paginação por cursor, mais recentes primeiro (20 por página, máx. 100). Somente leitura. O IP, o `requestId`
+                e o `metadata` dos eventos ficam no banco e **não** saem por aqui. Recusado (403) durante impersonamento.
+            security:
+                - SessionCookie: []
+            parameters:
+                - name: cursor
+                  in: query
+                  required: false
+                  description: 'Valor de `pageInfo.nextCursor` da página anterior (opaco).'
+                  schema: { type: string, maxLength: 200 }
+                - name: limit
+                  in: query
+                  required: false
+                  schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+                - name: order
+                  in: query
+                  required: false
+                  schema: { type: string, enum: [asc, desc], default: desc }
+                - name: action
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum:
+                          - admin.impersonation_token_created
+                          - auth.impersonation_started
+                          - user.password_changed
+                          - user.password_reset
+                          - user.email_changed
+                          - user.sessions_revoked_others
+                          - user.account_deletion_requested
+                          - user.account_deletion_cancelled
+                          - user.account_deletion_kept
+                          - operator.role_changed
+                          - operator.password_changed
+                          - operator.feature_flag_toggled
+            responses:
+                '200':
+                    description: Página de eventos
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/ApiSuccess'
+                                    - type: object
+                                      properties:
+                                          data:
+                                              type: object
+                                              properties:
+                                                  items:
+                                                      type: array
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              action: { type: string, example: user.password_changed }
+                                                              actorType:
+                                                                  {
+                                                                      type: string,
+                                                                      enum: [user, admin, operator, system],
+                                                                  }
+                                                              actor:
+                                                                  type: object
+                                                                  nullable: true
+                                                                  properties:
+                                                                      id: { type: string }
+                                                                      nickname: { type: string, nullable: true }
+                                                              target:
+                                                                  type: object
+                                                                  nullable: true
+                                                                  properties:
+                                                                      id: { type: string }
+                                                                      nickname: { type: string, nullable: true }
+                                                              createdAt: { type: string, format: date-time }
+                                                  pageInfo:
+                                                      type: object
+                                                      properties:
+                                                          nextCursor: { type: string, nullable: true }
+                                                          hasNext: { type: boolean }
+                                                          limit: { type: integer }
+                '400':
+                    $ref: '#/components/responses/ValidationError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    description: Sem papel ADMIN ou sessão de impersonamento
+
     /api/v1/admin/users:
         get:
             tags: [admin]
@@ -1073,6 +1165,18 @@ paths:
                                                   files:
                                                       type: array
                                                       items: { type: object }
+                                                  auditEvents:
+                                                      type: array
+                                                      description: Ações da trilha de auditoria em que o titular agiu ou foi alvo (sem o id da outra parte)
+                                                      items:
+                                                          type: object
+                                                          properties:
+                                                              id: { type: string }
+                                                              action: { type: string }
+                                                              asActor: { type: boolean }
+                                                              asTarget: { type: boolean }
+                                                              ip: { type: string, nullable: true }
+                                                              createdAt: { type: string, format: date-time }
                                                   aiLogs:
                                                       type: array
                                                       description: Chamadas de IA do titular dentro da janela de retenção (prompt, resposta, tokens)

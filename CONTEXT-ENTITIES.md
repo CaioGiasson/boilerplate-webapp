@@ -13,6 +13,7 @@ erDiagram
   User ||--o{ ActiveSession : userId
   User ||--o{ File : ownerId
   User ||--o{ AiLog : userId
+  User ||--o{ AuditEvent : actorId_targetUserId
   User ||--o{ Notification : userId
   User ||--o{ PushSubscription : userId
 ```
@@ -28,6 +29,7 @@ Sem relações Prisma declaradas: o vínculo é por `ObjectId` guardado (`userId
 | `SessionEvent`     | Revogações/logouts por `token` (hash do jti) com `exp`; consultado a cada requisição autenticada |
 | `File`             | Registro de objeto no Spaces (`key` único, `status`, `sizeBytes`, `thumbnailKey/Url`)            |
 | `FeatureFlag`      | Append-only por `key`; vigente = mais recente                                                    |
+| `AuditEvent`       | Trilha de auditoria append-only (ação, ator, alvo, IP, `requestId`). Ver abaixo                  |
 | `AiLog`            | Auditoria de chamada de IA (prompt, resposta, tokens). Conteúdo do usuário                       |
 | `Notification`     | Sino in-app                                                                                      |
 | `PushSubscription` | Aparelho inscrito no Web Push (`endpoint` único)                                                 |
@@ -52,6 +54,12 @@ Sem relações Prisma declaradas: o vínculo é por `ObjectId` guardado (`userId
 - `key` único: `{ownerId}/{categoria}/{hash}.webp` (e `{hash}.thumb.webp` em `thumbnailKey`). Legados podem ter outras extensões e não ter thumbnail.
 - `sizeBytes` = principal + thumbnail; só `status = published` conta na cota (1 GiB).
 - Ciclo: `pending` → `published` | `failed`; `orphan` quando substituído/removido; o `retention-purge` apaga os objetos de órfãos com mais de 7 dias (as **duas** chaves).
+
+### `AuditEvent`
+
+- Append-only: o repository só tem `record` e consultas; nunca `update`/`delete` por evento. `record` **não lança** (falha de auditoria só vira log). Guarda `action` (`AUDIT_ACTIONS` em `src/constants/audit.ts`), `actorType` (`user|admin|operator|system`), `actorId?`, `targetUserId?`, `metadata?` (curto, não sensível), `ip?` e `requestId?` (do contexto da requisição; ausentes em scripts).
+- Nunca guarda senha, token, e-mail nem corpo de requisição. A API de admin não devolve `ip`, `requestId` nem `metadata`.
+- Dado pessoal: entra na exportação LGPD (`auditEvents`, sem o id da outra parte), o **IP é zerado** na exclusão definitiva da conta (o evento fica) e os eventos vencem em **365 d** (`AUDIT_LOG_RETENTION_DAYS`, `retention-purge`). [`docs/operators/audit-log.md`](docs/operators/audit-log.md).
 
 ### `AiLog`, `Notification`, `PushSubscription`
 

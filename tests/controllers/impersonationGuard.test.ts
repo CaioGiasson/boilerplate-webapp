@@ -12,6 +12,7 @@ import subscribeRoute from '@/controllers/Push/routes/subscribe.route'
 import unsubscribeRoute from '@/controllers/Push/routes/unsubscribe.route'
 import sendTestRoute from '@/controllers/Push/routes/sendTest.route'
 import listAdminUsersRoute from '@/controllers/Admin/routes/listUsers.route'
+import listAuditEventsRoute from '@/controllers/Admin/routes/listAuditEvents.route'
 import createImpersonationTokenRoute from '@/controllers/Admin/routes/createImpersonationToken.route'
 
 /**
@@ -72,6 +73,7 @@ const BLOCKED: Array<[string, string, RouteCall]> = [
 	['DELETE push/subscriptions', 'DELETE', (req) => unsubscribeRoute(req, dependencies as never)],
 	['POST push/test', 'POST', (req) => sendTestRoute(req, dependencies as never)],
 	['GET admin/users', 'GET', (req) => listAdminUsersRoute(req, dependencies as never)],
+	['GET admin/audit-events', 'GET', (req) => listAuditEventsRoute(req, dependencies as never)],
 	[
 		'POST admin/users/{id}/impersonation-token',
 		'POST',

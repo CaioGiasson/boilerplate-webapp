@@ -1,4 +1,5 @@
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import UserRepository from '@/repositories/User.repository'
 import { ValidationError } from '@/errors'
 import { assertPasswordPolicy, hashPassword } from '@/utils/password'
@@ -57,6 +58,12 @@ export default class ResetPassword extends UseCaseMasterPort<Input, Output> {
 
 		const passwordHash = await hashPassword(input.newPassword)
 		await userRepository.updatePasswordClearingEmailChallenge(user.id, passwordHash)
+		await new AuditEventRepository(injectables.prisma).record({
+			action: 'user.password_reset',
+			actorType: 'user',
+			actorId: user.id,
+			targetUserId: user.id,
+		})
 
 		return { ok: true }
 	}

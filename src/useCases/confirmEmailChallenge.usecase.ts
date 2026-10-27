@@ -1,4 +1,5 @@
 import UseCaseMasterPort, { Injectables } from '@/masterPorts/UseCase.masterport'
+import AuditEventRepository from '@/repositories/AuditEvent.repository'
 import UserRepository, { isUniqueConstraintError, type PublicUser } from '@/repositories/User.repository'
 import { ConflictError, NotFoundError, ValidationError } from '@/errors'
 import { getEmailService } from '@/services/Email/Email.service'
@@ -99,6 +100,12 @@ export default class ConfirmEmailChallenge extends UseCaseMasterPort<Input, Outp
 			}
 			try {
 				const updated = await userRepository.applyPendingEmail(user.id, user.pendingEmail)
+				await new AuditEventRepository(injectables.prisma).record({
+					action: 'user.email_changed',
+					actorType: 'user',
+					actorId: user.id,
+					targetUserId: user.id,
+				})
 				return { user: await toPublicUserWithSignedPhoto(updated) }
 			} catch (error: unknown) {
 				if (isUniqueConstraintError(error)) {
